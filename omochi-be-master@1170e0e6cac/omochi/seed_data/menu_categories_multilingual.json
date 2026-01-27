@@ -1,0 +1,26 @@
+[
+    {
+        "name": "優先券",
+        "name_en": "Priority Pass"
+    },
+    {
+        "name": "メイン",
+        "name_en": "Main"
+    },
+    {
+        "name": "サイド",
+        "name_en": "Side"
+    },
+    {
+        "name": "飲み物",
+        "name_en": "Drinks"
+    },
+    {
+        "name": "その他",
+        "name_en": "Others"
+    },
+    {
+        "name": "アルコール",
+        "name_en": "Alcohol"
+    }
+]

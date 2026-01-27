@@ -1,0 +1,28 @@
+.logout-modal .ant-modal-content {
+  background-color: var(--background-color) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+}
+
+.logout-modal .ant-modal-body {
+  padding: 0 !important;
+}
+
+.logout-modal .ant-btn:hover,
+.logout-modal .ant-btn:focus {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+.logout-modal .ant-btn:active {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+} 
+
+.contact-modal .ant-modal-content {
+  background-color: #272525 !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+}
+

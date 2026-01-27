@@ -1,0 +1,13 @@
+[
+    {
+        "id": "b9f0231c-70db-4ea5-9420-059ce7ee9198",
+        "type": "SERVICE_FEE",
+        "value_type": "FIXED_AMOUNT",
+        "amount": 132,
+        "description": "Service Fee Free",
+        "is_active": true,
+        "paid_by": "OMOCCHI",
+        "order_type": ["TAKEOUT"],
+        "payment_method": ["CASH", "ONLINE"]
+    }
+]

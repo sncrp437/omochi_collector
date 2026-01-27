@@ -1,0 +1,13 @@
+[
+  {
+    "key": "service fee",
+    "value": {
+      "base_fee_amount": 120,
+      "tax_rate": 0.10
+    }
+  },
+  {
+    "key": "referral_onboarding_coupon",
+    "value": ["b9f0231c-70db-4ea5-9420-059ce7ee9198"]
+  }
+]

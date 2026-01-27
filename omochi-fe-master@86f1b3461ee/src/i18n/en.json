@@ -1,0 +1,1014 @@
+{
+  "auth": {
+    "login": {
+      "success": "All set, let’s go!",
+      "error": "Wrong email or password.",
+      "error_401": "Nope, that login doesn’t match.",
+      "generic_error": "Hiccup on our side, please give it another shot.",
+      "email": "Email",
+      "email_placeholder": "Type in your email",
+      "password": "Password",
+      "password_placeholder": "Type in your password",
+      "submit": "Login",
+      "register_link": "No account yet? Sign up here!⇒",
+      "remember_me": "Keep me logged in",
+      "forgot_password_link": "Forgot password? Click here!⇒",
+      "redirect_login_label": "Back to login screen"
+    },
+    "forgot_password": {
+      "step_label": "Step {{step}}",
+      "step_1": "Enter your email below",
+      "step_2": "Click 'Send link to email'. A password reset email will be sent to the address you entered.",
+      "step_3": "Open the link in the password reset email and enter your new password.",
+      "step_4": "Log in again with your new password",
+      "send_mail_label": "Send link to email",
+      "notice_email_label": "※If the email address entered exists in the system, a password reset email will be sent.",
+      "send_mail_success": "We have sent a link to your email. Please check your inbox and set a new password.",
+      "reset_password_success": "Your password has been successfully updated!"
+    },
+    "register": {
+      "success": "Account created — let’s go!",
+      "error": "Something went wrong. Please try again.",
+      "title": "User Registration",
+      "name": "Name",
+      "name_placeholder": "e.g.: Taro Yamada",
+      "address": "Address",
+      "prefecture_placeholder": "Prefecture",
+      "city_placeholder": "City/Town/Village",
+      "address_placeholder": "Please enter your address",
+      "email": "Email",
+      "email_placeholder": "Email",
+      "phone": "Phone Number",
+      "phone_placeholder": "Phone Number",
+      "password": "Password",
+      "password_placeholder": "Password",
+      "submit": "Register",
+      "register_success": "Done! You’re officially in!"
+    },
+    "logout": {
+      "success": "See you next time!",
+      "error": "Logout didn’t work, give it another go.",
+      "confirm_logout": "Are you sure you want to log out?"
+    }
+  },
+  "validation": {
+    "email": {
+      "required": "Please enter your email address.",
+      "invalid": "Oops, not a valid email."
+    },
+    "password": {
+      "required": "Password is required.",
+      "min_length": "Password must be at least 6 characters long.",
+      "max_length": "Password must not exceed 12 characters.",
+      "strong_password": "Use a mix of upper/lowercase, numbers & symbols"
+    },
+    "name": {
+      "required": "Name is a required field."
+    },
+    "japanese": {
+      "required": "Please enter in Japanese.",
+      "invalid_chars": "Please enter valid characters."
+    },
+    "phone": {
+      "required": "Please enter your phone number.",
+      "invalid_format": "Phone number must be at least 10 digits"
+    },
+    "address": {
+      "prefecture": "Required.",
+      "address": "Required.",
+      "city": "Required."
+    },
+    "menu_item": {
+      "description": {
+        "required": "Product description is a required field."
+      },
+      "category": {
+        "required": "Category is a required field.",
+        "invalid_value": "Please select a valid category."
+      },
+      "eat_in_price": {
+        "required": "Eat-in price is a required field.",
+        "invalid_format": "Please enter the price in numbers.",
+        "invalid_range": "Please enter a value of 0 yen or more."
+      },
+      "take_out_price": {
+        "required": "Take-out price is a required field."
+      },
+      "name": {
+        "required": "Product name is a required field."
+      }
+    },
+    "venue": {
+      "name": {
+        "required": "Store name is a required field."
+      },
+      "address": {
+        "required": "Please enter your address."
+      },
+      "nearest_station": {
+        "required": "Nearest station is a required field."
+      },
+      "order_types": {
+        "required": "Please select usage method (Take-out or Eat-in)."
+      },
+      "opening_hours": {
+        "required": "Please enter business hours.",
+        "invalid_value": "Please select a start time that is earlier than the end time."
+      },
+      "genre": {
+        "required": "Genre is required."
+      },
+      "payment_methods": {
+        "required": "Please select payment method (Store payment or Electronic payment)."
+      },
+      "capacity": {
+        "invalid_value": "Please enter the number of people as a number 0 or greater.",
+        "required": "Required fields are not entered."
+      },
+      "priority_pass": {
+        "invalid_value": "The number of people purchasing priority rights must be less than the maximum number of people.",
+        "exceed_capacity": "The number of priority tickets cannot exceed the maximum number of people."
+      }
+    }
+  },
+  "general": {
+    "generic_error": "Something went wrong — try again",
+    "network_error": "No network connection. Please check your connection.",
+    "confirm_save_message": "Save changes?",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "no_data": "No data available",
+    "payment_successful": "Payment successful!",
+    "payment_failed": "<0>Payment could not be completed.</0><1>Payment was cancelled or an error occurred. Please place your order again or delete your cart and start over.</1><2>*Please rest assured that even if you try again, you will not be charged twice.</2>",
+    "back": "Back",
+    "add_label": "Add",
+    "save_label": "Save Changes",
+    "edit_label": "Save",
+    "forbidden_error": "You do not have permission to perform this action.",
+    "stop_label": "Stop",
+    "full_label": "Full",
+    "invalid_start_time": "Please select a start time that is earlier than the end time.",
+    "invalid_timeslot_minium": "Must be set with an interval of 15 minutes or more.",
+    "copy_success": "Share link copied",
+    "share_title": "Check out this place!",
+    "empty_quantity": "Sold out",
+    "no_permission": "<0>We apologize. You do not have permission to access this page.</0><1>If you have any questions, please contact the administrator.</1>",
+    "select_date_label": "Select Date",
+    "show_more_label": "Show More",
+    "updated_profile_success": "Profile updated successfully.",
+    "type_label": "Type",
+    "expiration_date_label": "Expiration Date",
+    "enable_notifications_user": "<0>We will notify you when your order is ready.</0><1>Enable notifications?</1>",
+    "enable_notifications_venue": "<0>We will notify you when new orders come in.</0><1>Enable notifications?</1>",
+    "time_label": "Time",
+    "activate_interact_modal": "Tap to turn on audio so you don't miss important order notifications.",
+    "read_only": "Read Only",
+    "check_availability_label": "Check Availability",
+    "choice": "Reserve",
+    "not_available": "Not Available",
+    "dont_show_again": "Don't show again",
+    "learn_more": "Learn More",
+    "app_tagline": "Collect places you love",
+    "all_categories": "All",
+    "next_button": "Next",
+    "remove_label": "Remove"
+  },
+  "add_to_home_screen": {
+    "header": {
+      "title": "🎉 New store collected!",
+      "intro_1": "From now on, you can access it anytime from 'Stock Stores'✨",
+      "intro_2": "No more waiting. No more lines. Omochi’s your personal shortcut."
+    },
+    "main": {
+      "feature": "📱 Add Omochi to your home screen!",
+      "description": "Works like a smartphone app,",
+      "sub_description": "open it instantly with one tap.",
+      "benefits": {
+        "no_wait_entry": "Enter without waiting",
+        "takeout_preorder": "Pre-order takeout too",
+        "instant_stock_access": "Instant access to stock stores"
+      }
+    },
+    "instructions": {
+      "title": "🔧 Setup takes just a few seconds!",
+      "device_labels": {
+        "iphone": "【iPhone】",
+        "android": "【Android】"
+      },
+      "steps": {
+        "iphone": "Bottom 'Share' → 'Add to Home Screen'",
+        "android": "Top right '︙' → 'Add to Home Screen'"
+      },
+      "alternative": {
+        "title": "Bookmarking is also OK!",
+        "text": "Bookmark = instant reopen"
+      }
+    }
+  },
+  "error_mapping": {
+    "user with this email already exists.": "This email address is already registered."
+  },
+  "order": {
+    "title": {
+      "order_list_title": "See order progress",
+      "show_to_venue_title": "Store Display Screen",
+      "menu_title": "Menu List",
+      "qr_scan_title": "QR Scan",
+      "cart_title": "Confirm order",
+      "seat_reservation_title": "Seat Only",
+      "order_detail_title": "Order Status Details",
+      "coupon_title": "Deals & offers",
+      "notification_title": "Notifications"
+    },
+    "label": {
+      "store_name_label": "Store Name",
+      "order_method_label": "Order Type",
+      "order_status_label": "Prep Status",
+      "order_number_label": "Order Number",
+      "payment_info_label": "Payment Information",
+      "pre_order_label": "Pre-order",
+      "guest_count_label": "Party Size",
+      "time_specification_label": "Reserved Time",
+      "view_cart_label": "View Cart",
+      "seat_only_label": "Seat Only",
+      "order_method_label_other": "Reception Response",
+      "additional_info_label": "Additional Information",
+      "order_detail_label": "Order Details",
+      "payment_method_label": "Payment Method",
+      "payment_in_store_label": "Pay at Store",
+      "payment_credit_label": "Digital payment",
+      "coupon_label": "Coupon",
+      "confirm_order_label": "Complete Order",
+      "dine_in_label": "Dine In",
+      "takeout_label": "Takeout",
+      "combined_order_label": "Takeout・Dine In",
+      "menu_item_name_label": "Product Name",
+      "menu_item_quantity_label": "Quantity",
+      "menu_item_subtotal_label": "Subtotal",
+      "summary_subtotal_label": "Subtotal (Tax Included)",
+      "summary_service_fee_label": "Service Fee",
+      "summary_total_label": "Total (Tax Included)",
+      "summary_coupon_discount_label": "Coupon",
+      "show_to_venue_guide_label": "※When ready, press button & show staff",
+      "show_to_venue_label": "Display to staff",
+      "order_status_label_other": "Order Status",
+      "order_status_label_confirmed": "Received",
+      "order_status_label_preparing": "Preparing",
+      "order_status_label_ready": "Ready",
+      "order_status_label_completed": "Completed",
+      "time_slots_label": "Time Slot",
+      "payment_status_label": "Payment Status",
+      "date_label": "Date",
+      "back_to_order_label": "Back to Order",
+      "menu_item_updated_confirmation": "<0>Product information has been changed.</0><1>Please try again.</1>",
+      "order_method_all_label": "All",
+      "completion_date_time_label": "Completion Date and Time",
+      "price_label": "Amount",
+      "no_preorder_label": "No Pre-order",
+      "only_reservation_label": "Seat Only",
+      "apply_coupon_label": "Use this coupon",
+      "cancel_coupon_label": "Skip coupon",
+      "applicable_store_label": "Applicable Store",
+      "applicable_store_all_label": "All Stores",
+      "confirming_terms_label": "※Please be sure to check the terms of use before placing your order.",
+      "order_time_confirmation_label": "Order Confirmation Time",
+      "alcohol_confirmation_label": "Age verification required",
+      "alcohol_confirmation_sublabel": "This product contains alcohol.",
+      "infant_and_pet_notice": "※Customers with infants and pets, please contact the store in advance.",
+      "deadline_order_eat_in_label": "Must arrive by",
+      "deadline_order_take_out_label": "Pick up by",
+      "phone_reservation_label": "Call to reserve",
+      "order_questions_title": "Order Questions",
+      "order_questions_description": "Please answer the following questions before confirming your order.",
+      "order_questions_placeholder": "Please enter your answer...",
+      "no_answer": "No answer",
+      "order_confirmation_questions_label": "Store Confirmation Questions",
+      "order_confirm_label": "Confirm Order"
+    },
+    "content": {
+      "pre_order_yes_content": "Yes",
+      "pre_order_no_content": "No",
+      "alcohol_confirmation_content": "<0>Sale and provision to persons under 20 years of age is strictly prohibited by law (Minor Drinking Prohibition Act).</0><1>Purchasing through false declaration is a serious violation of the law and may result in suspension of use and reporting to relevant agencies.</1><2>Please be sure to declare your correct age.</2>",
+      "alcohol_confirmation_age": "Are you 20 years old or older?"
+    },
+    "contact": {
+      "title": "Cancel? Contact us here",
+      "name": "Name",
+      "phone": "Phone Number",
+      "email": "Email"
+    },
+    "status": {
+      "common": {
+        "pending": "Processing",
+        "confirmed": "Received",
+        "preparing": "Preparing",
+        "ready": "Ready / Pickup ready",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "payment": {
+        "incomplete": "Incomplete",
+        "completed": "Payment Completed"
+      }
+    }
+  },
+  "setting": {
+    "user_setting_title": "Settings",
+    "general_label": "General",
+    "edit_profile_label": "Edit",
+    "change_password_label": "Change Password",
+    "update_password_success": "Your password has been successfully updated!",
+    "current_password_label": "Current Password",
+    "new_password_label": "New Password",
+    "confirm_password_label": "Confirm New Password",
+    "rule": {
+      "current_password_required": "Please enter your current password.",
+      "new_password_required": "Please enter your new password.",
+      "new_password_same_as_current": "New password cannot be the same as current password.",
+      "confirm_password_required": "Please re-enter your password to confirm.",
+      "confirm_password_mismatch": "The passwords don’t match. Please try again."
+    }
+  },
+  "policy": {
+    "terms_title": "Terms of Service",
+    "privacy_title": "Privacy Policy",
+    "legal_title": "Specified Commercial Transaction Act",
+    "contact_title": "Contact・Operating Company",
+    "coupon_policy_title": "About Coupons",
+    "manual_title": "How to Use",
+    "example_usage_title": "For example, Omochi can be used like this...",
+    "social_link_label": "More details here",
+    "terms_subtitle": "Omochi Service User Terms of Service",
+    "user_guide_content": {
+      "section_1": {
+        "label": "First Time Use",
+        "step_1": "Scan the store's QR or click the link of the store to order/make reservations",
+        "step_2": "Check your order/reservation status from order history and go to the store!",
+        "step_3": "Share with friends/SNS if you like the store"
+      },
+      "section_2": {
+        "label": "Second Time and Beyond",
+        "step_1": "You can quickly access stores from stock or history",
+        "step_2": "Order or make reservations as usual",
+        "step_3": "Share with just one tap!"
+      },
+      "section_3": {
+        "label": "When You Want to Support a Store",
+        "step_1": "You can always share stores in 'Stock Stores'! Of course, you can also share with people who don't use Omochi.",
+        "step_2_content": "By supporting your favorite stores with the share feature, ",
+        "step_2_highlight": "you might get special benefits?"
+      }
+    },
+    "company_info": {
+      "business_name_label": "Business Name",
+      "business_name_value": "Serendipity Co., Ltd.",
+      "representative_label": "Representative",
+      "representative_value": "Samarakoon Buddila",
+      "capital_stock_label": "Capital Stock",
+      "capital_stock_value": "9.5 million yen",
+      "location_label": "Location",
+      "location_value": "〒135-0061 38F, 5-1-13 Toyosu, Koto-ku, Tokyo",
+      "phone_number_label": "Phone Number",
+      "phone_number_value": "03-4446-4735 (Reception hours: Weekdays 10:00-17:00)",
+      "email_label": "Email Address",
+      "sales_url_label": "Sales URL"
+    },
+    "privacy_content": {
+      "description": "Serendipity Co., Ltd. (hereinafter referred to as 'the Company') establishes the following privacy policy regarding the handling of users' personal information in the service 'Omochi'\n   (hereinafter referred to as 'this Service') provided by the Company.",
+      "section_1": {
+        "label": "Information We Collect",
+        "description": "When users use this service, the Company may collect the following information:",
+        "items": [
+          "- Name, address, phone number, email address",
+          "- Reservation information, order history",
+          "- Device information, IP address, browser information",
+          "- Cookie information, access logs"
+        ]
+      },
+      "section_2": {
+        "label": "Purpose of Use",
+        "description": "The collected personal information will be used for the following purposes:",
+        "items": [
+          "- Service provision, identity verification, reservation/order processing, billing for reservation fees and service usage fees",
+          "- Support and inquiry response",
+          "- Service improvement and new feature development",
+          "- Prevention of unauthorized use, security assurance"
+        ]
+      },
+      "section_3": {
+        "label": "Third-Party Provision",
+        "description": "The Company will not provide personal information to third parties except in the following cases:",
+        "items": [
+          "- When there is consent from the individual",
+          "- When required by law",
+          "- When providing to payment processors within the necessary scope for billing reservation fees and service usage fees",
+          "- When providing to partner stores where users have made reservation applications",
+          "- When providing to business partners within the necessary scope"
+        ]
+      },
+      "section_4": {
+        "label": "Security Measures",
+        "description": "The Company will implement necessary and appropriate security measures to prevent unauthorized access, leakage, alteration, loss, etc. of personal information."
+      },
+      "section_5": {
+        "label": "Use of Cookies",
+        "description": "This service may use cookies to improve user convenience and for access analysis."
+      },
+      "section_6": {
+        "label": "Integration with External Services",
+        "description": "We may integrate with external services such as Google Analytics. Please check each company's privacy policy when using these services."
+      },
+      "section_7": {
+        "label": "Changes to Privacy Policy",
+        "description": "The Company may change the content of this policy without notice. Changes will be notified on this page."
+      },
+      "section_8": {
+        "label": "Contact Information",
+        "description": "For inquiries regarding this policy, security measures, and procedures for disclosure of retained personal data, please contact us below."
+      }
+    },
+    "legal_content": {
+      "section_1": {
+        "label": "Sales Price",
+        "value": "Price displayed at the time of order (including tax)",
+        "optional_label": "Required fees other than product cost",
+        "optional_items": [
+          "- Takeout reservations: Service usage fee of 120 yen (excluding tax) per reservation",
+          "- Dine-in reservations: No additional costs for customers (some costs are borne by partner stores)"
+        ]
+      },
+      "section_2": {
+        "label": "Payment Method",
+        "value": "Credit card and other methods specified by this service",
+        "optional_label": "Payment Timing",
+        "optional_items": [
+          "- Takeout reservations: Immediate payment when reservation is confirmed",
+          "- Dine-in pre-orders (participating stores only): Immediate payment when order is placed"
+        ]
+      },
+      "section_3": {
+        "label": "Delivery Time",
+        "items": [
+          "- Takeout orders: Provided at the store at the pickup time specified when the reservation was confirmed",
+          "- Dine-in reservations: Service provided when visiting the store at the specified date and time when the reservation was confirmed"
+        ]
+      },
+      "section_4": {
+        "label": "Cancellation and Refunds",
+        "items": [
+          "- Cancellation after order confirmation is not possible.",
+          "- Same-day cancellation for dine-in pre-orders (participating stores only) may not be refundable."
+        ]
+      },
+      "section_5": {
+        "label": "Software Operating Environment",
+        "value": "This service operates on web browsers. Recommended environments are the latest versions of Google Chrome, Safari, Firefox, etc."
+      },
+      "section_6": {
+        "label": "Contract Conclusion Time Between Service Provider and User",
+        "value": "The contract is established when the order confirmation button is pressed."
+      }
+    },
+    "coupon_content": {
+      "section_1": {
+        "label": "【Coupon Content】",
+        "description": "Coupons issued by the Company (hereinafter simply referred to as 'Coupons') can only be used for reservation fees through the reservation service application (Omochi, hereinafter referred to as 'this Application') provided by the Company, and cannot be used for other purposes.\n\nCoupons are intended as first-time trial coupons for this service, making the first reservation fee free for those using this service for the first time (does not include food and beverage costs at partner stores). Additionally, coupons can only be used by users who have received them from the Company and cannot be transferred to third parties."
+      },
+      "section_2": {
+        "label": "【Coupon Grant Conditions】",
+        "description": "Coupons are granted to third parties who register for this service when users of this service introduce this service to third parties by sending links to partner stores listed in this application, and the introduced third parties register for this service."
+      },
+      "section_3": {
+        "label": "【How to Use Coupons】",
+        "description": "Coupons can be used by selecting coupon usage on the reservation confirmation screen when making a reservation through this service.\nCoupons cannot be used after reservation completion."
+      },
+      "section_4": {
+        "label": "【Coupon Validity Period】",
+        "description": "Coupons are valid for 6 months from the date of issue."
+      }
+    },
+    "terms_preview": {
+      "main": "Omochi Platform Terms of Service (hereinafter referred to as 'these Terms') apply to the use of the reservation service application (Omochi, hereinafter referred to as 'this Application') provided by Serendipity Co., Ltd. (hereinafter referred to as 'the Company')",
+      "more": "...Read more"
+    },
+    "terms_content": {
+      "description": "Omochi Platform Terms of Service (hereinafter referred to as 'these Terms') apply to the use of the reservation service application (Omochi, hereinafter referred to as 'this Application') provided by Serendipity Co., Ltd. (hereinafter referred to as 'the Company').",
+      "sections": {
+        "section_1": {
+          "label": "Article 1 (Use of Omochi Platform)",
+          "items": [
+            "1. Users may make reservation applications for services of dining facilities (hereinafter referred to as 'Partner Stores') designated by the Company through this Application based on these Terms.",
+            "2. Users may not allow third parties to use or transfer their usage qualifications, contractual status based on these Terms, and rights and obligations under such contracts."
+          ]
+        },
+        "section_2": {
+          "label": "Article 2 (Account Registration)",
+          "items": [
+            "1. To use this service, users must register for an Omochi account by the method separately designated by the Company. Users may use this service when they apply for use of this service by the method designated by the Company with approval of these Terms, and the Company approves such application.",
+            "2. Users must provide accurate, current, and complete information when registering for an Omochi account, and maintain information registered in the Omochi account in the latest state at all times.",
+            "3. Users may not transfer their Omochi account to third parties by other methods. Also, the Company may not approve or reserve registration at the Company's discretion when users have previously deleted their Omochi account themselves, when false declarations were made at registration, etc.",
+            "4. Users are responsible for keeping their Omochi account login information confidential and protected, and must not disclose their login information to any third party.\n            If users discover that their login information has been lost, stolen, misused, or leaked for any reason, or suspect this, or discover unauthorized access to their Omochi account or suspect this, they must immediately notify the Company.\n            Users are responsible for all activities conducted through their Omochi account. However, this does not apply when users have not approved such activities and when users have no negligence (such as not reporting unauthorized use or loss of login information)."
+          ]
+        },
+        "section_3": {
+          "label": "Article 3 (Receipt of E-mails, etc.)",
+          "items": [
+            "1. Users agree to receive reservation-related E-mails and SMS (short messages to mobile phone numbers, hereinafter collectively referred to as 'E-mails, etc.') notifications (including confirmation notifications for applications, reconfirmation notifications, change notifications, confirmation notifications after use, etc., hereinafter referred to as 'Reservation Notification E-mails, etc.') that the Company distributes when users use this service.",
+            "2. Members agree to receive information and questionnaires regarding maintenance, changes, suspension, or additions to this service or Partner Stores from the Company via E-mails, etc.",
+            "3. When users wish to receive information E-mails, etc. directly distributed by Partner Stores, they may apply for receipt at the time of reservation application or on the page of the relevant Partner Store.",
+            "4. The Company bears no responsibility whatsoever for the content, distribution methods, etc. of information E-mails, etc. specified in the preceding paragraph.",
+            "5. When users wish to stop receiving information distribution specified in paragraphs 2 and 3, they shall apply for stopping receipt through this Application or in the format designated by the Company.",
+            "6. Users are responsible for promptly updating change content or notifying the Company when changes occur to users' email addresses, etc. registered in this service, through this Application or in the format designated by the Company. Even if situations occur where users cannot receive or confirm Reservation Notification E-mails, etc. due to such changes not being updated, the Company bears no responsibility whatsoever."
+          ]
+        },
+        "section_4": {
+          "label": "Article 4 (Changes to Reported Matters, etc.)",
+          "items": [
+            "1. When changes occur to matters reported to the Company, users shall report them without delay through this Application or in the format designated by the Company at their own responsibility. The Company bears no responsibility whatsoever for damages incurred by users due to such changes not being made.",
+            "2. Notifications from the Company to users shall be deemed to have reached users when they should normally reach them by being sent to contact information reported by users to the Company."
+          ]
+        },
+        "section_5": {
+          "label": "Article 5 (Establishment of Usage Reservations)",
+          "items": [
+            "1. Users may make reservation applications for Partner Stores through this service (limited to dine-in services and takeout services on the reservation application date), and when Partner Stores accept users' reservation applications on this service, usage reservations between users and Partner Stores shall be deemed to have been established.\n            Users shall be deemed to have agreed to all Partner Store cancellation policies and other usage conditions when they exist, after confirming them in advance.",
+            "2. Users guarantee that names, phone numbers, E-mail addresses, credit card numbers, and other necessary information reported to the Company or Partner Stores when using this service are their own accurate information.",
+            "3. Notwithstanding the provisions of the preceding paragraph, when users notify false, illegal, or third-party information without consent due to intentional or negligent acts, they shall bear responsibility for all debts arising therefrom, and the Company bears no compensation responsibility whatsoever."
+          ]
+        },
+        "section_6": {
+          "label": "Article 6 (Cancellation of Reservation Applications)",
+          "items": [
+            "1. Users may cancel usage reservations with Partner Stores applied for through this service (hereinafter referred to as 'this Cancellation') by the method designated by the Company or Partner Stores.",
+            "2. When the content of this Cancellation conflicts with cancellation policies established by Partner Stores, and when users abandon applied usage reservations without performing this Cancellation, without prior contact through functions on this service designated by the Company or directly with Partner Stores (hereinafter referred to as 'Unauthorized Cancellation'), and when this conflicts with cancellation policies established by Partner Stores, users may be obligated to pay cancellation fees, etc. to Partner Stores according to such cancellation policies.",
+            "3. When users perform this Cancellation multiple times, perform Unauthorized Cancellation once or multiple times, conflict with cancellation policies established by Partner Stores, or when scheduled visits to Partner Stores for which reservations were made are not performed (limited to cases where visits are not made within the time slot specified at reservation and prior contact coordination with stores is not performed), the Company may suspend Omochi accounts at the Company's discretion.",
+            "4. Users guarantee that names, phone numbers, E-mail addresses, credit card numbers, and other necessary information reported to the Company or Partner Stores when using this service are their own accurate information.",
+            "5. All problems, disputes, etc. related to establishment, changes, cancellation of reservations, cancellation policies, or service content, collection of cancellation fees, etc. shall be resolved between Partner Stores and users, and the Company bears no responsibility whatsoever, except for problems related to reservation fees."
+          ]
+        },
+        "section_7": {
+          "label": "Article 7 (Payment of Reservation Fees, etc.)",
+          "items": [
+            "1. When usage reservations are established between users and Partner Stores, users shall pay the following reservation fees to the Company by the method designated by the Company. Reservation fees shall be incurred at the time usage reservations are established, and refunds shall not be made even for cancellations of reservations, etc.",
+            "2. The Company may entrust collection of fees for takeout reservations paid by users to payment processing companies designated by the Company, and in such cases, the Company may disclose information registered by users in this service to such payment processing companies.",
+            "3. Users agree to payment of fees described in this service and E-mails, etc. distributed from this service. Also, users agree that cancellation fees according to cancellation policies of Partner Stores shown at the time of reservation application may be charged."
+          ],
+          "note": "Note",
+          "note_items": [
+            "・Takeout reservations: 120 yen (excluding tax) per reservation"
+          ]
+        },
+        "section_8": {
+          "label": "Article 8 (Business Information of Partner Stores)",
+          "description": "The Company does not guarantee the accuracy of business information (including Partner Store business hours, regular holidays, locations, contact information, cancellation policies, availability of time slots desired by users, approval or rejection of users' usage applications, menus, images, distribution information that members wish to receive, etc.) provided by Partner Stores to the Company for users. The Company bears no responsibility whatsoever for any damages to users arising from errors in Partner Store business information. However, this does not apply when the Company has intentional or gross negligence."
+        },
+        "section_9": {
+          "label": "Article 9 (Links to Third-Party Sites)",
+          "items": [
+            "1. This site may display hypertext links to sites operated by third parties other than the Company. These hypertext link destination sites are not managed or operated by the Company, and the Company bears no responsibility whatsoever for their content, etc. However, this does not apply when the Company has intentional or gross negligence.",
+            "2. The Company bears no responsibility whatsoever for content, etc. of sites or E-mails, etc. operated and managed by third parties who guide users to this service by reference, links, or other methods."
+          ]
+        },
+        "section_10": {
+          "label": "Article 10 (Handling of User Information)",
+          "description": "The Company shall handle user information in accordance with the Privacy Policy."
+        },
+        "section_11": {
+          "label": "Article 11 (Deletion of User Information)",
+          "items": [
+            "1. Users may withdraw by the procedures designated by the Company.",
+            "2. When users die or other reasons make it impossible to use their membership qualifications, the Company shall deem such members to have withdrawn at that time and make users' passwords, etc. unusable."
+          ]
+        },
+        "section_12": {
+          "label": "Article 12 (Suspension and Expulsion of Usage Qualifications)",
+          "description": "The Company may temporarily suspend or expel usage qualifications and Omochi accounts without any prior notice or demand to users when the following reasons exist.",
+          "items": [
+            "① When passwords, etc. or this service are used illegally or allowed to be used",
+            "② When users fail to fulfill obligations accompanying this service",
+            "③ When users become payment suspended or payment unable",
+            "④ When seizure, provisional seizure, provisional disposition, compulsory execution, bankruptcy, civil rehabilitation, corporate reorganization, special liquidation applications are made against users, or when users themselves apply for bankruptcy, civil rehabilitation, corporate reorganization, special liquidation",
+            "⑤ When there are password input errors exceeding the number determined by the Company",
+            "⑥ When this service has not been used within the period determined by the Company",
+            "⑦ When the Company judges that users are anti-social forces, etc. (including yakuza, yakuza members, quasi-yakuza members, sokaiya, social movement advocates, special intelligence violent groups, anti-social forces, and others equivalent to these), or when the Company judges that users cooperate or are involved in maintaining, operating, or managing anti-social forces, etc. through funding, etc., or have any exchange or involvement with anti-social forces, etc.",
+            "⑧ When users violate provisions of these Terms",
+            "⑨ When the Company judges that users are unsuitable as users"
+          ]
+        },
+        "section_13": {
+          "label": "Article 13 (Changes and Abolition of This Service)",
+          "description": "The Company may change or abolish the content of this service (including this Application and all related services) at any time without prior notice. The Company bears no responsibility for damages incurred by users due to changes or abolition."
+        },
+        "section_14": {
+          "label": "Article 14 (Suspension of This Service)",
+          "description": "The Company may suspend part or all of this service (including this Application and all related services) without prior notice due to the following reasons, and bears no responsibility for damages incurred by users due to such suspension.",
+          "items": [
+            "① When performing maintenance or inspection of equipment and systems for providing this service",
+            "② When operation of this service becomes difficult due to fire, power outages, natural disasters, system failures, etc.",
+            "③ When the Company judges it unavoidable for other reasons"
+          ]
+        },
+        "section_15": {
+          "label": "Article 15 (Prohibited Acts)",
+          "items": [
+            "1. Users shall not perform acts that correspond to one or more of the following items or acts that may correspond to them when using this service.",
+            "2. When the Company suffers any damages due to users violating these Terms, the Company may claim compensation for damages from users."
+          ],
+          "prohibited_items": [
+            "① Acts of using this service for illegal purposes",
+            "② Acts of infringing intellectual property rights, portrait rights, publicity rights, and other rights of the Company, Partner Stores, and other third parties",
+            "③ Acts of defaming reputation or credit of the Company, Partner Stores, and other third parties, or infringing privacy",
+            "④ Acts connected to crimes such as fraud",
+            "⑤ Acts of sending or providing harmful programs such as computer viruses, or recommending such acts",
+            "⑥ Acts of altering or deleting information of the Company, Partner Stores, and other third parties",
+            "⑦ Acts of illegally using equipment of the Company, Partner Stores, and other third parties, or interfering with their operation",
+            "⑧ Acts of using software, devices, methods, or means for automatically accessing for monitoring, information acquisition, or other purposes of this service without written permission from the Company",
+            "⑨ Acts violating laws, these Terms, or public order and morals",
+            "⑩ Acts interfering with operation of this service",
+            "⑪ Other acts that the Company judges inappropriate"
+          ]
+        },
+        "section_16": {
+          "label": "Article 16 (Scope of Company Responsibility and User Responsibility)",
+          "items": [
+            "1. The Company does not guarantee that users will not suffer damages from harmful programs such as computer viruses when using this service.",
+            "2. The Company does not guarantee operation of any equipment, software, communication lines, or other communication environments used by users when using this service, and users shall prepare and maintain equipment, software, communication lines, or other communication environments necessary for using this site at their own expense and responsibility.",
+            "3. The Company bears no responsibility whatsoever for communication costs incurred when users use this service.",
+            "4. Users shall use this service at their own responsibility and bear all responsibility for all acts performed in this service and their results. Disputes, etc. arising between users and third parties related to this service shall be resolved by users at their own responsibility, and the Company bears no responsibility whatsoever for such matters.",
+            "5. The Company bears no responsibility whatsoever for losses and damages due to performance or non-performance by Partner Stores.",
+            "6. The Company bears no responsibility whatsoever for compensating damages incurred by users related to changes, abolition, or suspension of this service by the Company, suspension of membership qualifications, data loss or equipment failure due to use of this service, or other damages related to this site.\n            Even when the Company bears compensation responsibility to users due to application of the Consumer Contract Act or other reasons, regardless of provisions exempting the Company's damage compensation responsibility, the Company's responsibility shall be limited to direct and ordinary damages that actually occur among damages incurred by users due to the Company's negligence (excluding gross negligence)\n            causing breach of contract or tort, and shall be limited to 500 yen as the upper limit."
+          ]
+        },
+        "section_17": {
+          "label": "Article 17 (Severability)",
+          "description": "Even when any provision or part of these Terms is judged invalid by the Consumer Contract Act or other laws, the remaining provisions of these Terms and the remaining parts of provisions judged partially invalid shall continue to exist validly, and such invalid provisions or parts shall be interpreted to the extent necessary to make them valid,\n        to the maximum extent, ensuring that the purpose and legally and economically equivalent effects of such invalid provisions or parts are maintained."
+        },
+        "section_18": {
+          "label": "Article 18 (Changes to Terms)",
+          "description": "The Company may change these Terms without prior consent or notice. After such changes, users who use this site shall be deemed to have agreed to such changes."
+        },
+        "section_19": {
+          "label": "Article 19 (Governing Law and Agreed Jurisdiction)",
+          "description": "The governing law of these Terms shall be Japanese law, and all disputes related to these Terms shall be subject to the exclusive agreed jurisdiction of the Tokyo District Court as the court of first instance. Users who use this site shall be deemed to have agreed to such changes."
+        }
+      }
+    }
+  },
+  "qr_scan": {
+    "qr_scan_error": "This store's page is currently unavailable. It may be temporarily suspended or under maintenance.",
+    "camera_permission_required": "Camera access is required to read QR codes. Currently, camera access is not allowed in your browser, so it cannot be launched.",
+    "solution_title": "【Solution】",
+    "solution_step_1": "1. Change camera access to 'Allow' in your browser settings (e.g., for Safari: 'Settings' > 'Safari' > 'Camera').",
+    "solution_step_2": "2. Close this page once and access it again.",
+    "solution_step_3": "3. Select 'Allow' in the popup that appears asking 'Allow camera access?'."
+  },
+  "home": {
+    "home_title": "Dashboard",
+    "home_manual_label": "How to use"
+  },
+  "venue": {
+    "title": {
+      "menu_management_title": "Menu Management",
+      "capacity_control_title": "Capacity Management",
+      "order_status_list_title": "Order Confirmation",
+      "venue_setting_title": "Store Management",
+      "order_logs_title": "Order History",
+      "menu_item_add_title": "Add Menu",
+      "menu_item_edit_title": "Edit Menu",
+      "order_logs_detail_title": "Order History Details"
+    },
+    "label": {
+      "edit_label": "Edit",
+      "delelte_item_confirmation_label": "Are you sure you want to delete this product?",
+      "menu_item_image_label": "Product Image",
+      "menu_item_description_label": "Product Description",
+      "menu_item_dine_in_tax_label": "Dine-in Price (Tax Included)",
+      "menu_item_take_out_tax_label": "Take-out Price (Tax Included)",
+      "menu_item_category_label": "Category",
+      "time_slots_setting_label": "Time Slot Settings",
+      "time_slots_table_label": "Time Slot",
+      "party_size_table_label_take_out": "Capacity",
+      "party_size_table_label_eat_in": "Seats",
+      "priority_pass_table_label": "Priority Pass",
+      "priority_pass_table_header": "Priority",
+      "party_size_table_label_take_out_unit": "orders",
+      "party_size_table_label_eat_in_unit": "p",
+      "action_label": "Action",
+      "start_time_label": "Start Time",
+      "end_time_label": "End Time",
+      "out_of_stock_label": "Out of Stock Setting",
+      "out_of_stock_placeholder": "Select out of stock",
+      "stop_accepting_eat_in_label": "Stop accepting dine-in orders",
+      "stop_accepting_take_out_label": "Stop accepting take-out orders",
+      "add_time_slot_label": "Add this time slot",
+      "menu_item_edit_confirm": "<0>There are unsaved changes</0><1>Do you want to discard them?</1>",
+      "menu_item_edit_confirm_cancel": "Cancel",
+      "menu_item_edit_confirm_ok": "Discard changes and go back",
+      "phone_number_venue_label": "Store Phone Number",
+      "opening_hours_label": "Business Hours",
+      "genre_label": "Genre",
+      "genre_placeholder": "Please select",
+      "description_venue_label": "Store Description",
+      "description_venue_placeholder": "Please enter store description (Max: 50 characters)",
+      "setting_additional_info_label": "Store Additional Information",
+      "setting_additional_info_placeholder": "Store Tags",
+      "save_image_label": "Store Image",
+      "save_qr_code_label": "Store QR",
+      "download_qr_code_label": "Download Store QR",
+      "stripe_link_label": "Stripe Integration",
+      "notice_stripe_link_label": "Please integrate with Stripe below to enable 'Electronic Payment'",
+      "neartest_station_label": "Area",
+      "reception_time_label": "Reception Hours",
+      "time_slots_delete_confirmation": "Do you want to delete this time slot?",
+      "stop_accepting_confirmation": "<0>Stop accepting all orders.</0><1>Are you sure?</1>",
+      "resume_time_slot_confirmation": "Do you want to resume this time slot?",
+      "pause_time_slot_confirmation": "Do you want to pause this time slot?",
+      "set_limit_capacity_confirmation": "Do you want to resume accepting reservations for this time period?",
+      "current_capacity_label": "Current Reception Limit",
+      "add_more_capacity_label_take_out": "How many orders to add?",
+      "add_more_capacity_label_eat_in": "How many people to add?",
+      "resume_reception_label": "Resume Reception",
+      "address_label": "Address",
+      "order_type_label": "Supported Orders",
+      "disable_eatin_preorder": "Disable dine-in pre-orders",
+      "disable_eatin_reservation": "Disable dine-in seat-only",
+      "announcement_venue_label": "Important Notice・Cancellation Policy etc.",
+      "announcement_venue_placeholder": "Please enter cancellation policy, temporary changes to business hours/location, special notes, etc."
+    },
+    "toast": {
+      "menu_item_delete_success": "Menu deleted.",
+      "menu_item_delete_failed": "Deletion failed. It may have already been deleted.",
+      "menu_item_add_success": "Menu added.",
+      "menu_item_add_failed": "Failed to add menu. Please try again.",
+      "menu_item_edit_success": "Menu updated.",
+      "menu_item_edit_failed": "Failed to update menu. Please check the content.",
+      "update_venue_success": "Store information updated successfully.",
+      "save_capacity_success": "Capacity settings saved.",
+      "update_capacity_success": "Capacity settings updated.",
+      "detele_capacity_success": "Capacity settings deleted."
+    },
+    "bulk_status": {
+      "title": "Bulk Order Confirmation",
+      "description_ready": "<0>All selected orders will be marked as “Ready”.</0><1>This action will send a notification to the customer indicating the orders are ready.</1><2>Please review the details and click “Mark as Ready” if everything is correct.</2>",
+      "description_completed": "<0>All selected orders will be updated to “Completed” status.</0><1>※“Completed” means the reservation is officially confirmed.</1><2>※Do not mark canceled reservations as completed; leave them as is to distinguish from officially confirmed reservations.</2>",
+      "target_orders_label": "Target Orders:",
+      "confirm_button_label_ready": "Mark as Ready",
+      "confirm_button_label_completed": "Mark as Completed",
+      "toast": {
+        "update_status_success": "Bulk order statuses have been successfully updated."
+      }
+    }
+  },
+  "share": {
+    "title": "Please select the share type below",
+    "btn_share": "Share",
+    "post_title": "Post Template",
+    "copy_post": "Copy",
+    "stock_store_title": "Stock Store",
+    "share_store_title": "Share",
+    "stock_venue_available_title": "Check Availability",
+    "remaining_slots_prefix": "Remaining",
+    "template": {
+      "recommendation": "🍽️ {{venues}} is seriously recommended!",
+      "invitation_label": "＜Invitation Only＞",
+      "description": "Let's collect stores and make reservations with Omochi, the “favorite store collection” app!",
+      "benefit_1": "✔ Skip lines with same-day & off-peak reservations",
+      "benefit_2": "✔ Support stores and get special benefits!",
+      "benefit_3": "✔ Collect “stores you want to visit” and “your favorite stores”",
+      "benefit_4": "✔ Check availability from your personal list!",
+      "call_to_action": "👇Check it out now👇",
+      "hashtags": "#Omochi"
+    }
+  },
+  "qr_modal": {
+    "title": "When sharing QR, please be sure to include the text below.",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "introduction": {
+    "introduction_label": "Get Started Now",
+    "how_to_use_label": "How to use video here",
+    "venue_recommended_label": "<0>Recommended Stores</0><1>See featured page!</1>",
+    "section_1": {
+      "title_line_1": "Collect your favorite food spots — and support them",
+      "title_line_2": "",
+      "title_line_3": "",
+      "description": "<1>▶ Skip the line with same-day & off-peak reservations</1><2>▶ Support your favorite spots and get perks</2><3>▶ Collect the places you want to go and your favorites</3><4>▶ Check real-time availability from your own favorites list</4>",
+      "scene_1": {
+        "title_primary": "Want to eat casually",
+        "title_secondary": "but it's crowded...",
+        "description_1": "'I want to go to XX restaurant today' - but when you get there, there's a long line... Have you ever given up?",
+        "description_2": "With Omochi, you can check 'available slots right now' in advance.",
+        "description_3": "Make a quick reservation and then head over - zero wasted waiting time. Same-day slots = instant plans. Perfect for last-minute cravings."
+      },
+      "scene_2": {
+        "title_primary": "Don't want to wait in line for lunch",
+        "title_secondary": "For busy professionals",
+        "description_1": "Limited lunch break, precious one hour. But popular restaurants all have long lines... If you order takeout with time specification on Omochi, you can pick it up smoothly without waiting in line. By the time you get back to your seat, you're already eating."
+      }
+    },
+    "section_2": {
+      "title_line_1": "Just scan",
+      "title_line_2": "QR・link,",
+      "title_line_3": "instant access to",
+      "title_line_4": "menu・reservation slots.",
+      "scene_1": {
+        "title_primary": "Your personal gourmet map",
+        "title_secondary": "Your favorites,",
+        "description_1": "Stores you've used once are automatically saved to 'Stock Stores'.",
+        "description_2": "No more trouble searching 'Where was that store?'.",
+        "description_3": "Open your smartphone and your 'personal gourmet map' spreads out. Repeat visits and recommendations are all easy."
+      },
+      "scene_2": {
+        "title_primary": "Share with one button",
+        "title_secondary": "Stores you want to tell friends about",
+        "description_1": "'This place was amazing' - along with those words, send Omochi's reservation link via messaging apps. The recipient just taps the link to go to the reservation or order screen."
+      }
+    },
+    "section_4": {
+      "title_line_1": "Your “want to go” becomes",
+      "title_line_2": "The power to support your favorite stores!"
+    }
+  },
+  "priority_pass": {
+    "title": {
+      "priority_pass_notice_title": "All free slots are taken",
+      "priority_pass_not_required_notice_title": "No Quick Pass needed. Free slots available."
+    },
+    "content": {
+      "priority_pass_notice_content": "<0>Buy a Quick Pass to secure this slot. If you would like to make a free reservation, please check other time slots.</0>",
+      "priority_pass_not_required_description": "Quick Pass is not required for this time slot. ",
+      "priority_pass_not_required_content_highlight": "However, <highlight>if you want to visit without specifying a time and be seated from the front of the line</highlight>, you can purchase one. Please consider according to your preference.",
+      "priority_pass_question": "<0>※What is Quick Pass?</0><1>Quick Pass is a priority ticket that allows you to be seated from the front of the line regardless of your arrival time. Please select and purchase the time slot closest to your planned visit time. </1>",
+      "show_order_screen_content": "After purchase, please show your order screen to the store staff when you visit.",
+      "has_priority_pass": "With Priority Pass ({{count}} {{unit}})"
+    }
+  },
+  "upload_image": {
+    "edit_image_title": "Image Edit",
+    "save_upload_label": "Save with this",
+    "change_zoom_label": "Change Size",
+    "notice_upload": "<0>Tap the image above to move position,</0><1>Adjust in/out zoom with 'Change Size'</1>"
+  },
+  "upload_input": {
+    "upload_text_default": "Upload Image",
+    "error_invalid_format": "Only image files (JPG/PNG) can be uploaded!",
+    "error_file_size": "Image size must be less than 1MB!"
+  },
+  "campaign": {
+    "button_show_campaign_label": "Latest info/Special offers available! Tap for details",
+    "campaign_progessing_label": "Latest news & offers",
+    "button_view_menu_label": "View Menu",
+    "deadline_label": "Until!",
+    "button_show_campaign_label_notification": "View latest info/Special offers"
+  },
+  "article": {
+    "title": "Recommendations",
+    "article_detail_title": "Details",
+    "breadcrumb_home": "Home",
+    "social_link_label": "Introduction Video",
+    "menu_link_label": "Reserve・Save",
+    "created_at_label": "Created : {{date}}・Omochi"
+  },
+  "seo": {
+    "description_menu": "You can view the menu. We look forward to your order at {{name}}.",
+    "description_article_list": "A must-see for gourmet lovers! 'Recommendations!' introduces a wide range of restaurants from hidden local gems to popular gourmet spots with long lines. You can find the perfect restaurant for your scene and purpose, from casual izakayas and atmospheric cafes to high-end restaurants for special occasions. It's packed with information useful for various situations like lunch, dinner, drinking parties, dates, and anniversaries."
+  },
+  "options": {
+    "prefectures": {
+      "hokkaido": "Hokkaido",
+      "aomori": "Aomori",
+      "iwate": "Iwate",
+      "miyagi": "Miyagi",
+      "akita": "Akita",
+      "yamagata": "Yamagata",
+      "fukushima": "Fukushima",
+      "ibaraki": "Ibaraki",
+      "tochigi": "Tochigi",
+      "gunma": "Gunma",
+      "saitama": "Saitama",
+      "chiba": "Chiba",
+      "tokyo": "Tokyo",
+      "kanagawa": "Kanagawa",
+      "niigata": "Niigata",
+      "toyama": "Toyama",
+      "ishikawa": "Ishikawa",
+      "fukui": "Fukui",
+      "yamanashi": "Yamanashi",
+      "nagano": "Nagano",
+      "gifu": "Gifu",
+      "shizuoka": "Shizuoka",
+      "aichi": "Aichi",
+      "mie": "Mie",
+      "shiga": "Shiga",
+      "kyoto": "Kyoto",
+      "osaka": "Osaka",
+      "hyogo": "Hyogo",
+      "nara": "Nara",
+      "wakayama": "Wakayama",
+      "tottori": "Tottori",
+      "shimane": "Shimane",
+      "okayama": "Okayama",
+      "hiroshima": "Hiroshima",
+      "yamaguchi": "Yamaguchi",
+      "tokushima": "Tokushima",
+      "kagawa": "Kagawa",
+      "ehime": "Ehime",
+      "kochi": "Kochi",
+      "fukuoka": "Fukuoka",
+      "saga": "Saga",
+      "nagasaki": "Nagasaki",
+      "kumamoto": "Kumamoto",
+      "oita": "Oita",
+      "miyazaki": "Miyazaki",
+      "kagoshima": "Kagoshima",
+      "okinawa": "Okinawa"
+    },
+    "menu_categories": {
+      "main": "Main",
+      "side": "Side",
+      "drink": "Drinks",
+      "other": "Other"
+    },
+    "genres": {
+      "hamburger": "Hamburger",
+      "pizza": "Pizza",
+      "japanese": "Japanese Cuisine",
+      "chinese": "Chinese Cuisine",
+      "korean": "Korean Cuisine",
+      "italian": "Italian",
+      "french": "French",
+      "curry": "Curry",
+      "cafe": "Cafe・Coffee Shop",
+      "sweets": "Sweets・Desserts",
+      "bento": "Bento・Rice Balls",
+      "rice_bowl": "Rice Bowls",
+      "sushi": "Sushi",
+      "udon_soba": "Udon・Soba",
+      "ramen": "Ramen",
+      "grill_bbq": "Grill・BBQ",
+      "salad_healthy": "Salad・Healthy Food",
+      "vegetarian_vegan": "Vegetarian・Vegan",
+      "seafood": "Seafood",
+      "family_restaurant": "Family Restaurant",
+      "bakery": "Bread・Bakery",
+      "drinks_juice": "Drinks・Juice Stand",
+      "alcohol_bar": "Alcohol・Bar"
+    },
+    "venue_tags": {
+      "cash_only": "Cash Only (Store Payment)",
+      "wifi_available": "Wi-Fi Available",
+      "power_outlet": "Power Outlet Available",
+      "non_smoking": "Completely Non-Smoking",
+      "smoking_allowed": "Smoking Allowed (Including Separated Areas)",
+      "terrace_seating": "Terrace Seating Available",
+      "private_room": "Private Room Available",
+      "child_friendly": "Child-Friendly",
+      "stroller_friendly": "Stroller-Friendly",
+      "kids_chair": "Kids Chair Available",
+      "pet_outdoor": "Pet-Friendly (Outdoor)",
+      "pet_indoor": "Pet-Friendly (Indoor)",
+      "pet_not_allowed": "Pets Not Allowed"
+    }
+  },
+  "ui": {
+    "guest_count": {
+      "one_person": "1p",
+      "two_people": "2p",
+      "three_people": "3p",
+      "four_people": "4p",
+      "five_people": "5p",
+      "six_people": "6p"
+    },
+    "date_format": {
+      "month_day": "{{month}}/{{day}}",
+      "year_month_day": "{{month}}/{{day}}/{{year}}"
+    },
+    "currency": {
+      "yen_symbol": "¥",
+      "until_suffix": "",
+      "six_months": "6 months"
+    }
+  },
+  "question": {
+    "note_question_modal_label": "※Reservations can only be made if you agree with the terms of the venue, and answer all the questions from the venue.",
+    "enable_question_label": "Enable questions?",
+    "setting_order_questions_label": "Go to Customer Question Settings",
+    "question_label": "Question",
+    "add_question_label": "Add Question",
+    "venue_setting_questions_title": "Questions for Customers",
+    "setting_question_placeholder": "Enter your question",
+    "user_answer_placeholder": "Enter your answer (Max: 50 characters)",
+    "toast": {
+      "update_question_success": "Questions updated successfully.",
+      "delete_question_success": "Question deleted successfully.",
+      "max_question_reached": "You can add up to {{max}} questions."
+    },
+    "validation": {
+      "question_whitespace_error": "Please enter a question.",
+      "answer_required": "Please answer this question.",
+      "unique_question": "This question already exists in this venue."
+    }
+  }
+}

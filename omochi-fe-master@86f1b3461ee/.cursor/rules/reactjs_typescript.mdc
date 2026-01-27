@@ -1,0 +1,515 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Quy tắc Coding cho dự án React.js
+
+# I. Kaopiz checklist coding
+
+## 1. Không có code/chức năng thừa (Clean code)
+- (PASS/FAIL) Không có code/comment thừa, lặp lại, không cần thiết
+- (PASS/FAIL) Tránh sự trùng lặp (DRY principle)
+- (PASS/FAIL) Đặt tên biến và hàm có ý nghĩa
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent = () => {
+  // Đoạn code không liên quan
+  const unrelatedFunction = () => {
+    console.log("This is unrelated");
+  };
+
+  return <div>Hello World</div>;
+};
+// Tốt
+const MyComponent = () => {
+  return <div>Hello World</div>;
+};
+```
+
+## 2. Có comment cho những đoạn logic khó hiểu
+- (PASS/FAIL) Có comment cho những đoạn logic khó hiểu
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent = () => {
+  const result = someComplexFunction();
+  return <div>{result}</div>;
+};
+// Tốt
+const MyComponent = () => {
+  // Tính toán kết quả phức tạp
+  const result = someComplexFunction();
+  return <div>{result}</div>;
+};
+```
+
+## 3. Xử lý ngoại lệ (Error handling)
+- (PASS/FAIL) Xử lý ngoại lệ và các trường hợp đối tượng NULL, rỗng, thiếu else
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent = ({ data }) => {
+  if (data) {
+    return <div>{data}</div>;
+  }
+  return null; // Không xử lý trường hợp null
+};
+// Tốt
+const MyComponent = ({ data }) => {
+  if (!data) {
+    return <div>No data available</div>; // Xử lý trường hợp null
+  }
+  return <div>{data}</div>;
+};
+
+## 4. Xử lý spam vào các button
+- (PASS/FAIL) Xử lý trường hợp spam vào các button
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent = () => {
+  const handleClick = () => {
+    console.log("Button clicked");
+  };
+
+  return <button onClick={handleClick}>Click me</button>;
+};
+// Tốt
+const MyComponent = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = () => {
+    if (isLoading) return; // Ngăn chặn spam
+    setIsLoading(true);
+    console.log("Button clicked");
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Giả lập thời gian tải
+  };
+
+  return <button onClick={handleClick} disabled={isLoading}>Click me</button>;
+};
+```
+
+## 5. Kiểm tra tính bảo mật
+- (PASS/FAIL) Chú ý khi sử dụng biến constant hoặc key/token
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent = () => {
+  const API_KEY = "1234567890";
+  return <div>{API_KEY}</div>;
+};
+// Tốt
+const MyComponent = () => {
+  const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
+  return <div>{API_KEY}</div>;
+};
+```
+
+## 6. Kiểm tra tính bảo mật của thư viện bên ngoài
+- (PASS/FAIL) Không vi phạm bản quyền của thư viện
+- (PASS/FAIL) Không sử dụng thư viện có các vấn đề bảo mật hoặc không được sử dụng rộng rãi
+
+## 7. Kiểm tra tính bảo mật của thông tin lưu trữ
+- (PASS/FAIL) KHÔNG lưu thông tin cá nhân của user vào storage (email, tên, tuổi, số điện thoại,...) trừ token cần lưu
+- (PASS/FAIL) KHÔNG lưu trữ thông tin thẻ ngân hàng thay vào đấy chỉ cần lưu token
+- (PASS/FAIL) Trong trường hợp phải lưu trữ, đảm bảo thông tin bảo mật  (password, mã số công dân, card number, ...) đã được mã hoá hoặc được che dấu
+
+## 8. Kiểm tra tính bảo mật của dữ liệu
+- (PASS/FAIL) Không lưu trữ dữ liệu nhạy cảm trong local storage, session storage, cookie, URL
+
+# II Nextjs + Reactjs + Typescript
+
+## 1. Quy tắc chung
+
+### 1.1. Code sạch (Clean Code)
+
+#### 1.1.1 Quy tắc đặt tên biến
+- (PASS/FAIL) Tên biến, hàm, component phải rõ nghĩa và dễ hiểu.
+- (PASS/FAIL) Tránh sử dụng các từ viết tắt không rõ nghĩa.
+- (PASS/FAIL) Tránh sử dụng các từ khóa như `data`, `info`, `temp`, `obj`, `thing`, `stuff`.
+- (PASS/FAIL) Sử dụng tên biến ngữ nghĩa, ví dụ: `userList` thay vì `list`, `isLoading` thay vì `loading`.
+- (PASS/FAIL) Sử dụng tên biến theo ngữ cảnh, ví dụ: `userName` thay vì `name`, `userEmail` thay vì `email`.
+- (PASS/FAIL) Sử dụng tên biến theo kiểu dữ liệu, ví dụ: `userList` cho mảng, `userMap` cho object.
+- (PASS/FAIL) Sử dụng tên biến theo hành động, ví dụ: `fetchUser` cho hàm lấy dữ liệu người dùng, `updateUser` cho hàm cập nhật người dùng.
+- (PASS/FAIL) Sử dụng tên biến theo trạng thái, ví dụ: `isLoading` cho trạng thái đang tải, `isError` cho trạng thái lỗi.
+- (PASS/FAIL) Sử dụng tên biến theo kiểu dữ liệu, ví dụ: `userList` cho mảng, `userMap` cho object.
+
+Ví dụ:
+```tsx
+// Không tốt
+const user = ['John', 'Jane', 'Bob']; // Tên biến số ít nhưng chứa nhiều đối tượng
+const items = { id: 1, name: 'Product' }; // Tên biến số nhiều nhưng chỉ chứa một đối tượng
+
+// Tốt
+const users = ['John', 'Jane', 'Bob']; // Array dùng tên số nhiều
+const item = { id: 1, name: 'Product' }; // Object đơn lẻ dùng tên số ít
+
+// Tốt - Áp dụng nhất quán
+const userList = ['John', 'Jane', 'Bob'];
+const activeUser = { id: 1, name: 'John' };
+
+const productMap = new Map();
+const selectedProduct = productMap.get(1);
+
+const customerCount = customers.length;
+const hasNewCustomer = newCustomer !== undefined;
+```
+
+- (PASS/FAIL) Sử dụng tên biến dạng số nhiều cho các collection (array, list, map) và số ít cho các object đơn lẻ.
+
+Ví dụ:
+```tsx
+// Không tốt
+const a = 10; // Không rõ nghĩa
+const b = "Hello"; // Không rõ nghĩa
+const c = [1, 2, 3]; // Không rõ nghĩa
+
+// Tốt
+const userAge = 10; // Rõ nghĩa
+const greetingMessage = "Hello"; // Rõ nghĩa
+const userIds = [1, 2, 3]; // Rõ nghĩa
+```
+
+- (PASS/FAIL) Sử dụng **camelCase** cho tên biến, thuộc tính, và hàm. Bắt đầu bằng chữ thường và viết hoa chữ cái đầu tiên của từ tiếp theo.
+
+Ví dụ:
+```tsx
+// Không tốt
+const user_name = 'John Doe'; // Snake case không phù hợp trong JavaScript/TypeScript
+const UserAge = 25; // PascalCase không nên dùng cho biến thông thường
+const EMAIL = 'john@example.com'; // UPPER_CASE chỉ nên dùng cho hằng số
+
+// Tốt
+const userName = 'John Doe'; // camelCase cho biến
+const userAge = 25; // camelCase cho biến
+const calculateTotalPrice = (items: Item[]): number => {...}; // camelCase cho hàm
+const userProfileData = { firstName: 'John', lastName: 'Doe' }; // camelCase cho thuộc tính object
+
+// Tốt - Quy ước khác
+const USER_ROLES = ['admin', 'editor', 'viewer']; // UPPER_SNAKE_CASE cho hằng số
+const UserProfile = () => {...}; // PascalCase cho component React
+class UserRepository {...} // PascalCase cho class
+```
+
+#### 1.1.2. Quy tắc đặt tên hàm
+- (PASS/FAIL) Tên hàm phải rõ nghĩa và dễ hiểu.
+
+Ví dụ:
+```tsx
+// Không tốt
+const fn = (a, b) => {
+  return a + b;
+};
+// Tốt
+const addNumbers = (num1: number, num2: number): number => {
+  return num1 + num2;
+};
+
+#### 1.1.3. Quy tắc đặt tên class, component
+- (PASS/FAIL) Tên class, component phải rõ nghĩa và dễ hiểu.
+- (PASS/FAIL) Tên class, component phải bắt đầu bằng chữ hoa (PascalCase).
+- (PASS/FAIL) Tên class, component phải có hậu tố `Page` nếu là trang.
+
+Ví dụ:
+```tsx
+// Không tốt
+class user {
+  constructor(name) {
+    this.name = name;
+  }
+}
+// Tốt
+class User {
+  constructor(name) {
+    this.name = name;
+  }
+}
+// Không tốt
+const button = () => {
+  return <button>Click me</button>;
+}
+// Tốt
+const button = () => {
+  return <button>Click me</button>;
+}
+```
+
+#### 1.1.4. Quy tắc đặt tên file
+- (PASS/FAIL) Tên file phải rõ nghĩa và dễ hiểu.
+- (PASS/FAIL) Tên file phải bắt đầu bằng chữ hoa (PascalCase).
+- (PASS/FAIL) Tên file phải có hậu tố `.tsx` nếu là file component, `.ts` nếu là file TypeScript, `.js` nếu là file JavaScript.
+- (PASS/FAIL) Tên file phải có hậu tố `.test.tsx` nếu là file test, `.test.ts` nếu là file test TypeScript, `.test.js` nếu là file test JavaScript.
+- (PASS/FAIL) Tên file phải có hậu tố `.module.css` nếu là file CSS module, `.css` nếu là file CSS thông thường.
+- (PASS/FAIL) Tên file phải có hậu tố `.scss` nếu là file SCSS, `.sass` nếu là file SASS.
+
+#### 1.1.5. Quy tắc đặt tên biến trong CSS
+- (PASS/FAIL) Tên biến phải rõ nghĩa và dễ hiểu.
+
+#### 1.1.6. Quy tắc đặt tên biến trong CSS-in-JS
+- (PASS/FAIL) Tên biến phải rõ nghĩa và dễ hiểu.
+
+#### 1.1.7. Quy tắc đặt tên biến trong Styled Components
+- (PASS/FAIL) Tên biến phải rõ nghĩa và dễ hiểu.
+- (PASS/FAIL) Tên biến phải bắt đầu bằng chữ hoa (PascalCase).
+
+### 1.2. Quy tắc viết mã
+- (PASS/FAIL) Sử dụng **ESLint** và **Prettier** để đảm bảo quy tắc.
+- (PASS/FAIL) Sử dụng **TypeScript** để đảm bảo kiểu dữ liệu.
+
+
+Ví dụ:
+```tsx
+// Không tốt
+const add = (a, b) => {
+  return a + b;
+};
+// Tốt
+const add = (num1: number, num2: number): number => {
+  return num1 + num2;
+};
+// Không tốt
+const user = {
+  name: 'John',
+  age: 25,
+};
+// Tốt
+const user: { name: string; age: number } = {
+  name: 'John',
+  age: 25,
+};;
+
+// Không tốt
+const Button = (props) => {
+  return <button>{props.text}</button>;
+};
+// Tốt
+type ButtonProps = {
+  text: string;
+};
+const Button: React.FC<ButtonProps> = ({ text }) => {
+  return <button>{text}</button>;
+};
+```
+
+## 2. Cấu trúc dự án
+
+### 2.1. Quy định tên file và thư mục
+- **Components**: `components/component-name|ComponentName(/index).tsx`
+- **Pages**: `app/(page-name)/page.tsx`
+- **Hooks**: `hooks/use-custom-hook|useCustomHook(/index).ts(x)`
+- **API handlers**: `app/api/handler/route.ts`
+- **Styles**: `styles/global.css`, `styles/component-name|ComponentName.module.css`
+
+### 2.2. Tổ chức component
+- (PASS/FAIL) Mỗi file chỉ chứa một component.
+
+## 3. Hiệu suất và best practices
+### 3.1. Tối ưu hiệu suất
+- (PASS/FAIL) Sử dụng **React.memo** để tối ưu render.
+
+
+Ví dụ:
+```tsx
+// Không tốt
+type MyComponentProps = {
+  data: string;
+};
+const MyComponent: React.FC<MyComponentProps> = ({ data }) => {
+  return <div>{data}</div>;
+};
+
+// Tốt
+const MyComponent: React.FC<MyComponentProps> = React.memo(({ data }) => {
+  return <div>{data}</div>;
+});
+```
+
+- (PASS/FAIL) Tắt tần suất re-render bằng `useCallback`/`useMemo` khi cần thiết.
+
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent: React.FC = () => {
+  const handleClick = () => {
+    console.log("Clicked");
+  };
+
+  return <button onClick={handleClick}>Click me</button>;
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  const handleClick = useCallback(() => {
+    console.log("Clicked");
+  }, []);
+
+  return <button onClick={handleClick}>Click me</button>;
+};
+```
+
+### 3.3. Rendering
+- (PASS/FAIL) Khi render mảng cần thêm key để React nhận diện các phần tử.
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent: React.FC = () => {
+  const items = ["Item 1", "Item 2", "Item 3"];
+  return (
+    <ul>
+      {items.map((item) => (
+        <li>{item}</li> // Không có key
+      ))}
+    </ul>
+  );
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  const items = ["Item 1", "Item 2", "Item 3"];
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={index}>{item}</li> // Có key
+      ))}
+    </ul>
+  );
+};
+```
+- (PASS/FAIL) Sử dụng **React.Fragment** hoặc `<>` để nhóm các phần tử mà không cần thêm thẻ cha.
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent: React.FC = () => {
+  return (
+    <div>
+      <h1>Title</h1>
+      <p>Content</p>
+    </div>
+  );
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  return (
+    <>
+      <h1>Title</h1>
+      <p>Content</p>
+    </>
+  );
+};
+```
+
+### 3.4. Lifecycle
+- (PASS/FAIL) Sử dụng `useEffect` để xử lý các side effects.
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+
+  // Không nên dùng setTimeout trong component
+  setTimeout(() => {
+    setCount(count + 1);
+  }, 1000);
+
+  return <div>{count}</div>;
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCount((prevCount) => prevCount + 1);
+    }, 1000);
+
+    return () => clearTimeout(timer); // Dọn dẹp khi component unmount
+  }, []);
+
+  return <div>{count}</div>;
+};
+
+// Không tốt
+const MyComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCount(count + 1);
+    }, 1000);
+
+    return () => clearTimeout(timer); // Dọn dẹp khi component unmount
+  }, [count]); // Không nên thêm count vào dependency array
+
+  return <div>{count}</div>;
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCount((prevCount) => prevCount + 1);
+    }, 1000);
+
+    return () => clearTimeout(timer); // Dọn dẹp khi component unmount
+  }, []);
+
+  return <div>{count}</div>;
+};
+```
+- (PASS/FAIL) Sử dụng `useEffect` với dependency array để tránh gọi lại không cần thiết.
+
+- (PASS/FAIL) Sử dụng `useLayoutEffect` khi cần cập nhật DOM ngay lập tức sau khi render.
+Ví dụ:
+```tsx
+// Không tốt
+const MyComponent: React.FC = () => {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <div>{width}</div>;
+};
+// Tốt
+const MyComponent: React.FC = () => {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <div>{width}</div>;
+};
+```
+
+## 4. Chất lượng mã nguồn
+### 4.1. Linting & Formatting
+- (PASS/FAIL) Sử dụng **ESLint** và **Prettier** để đảm bảo quy tắc.
+- (PASS/FAIL) Tuân thủ quy tắc **Airbnb/Next.js** cho ESLint.
+
+```
