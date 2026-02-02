@@ -125,7 +125,25 @@ const translations = {
         tagCount: 'person',
         tagCountPlural: 'people',
         closeBtn: 'Close',
-        venueDetails: 'Venue Details'
+        venueDetails: 'Venue Details',
+
+        // Venue bottom sheet - action buttons
+        callBtn: 'Call',
+        webReserveBtn: 'Reserve',
+        viewOnAppBtn: 'Omochi App',
+
+        // Venue bottom sheet - details
+        hoursLabel: 'Hours',
+        dineIn: 'Dine-in',
+        takeout: 'Takeout',
+        reservationAvailable: 'Reservation',
+
+        // Venue bottom sheet - memo redesign
+        myNoteTitle: 'My Note',
+        memoPrivateHint: 'Only you can see this',
+        memoPlaceholderFriendly: 'What did you think? Add your personal note...',
+        memoLoginPrompt: 'Tap to add your personal note',
+        memoLoginHint: 'Log in to save private notes'
     },
     ja: {
         // Index page
@@ -247,7 +265,25 @@ const translations = {
         tagCount: '人',
         tagCountPlural: '人',
         closeBtn: '閉じる',
-        venueDetails: '店舗詳細'
+        venueDetails: '店舗詳細',
+
+        // Venue bottom sheet - action buttons
+        callBtn: '電話する',
+        webReserveBtn: '予約',
+        viewOnAppBtn: 'Omochiアプリ',
+
+        // Venue bottom sheet - details
+        hoursLabel: '営業時間',
+        dineIn: 'イートイン',
+        takeout: 'テイクアウト',
+        reservationAvailable: '予約可',
+
+        // Venue bottom sheet - memo redesign
+        myNoteTitle: 'マイメモ',
+        memoPrivateHint: '自分だけに見えます',
+        memoPlaceholderFriendly: 'どうでしたか？メモを追加...',
+        memoLoginPrompt: 'タップしてメモを追加',
+        memoLoginHint: 'ログインしてメモを保存'
     }
 };
 

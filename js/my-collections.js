@@ -129,9 +129,15 @@ function _getVenueInfo(item) {
             address: (lang === 'en' && v.address_en) ? v.address_en : (v.address || ''),
             logo: v.logo || null,
             website: v.website || null,
-            description: v.description || '',
+            description: (lang === 'en' && v.description_en) ? v.description_en : (v.description || ''),
             opening_time: v.opening_time || '',
-            closing_time: v.closing_time || ''
+            closing_time: v.closing_time || '',
+            phone_number: v.phone_number || '',
+            enable_reservation: !!v.enable_reservation,
+            enable_eat_in: !!v.enable_eat_in,
+            enable_take_out: !!v.enable_take_out,
+            announcement: (lang === 'en' && v.announcement_en) ? v.announcement_en : (v.announcement || ''),
+            venue_uuid: item.data.venue || null
         };
     }
     // Local item
@@ -145,7 +151,14 @@ function _getVenueInfo(item) {
         website: null,
         description: '',
         opening_time: '',
-        closing_time: ''
+        closing_time: '',
+        phone_number: '',
+        enable_reservation: false,
+        enable_eat_in: false,
+        enable_take_out: false,
+        announcement: '',
+        venue_uuid: d.venue_uuid || null,
+        reservation_url: d.reservation_url || ''
     };
 }
 
@@ -242,10 +255,34 @@ function _createUnifiedCard(item) {
     var infoDiv = document.createElement('div');
     infoDiv.className = 'venue-card-info';
 
+    var nameRow = document.createElement('div');
+    nameRow.className = 'venue-card-name-row';
+
     var nameEl = document.createElement('div');
     nameEl.className = 'venue-card-name';
     nameEl.textContent = info.name;
-    infoDiv.appendChild(nameEl);
+    nameRow.appendChild(nameEl);
+
+    // Memo indicator (populated async)
+    var memoIndicator = document.createElement('span');
+    memoIndicator.className = 'venue-card-memo-indicator';
+    memoIndicator.style.display = 'none';
+    memoIndicator.textContent = '\u270F\uFE0F';
+    memoIndicator.title = t('myNoteTitle');
+    nameRow.appendChild(memoIndicator);
+
+    infoDiv.appendChild(nameRow);
+
+    // Async: check if user has a memo for this venue
+    var venueIdForMemo = typeof getVenueIdFromItem === 'function' ? getVenueIdFromItem(item) : null;
+    if (venueIdForMemo && typeof isLoggedIn === 'function' && isLoggedIn() &&
+        typeof fetchMemo === 'function' && typeof isTagsApiConfigured === 'function' && isTagsApiConfigured()) {
+        fetchMemo(venueIdForMemo).then(function(memo) {
+            if (memo && memo.trim()) {
+                memoIndicator.style.display = 'inline';
+            }
+        });
+    }
 
     if (info.genre) {
         var genreEl = document.createElement('div');
@@ -696,6 +733,37 @@ async function _executeAiFilter(query) {
 
 var _currentSheetItem = null;
 
+// Omochi App base URL (DEV environment)
+var OMOCHI_APP_BASE_URL = 'https://d25ayioio4kluj.cloudfront.net';
+
+/**
+ * Get reservation URL for an item (checks localStorage for Google Sheets data)
+ */
+function _getReservationUrl(item) {
+    if (item.source === 'local') {
+        return item.data.reservation_url || '';
+    }
+    // API items: look up matching local collection by venue_uuid
+    if (item.source === 'api' && item.data.venue) {
+        var locals = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
+        for (var i = 0; i < locals.length; i++) {
+            if (locals[i].venue_uuid === item.data.venue && locals[i].reservation_url) {
+                return locals[i].reservation_url;
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * Log a venue action to analytics
+ */
+function _logVenueAction(eventType, venueId) {
+    if (typeof logAnalyticsEvent === 'function') {
+        logAnalyticsEvent(eventType, venueId || '');
+    }
+}
+
 /**
  * Open the venue detail bottom sheet for a collection item
  */
@@ -719,11 +787,17 @@ async function _openVenueSheet(item) {
         metaEl.textContent = metaParts.join(' \u00B7 ');
     }
 
+    // Render memo section (prominent, always visible)
+    await _renderSheetMemo(venueId);
+
+    // Populate action buttons
+    _renderActionButtons(item, info, venueId);
+
+    // Populate venue details
+    _renderVenueDetails(info);
+
     // Render tags
     await _renderSheetTags(venueId);
-
-    // Render memo section
-    await _renderSheetMemo(venueId);
 
     // Show overlay
     overlay.classList.add('active');
@@ -738,6 +812,115 @@ async function _openVenueSheet(item) {
             if (e.target === overlayEl) _closeVenueSheet();
         };
     }
+
+    // Log venue detail view
+    _logVenueAction('venue_detail_view', venueId);
+}
+
+/**
+ * Render action buttons (Call, Reserve, Omochi App)
+ */
+function _renderActionButtons(item, info, venueId) {
+    var actionsEl = document.getElementById('venueSheetActions');
+    var callBtn = document.getElementById('venueActionCall');
+    var reserveBtn = document.getElementById('venueActionReserve');
+    var appBtn = document.getElementById('venueActionApp');
+    var hasActions = false;
+
+    var reservationUrl = _getReservationUrl(item);
+    var venueUuid = info.venue_uuid;
+
+    if (callBtn) {
+        if (info.phone_number) {
+            callBtn.href = 'tel:' + info.phone_number;
+            callBtn.style.display = 'flex';
+            callBtn.onclick = function(e) {
+                _logVenueAction('venue_call', venueId);
+            };
+            hasActions = true;
+        } else {
+            callBtn.style.display = 'none';
+        }
+    }
+
+    if (reserveBtn) {
+        if (reservationUrl) {
+            reserveBtn.href = reservationUrl;
+            reserveBtn.style.display = 'flex';
+            reserveBtn.onclick = function(e) {
+                _logVenueAction('venue_web_reserve', venueId);
+            };
+            hasActions = true;
+        } else {
+            reserveBtn.style.display = 'none';
+        }
+    }
+
+    if (appBtn) {
+        if (venueUuid) {
+            appBtn.href = OMOCHI_APP_BASE_URL + '/store/' + venueUuid;
+            appBtn.style.display = 'flex';
+            appBtn.onclick = function(e) {
+                _logVenueAction('venue_view_app', venueId);
+            };
+            hasActions = true;
+        } else {
+            appBtn.style.display = 'none';
+        }
+    }
+
+    if (actionsEl) actionsEl.style.display = hasActions ? 'flex' : 'none';
+}
+
+/**
+ * Render venue detail info (description, hours, services, announcement)
+ */
+function _renderVenueDetails(info) {
+    var detailsEl = document.getElementById('venueSheetDetails');
+    var descEl = document.getElementById('venueSheetDescription');
+    var hoursEl = document.getElementById('venueSheetHours');
+    var servicesEl = document.getElementById('venueSheetServices');
+    var announcementEl = document.getElementById('venueSheetAnnouncement');
+
+    var hasDetails = false;
+
+    if (descEl) {
+        descEl.textContent = info.description || '';
+        descEl.style.display = info.description ? 'block' : 'none';
+        if (info.description) hasDetails = true;
+    }
+
+    if (hoursEl) {
+        if (info.opening_time || info.closing_time) {
+            hoursEl.textContent = t('hoursLabel') + ': ' + (info.opening_time || '?') + ' - ' + (info.closing_time || '?');
+            hoursEl.style.display = 'block';
+            hasDetails = true;
+        } else {
+            hoursEl.style.display = 'none';
+        }
+    }
+
+    if (servicesEl) {
+        var services = [];
+        if (info.enable_eat_in) services.push(t('dineIn'));
+        if (info.enable_take_out) services.push(t('takeout'));
+        if (info.enable_reservation) services.push(t('reservationAvailable'));
+        if (services.length > 0) {
+            servicesEl.textContent = services.join(' \u00B7 ');
+            servicesEl.style.display = 'block';
+            hasDetails = true;
+        } else {
+            servicesEl.style.display = 'none';
+        }
+    }
+
+    if (announcementEl) {
+        announcementEl.textContent = info.announcement || '';
+        announcementEl.style.display = info.announcement ? 'block' : 'none';
+        if (info.announcement) hasDetails = true;
+    }
+
+    if (detailsEl) detailsEl.style.display = hasDetails ? 'block' : 'none';
 }
 
 function _closeVenueSheet() {
@@ -874,43 +1057,67 @@ async function _toggleTag(venueId, tagKey, pillEl, currentCount, wasActive) {
 }
 
 /**
- * Render the memo section in the bottom sheet
+ * Render the memo section in the bottom sheet (always visible)
+ * - Logged-in: textarea with existing memo + save button
+ * - Not logged-in: friendly tap-to-login prompt
  */
 async function _renderSheetMemo(venueId) {
     var section = document.getElementById('venueSheetMemoSection');
+    var loggedInDiv = document.getElementById('venueSheetMemoLoggedIn');
+    var loginPrompt = document.getElementById('venueSheetMemoLoginPrompt');
+    var hintEl = document.getElementById('venueSheetMemoHint');
     var textarea = document.getElementById('venueSheetMemo');
     var saveBtn = document.getElementById('venueSheetSaveBtn');
     if (!section) return;
 
     var loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
 
-    if (!loggedIn) {
-        section.style.display = 'none';
-        return;
-    }
-
+    // Always show the memo section
     section.style.display = 'block';
-    if (textarea) textarea.value = '';
 
-    // Load existing memo
-    if (venueId && typeof fetchMemo === 'function') {
-        var memo = await fetchMemo(venueId);
-        if (memo && textarea) textarea.value = memo;
-    }
+    if (loggedIn) {
+        // Show textarea, hide login prompt
+        if (loggedInDiv) loggedInDiv.style.display = 'block';
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        if (hintEl) hintEl.style.display = 'inline';
+        if (textarea) textarea.value = '';
 
-    // Save handler
-    if (saveBtn) {
-        saveBtn.onclick = async function() {
-            if (!textarea || !venueId) return;
-            saveBtn.disabled = true;
+        // Load existing memo
+        if (venueId && typeof fetchMemo === 'function') {
+            var memo = await fetchMemo(venueId);
+            if (memo && textarea) textarea.value = memo;
+        }
 
-            var success = await saveMemo(venueId, textarea.value);
-            saveBtn.disabled = false;
+        // Save handler
+        if (saveBtn) {
+            saveBtn.onclick = async function() {
+                if (!textarea || !venueId) return;
+                saveBtn.disabled = true;
+                saveBtn.textContent = '...';
 
-            if (typeof showToast === 'function') {
-                showToast(success ? t('memoSaved') : t('memoSaveFailed'));
-            }
-        };
+                var success = await saveMemo(venueId, textarea.value);
+                saveBtn.disabled = false;
+                saveBtn.textContent = t('saveMemo');
+
+                if (typeof showToast === 'function') {
+                    showToast(success ? t('memoSaved') : t('memoSaveFailed'));
+                }
+            };
+        }
+    } else {
+        // Show login prompt, hide textarea
+        if (loggedInDiv) loggedInDiv.style.display = 'none';
+        if (loginPrompt) loginPrompt.style.display = 'flex';
+        if (hintEl) hintEl.style.display = 'none';
+
+        // Tap prompt to trigger auth modal
+        if (loginPrompt) {
+            loginPrompt.onclick = function() {
+                if (typeof showAuthModal === 'function') {
+                    showAuthModal('login');
+                }
+            };
+        }
     }
 }
 

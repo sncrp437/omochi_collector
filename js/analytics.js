@@ -194,3 +194,33 @@ function sendBatchedEvents() {
         }).catch(() => {});
     });
 }
+
+/**
+ * Log a generic analytics event with custom event type
+ * Used for venue actions: venue_detail_view, venue_call, venue_web_reserve, venue_view_app
+ * @param {string} eventType - The event type string
+ * @param {string} videoId - Optional video/venue ID
+ */
+function logAnalyticsEvent(eventType, videoId) {
+    if (!ENABLE_FRONTEND_ANALYTICS || !sessionId || ANALYTICS_API_URL === 'YOUR_ANALYTICS_APPS_SCRIPT_URL_HERE') return;
+
+    try {
+        const sessionData = getSessionData();
+        const payload = {
+            event_type: eventType,
+            video_id: videoId || '',
+            ...sessionData
+        };
+
+        fetch(ANALYTICS_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).catch(() => {});
+    } catch (error) {
+        console.debug('Analytics event failed:', error);
+    }
+}

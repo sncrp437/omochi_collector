@@ -1487,6 +1487,168 @@ body.collections-body {
     cursor: not-allowed;
 }
 
+/* Memo section - redesigned header */
+.venue-sheet-memo-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.venue-sheet-memo-header h3 {
+    margin: 0;
+}
+
+.venue-sheet-memo-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    font-style: italic;
+}
+
+/* Memo login prompt (for non-logged-in users) */
+.venue-sheet-memo-login-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.venue-sheet-memo-login-prompt:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(168, 85, 247, 0.4);
+}
+
+.memo-login-icon {
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+.memo-login-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.memo-login-text > span:first-child {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.memo-login-subtext {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Venue card memo indicator */
+.venue-card-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.venue-card-memo-indicator {
+    font-size: 12px;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+/* Action Buttons Row */
+.venue-sheet-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.venue-action-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 11px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.venue-action-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.venue-action-icon {
+    font-size: 20px;
+}
+
+.venue-action-label {
+    font-weight: 500;
+    text-align: center;
+}
+
+.venue-action-call {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.venue-action-call:hover {
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.venue-action-reserve {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.venue-action-reserve:hover {
+    background: rgba(59, 130, 246, 0.12);
+}
+
+.venue-action-app {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.venue-action-app:hover {
+    background: rgba(168, 85, 247, 0.12);
+}
+
+/* Venue Detail Info Section */
+.venue-sheet-description {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.venue-sheet-hours {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 6px;
+}
+
+.venue-sheet-services {
+    font-size: 12px;
+    color: rgba(168, 85, 247, 0.8);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.venue-sheet-announcement {
+    font-size: 12px;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 8px;
+}
+
 /* Small tag badges on venue cards */
 .venue-card-tags {
     display: flex;

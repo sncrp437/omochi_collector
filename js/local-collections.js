@@ -42,6 +42,7 @@ function saveLocalCollection(video) {
         caption_en: video.caption_en || '',
         caption_ja: video.caption_ja || '',
         video_url: video.url || '',
+        reservation_url: video.reservation_url || '',
         date_added: new Date().toISOString(),
         synced: false
     });

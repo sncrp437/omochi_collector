@@ -128,6 +128,51 @@
                 <div class="venue-sheet-meta" id="venueSheetMeta"></div>
             </div>
 
+            <!-- My Note Section (always visible, prominent) -->
+            <div class="venue-sheet-section venue-sheet-memo-section" id="venueSheetMemoSection">
+                <div class="venue-sheet-memo-header">
+                    <h3 data-i18n="myNoteTitle">My Note</h3>
+                    <span class="venue-sheet-memo-hint" id="venueSheetMemoHint" data-i18n="memoPrivateHint">Only you can see this</span>
+                </div>
+                <!-- Logged-in: textarea + save -->
+                <div id="venueSheetMemoLoggedIn" style="display:none;">
+                    <textarea class="venue-sheet-memo" id="venueSheetMemo" data-i18n="memoPlaceholderFriendly" placeholder="What did you think? Add your personal note..." maxlength="500"></textarea>
+                    <button class="venue-sheet-save-btn" id="venueSheetSaveBtn" data-i18n="saveMemo">Save</button>
+                </div>
+                <!-- Not logged-in: tap to login prompt -->
+                <div class="venue-sheet-memo-login-prompt" id="venueSheetMemoLoginPrompt" style="display:none;">
+                    <span class="memo-login-icon">&#9998;</span>
+                    <div class="memo-login-text">
+                        <span data-i18n="memoLoginPrompt">Tap to add your personal note</span>
+                        <span class="memo-login-subtext" data-i18n="memoLoginHint">Log in to save private notes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div class="venue-sheet-actions" id="venueSheetActions" style="display:none;">
+                <a class="venue-action-btn venue-action-call" id="venueActionCall" href="#" style="display:none;">
+                    <span class="venue-action-icon">&#128222;</span>
+                    <span class="venue-action-label" data-i18n="callBtn">Call</span>
+                </a>
+                <a class="venue-action-btn venue-action-reserve" id="venueActionReserve" href="#" target="_blank" rel="noopener" style="display:none;">
+                    <span class="venue-action-icon">&#128197;</span>
+                    <span class="venue-action-label" data-i18n="webReserveBtn">Reserve</span>
+                </a>
+                <a class="venue-action-btn venue-action-app" id="venueActionApp" href="#" target="_blank" rel="noopener" style="display:none;">
+                    <span class="venue-action-icon">&#127860;</span>
+                    <span class="venue-action-label" data-i18n="viewOnAppBtn">Omochi App</span>
+                </a>
+            </div>
+
+            <!-- Venue Detail Info Section -->
+            <div class="venue-sheet-section venue-sheet-details" id="venueSheetDetails" style="display:none;">
+                <div class="venue-sheet-description" id="venueSheetDescription"></div>
+                <div class="venue-sheet-hours" id="venueSheetHours"></div>
+                <div class="venue-sheet-services" id="venueSheetServices"></div>
+                <div class="venue-sheet-announcement" id="venueSheetAnnouncement"></div>
+            </div>
+
             <!-- Community Tags Section -->
             <div class="venue-sheet-section">
                 <h3 data-i18n="communityTags">Community Tags</h3>
@@ -135,13 +180,6 @@
                     <!-- Tag pills rendered dynamically -->
                 </div>
                 <div class="venue-sheet-tags-hint" id="venueSheetTagsHint"></div>
-            </div>
-
-            <!-- My Notes Section (logged in only) -->
-            <div class="venue-sheet-section venue-sheet-memo-section" id="venueSheetMemoSection" style="display:none;">
-                <h3 data-i18n="myNotes">My Notes</h3>
-                <textarea class="venue-sheet-memo" id="venueSheetMemo" data-i18n="memoPlaceholder" placeholder="Add a personal note about this venue..." maxlength="500"></textarea>
-                <button class="venue-sheet-save-btn" id="venueSheetSaveBtn" data-i18n="saveMemo">Save</button>
             </div>
         </div>
     </div>
@@ -164,6 +202,7 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/local-collections.js"></script>
+    <script src="js/analytics.js"></script>
     <script src="js/venue-tags.js"></script>
     <script src="js/ai-sort.js"></script>
     <script src="js/my-collections.js"></script>
