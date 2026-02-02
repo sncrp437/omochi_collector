@@ -76,8 +76,12 @@ const translations = {
         networkError: 'Network error. Please check your connection.',
 
         // Bottom tab bar
+        infoTab: 'Info',
         homeTab: 'Home',
-        collectionsTab: 'Collections'
+        collectionsTab: 'Collections',
+
+        // Auth status
+        loggedIn: 'Logged in!'
     },
     ja: {
         // Index page
@@ -150,8 +154,12 @@ const translations = {
         networkError: 'ネットワークエラー。接続を確認してください。',
 
         // Bottom tab bar
+        infoTab: '情報',
         homeTab: 'ホーム',
-        collectionsTab: 'コレクション'
+        collectionsTab: 'コレクション',
+
+        // Auth status
+        loggedIn: 'ログインしました！'
     }
 };
 

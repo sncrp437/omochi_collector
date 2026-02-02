@@ -15,29 +15,25 @@ body {
     height: 100%;
 }
 
-/* Info Button */
-.info-btn {
+/* Auth Status Indicator - green dot when logged in */
+.auth-status {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 24px;
+    left: 24px;
     z-index: 999;
-    width: 36px;
-    height: 36px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    border: none;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent;
+    transition: all 0.3s ease;
+    pointer-events: none;
 }
 
-.info-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+.auth-status.logged-in {
+    background: #4CAF50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 /* Language Selector */
@@ -153,6 +149,10 @@ body {
     padding: 20px;
 }
 
+body.has-tab-bar .empty-collection {
+    height: calc(100vh - 56px);
+}
+
 /* Reels Container - Vertical scroll with snap */
 .reels-container {
     width: 100%;
@@ -161,6 +161,10 @@ body {
     scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Firefox */
+}
+
+body.has-tab-bar .reels-container {
+    height: calc(100vh - 56px);
 }
 
 .reels-container::-webkit-scrollbar {
@@ -180,6 +184,10 @@ body {
     background-color: #000;
 }
 
+body.has-tab-bar .reel-item {
+    height: calc(100vh - 56px);
+}
+
 /* Video embed container - maintains 9:16 aspect ratio */
 .video-container {
     position: relative;
@@ -196,9 +204,13 @@ body {
     position: relative;
     width: 100%;
     height: 100%;
-    max-width: 56.25vh; /* 9:16 ratio: if height is 100vh, width is 56.25vh */
+    max-width: 56.25vh;
     aspect-ratio: 9 / 16;
     background-color: #000;
+}
+
+body.has-tab-bar .video-wrapper {
+    max-width: calc((100vh - 56px) * 9 / 16);
 }
 
 .video-container iframe {
@@ -385,60 +397,105 @@ body {
     }
 }
 
-/* Welcome Modal Styles */
+/* Welcome Modal Styles - Clean modern card */
 .welcome-modal-content {
-    max-width: 480px;
+    max-width: 420px;
     text-align: left;
+    background: rgba(26, 26, 26, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 36px 28px 28px;
+    animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -45%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
 .welcome-icon {
-    font-size: 64px;
+    font-size: 48px;
     text-align: center;
+    margin-bottom: 16px;
+}
+
+.welcome-modal-content h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 .welcome-section {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.welcome-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 16px;
+    padding-bottom: 0;
 }
 
 .welcome-section h3 {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 8px;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .welcome-section p {
     font-size: 14px;
-    line-height: 1.6;
-    color: #aaa;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .welcome-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .welcome-list li {
     font-size: 14px;
-    line-height: 1.8;
-    color: #aaa;
-    padding-left: 24px;
-    position: relative;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .welcome-list li::before {
-    content: '•';
-    position: absolute;
-    left: 8px;
-    color: #fff;
+    content: attr(data-icon);
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
 .welcome-current-collection {
-    font-size: 14px;
-    color: #aaa;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
     text-align: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
 }
 
 .welcome-current-collection strong {
@@ -446,14 +503,28 @@ body {
     font-weight: 600;
 }
 
+.welcome-modal-content .auth-btn-primary {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #fff;
+    color: #000;
+    transition: all 0.2s ease;
+}
+
+.welcome-modal-content .auth-btn-primary:hover {
+    background: #f0f0f0;
+    transform: scale(0.98);
+}
+
 /* Mobile optimization */
 @media (max-width: 767px) {
-    .info-btn {
-        top: 12px;
-        left: 12px;
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+    .auth-status {
+        top: 16px;
+        left: 16px;
     }
 
     .language-selector {
@@ -489,11 +560,11 @@ body {
     }
 
     .welcome-modal-content {
-        padding: 24px 20px;
+        padding: 28px 20px 20px;
     }
 
     .welcome-icon {
-        font-size: 48px;
+        font-size: 40px;
     }
 }
 
@@ -714,6 +785,62 @@ body {
     cursor: not-allowed;
 }
 
+/* Auth button loading state */
+.auth-btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.auth-btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* Auth success state */
+.auth-success-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-success-icon {
+    width: 48px;
+    height: 48px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+}
+
+.auth-success-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 .auth-toggle {
     margin-top: 16px;
     font-size: 14px;
@@ -809,9 +936,9 @@ body {
     font-size: 10px;
 }
 
-/* Add body padding to account for tab bar */
+/* Tab bar body adjustments - height calc handles spacing, no padding needed for index page */
 body.has-tab-bar {
-    padding-bottom: 56px;
+    padding-bottom: 0;
 }
 
 /* =============================================================================

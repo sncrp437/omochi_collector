@@ -73,12 +73,12 @@ function initWelcomeModal() {
     const closeBtn = document.getElementById('welcomeModalClose');
     const overlay = document.getElementById('welcomeModalOverlay');
     const getStartedBtn = document.getElementById('welcomeGetStarted');
-    const infoBtn = document.getElementById('infoBtn');
+    const tabInfoBtn = document.getElementById('tabInfoBtn');
 
     if (closeBtn) closeBtn.addEventListener('click', closeWelcomeModal);
     if (overlay) overlay.addEventListener('click', closeWelcomeModal);
     if (getStartedBtn) getStartedBtn.addEventListener('click', closeWelcomeModal);
-    if (infoBtn) infoBtn.addEventListener('click', reopenWelcomeModal);
+    if (tabInfoBtn) tabInfoBtn.addEventListener('click', reopenWelcomeModal);
 }
 
 // Initialize when DOM is ready

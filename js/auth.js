@@ -184,12 +184,20 @@ async function _handleLogin() {
     }
 
     try {
-        if (submitBtn) submitBtn.disabled = true;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('auth-btn-loading');
+        }
         await login(email, password);
-        hideAuthModal();
-        updateAuthUI();
-        _handlePendingCollect();
+
+        // Show success state briefly before closing
+        _showAuthSuccess(() => {
+            hideAuthModal();
+            updateAuthUI();
+            _handlePendingCollect();
+        });
     } catch (err) {
+        if (submitBtn) submitBtn.classList.remove('auth-btn-loading');
         if (errorEl) {
             if (err instanceof Error) {
                 errorEl.textContent = t('networkError') || 'Network error. Please check your connection.';
@@ -198,7 +206,10 @@ async function _handleLogin() {
             }
         }
     } finally {
-        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('auth-btn-loading');
+        }
     }
 }
 
@@ -240,12 +251,20 @@ async function _handleRegister() {
     }
 
     try {
-        if (submitBtn) submitBtn.disabled = true;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('auth-btn-loading');
+        }
         await register(formData);
-        hideAuthModal();
-        updateAuthUI();
-        _handlePendingCollect();
+
+        // Show success state briefly before closing
+        _showAuthSuccess(() => {
+            hideAuthModal();
+            updateAuthUI();
+            _handlePendingCollect();
+        });
     } catch (err) {
+        if (submitBtn) submitBtn.classList.remove('auth-btn-loading');
         if (errorEl) {
             if (err instanceof Error) {
                 errorEl.textContent = t('networkError') || 'Network error. Please check your connection.';
@@ -255,7 +274,10 @@ async function _handleRegister() {
             }
         }
     } finally {
-        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('auth-btn-loading');
+        }
     }
 }
 
@@ -273,6 +295,36 @@ async function _handlePendingCollect() {
 }
 
 /**
+ * Show a brief success animation in the auth modal, then call onComplete
+ */
+function _showAuthSuccess(onComplete) {
+    const modalContent = document.querySelector('#authModal .auth-modal-content');
+    if (!modalContent) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    // Replace modal content with success state
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    if (loginForm) loginForm.style.display = 'none';
+    if (registerForm) registerForm.style.display = 'none';
+
+    const successEl = document.createElement('div');
+    successEl.className = 'auth-success-overlay';
+    successEl.innerHTML = `
+        <div class="auth-success-icon">✓</div>
+        <div class="auth-success-text">${t('loggedIn') || 'Logged in!'}</div>
+    `;
+    modalContent.appendChild(successEl);
+
+    setTimeout(() => {
+        successEl.remove();
+        if (onComplete) onComplete();
+    }, 800);
+}
+
+/**
  * Update UI elements based on auth state
  */
 function updateAuthUI() {
@@ -287,6 +339,16 @@ function updateAuthUI() {
     const userDisplay = document.getElementById('userDisplay');
     if (userDisplay) {
         userDisplay.textContent = loggedIn && user ? user.first_name || user.email : '';
+    }
+
+    // Update auth status indicator (green dot)
+    const authStatus = document.getElementById('authStatus');
+    if (authStatus) {
+        if (loggedIn) {
+            authStatus.classList.add('logged-in');
+        } else {
+            authStatus.classList.remove('logged-in');
+        }
     }
 }
 

@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="has-tab-bar">
-    <!-- Info Button -->
-    <button class="info-btn" id="infoBtn" aria-label="Information">ℹ️</button>
+    <!-- Auth Status Indicator -->
+    <div class="auth-status" id="authStatus"></div>
 
     <!-- Language Selector -->
     <div class="language-selector">
@@ -91,10 +91,10 @@
             <div class="welcome-section">
                 <h3 data-i18n="welcomeHowToTitle">How to Use</h3>
                 <ul class="welcome-list">
-                    <li data-i18n="welcomeSwipe">Swipe up/down to browse videos</li>
-                    <li data-i18n="welcomeCollect">Tap "Collect" to save favorites</li>
-                    <li data-i18n="welcomeCollections">Select collections at the top to filter</li>
-                    <li data-i18n="welcomeLanguage">Switch languages in the top right</li>
+                    <li data-icon="👆" data-i18n="welcomeSwipe">Swipe up/down to browse videos</li>
+                    <li data-icon="⭐" data-i18n="welcomeCollect">Tap "Collect" to save favorites</li>
+                    <li data-icon="🏷️" data-i18n="welcomeCollections">Select collections at the top to filter</li>
+                    <li data-icon="🌐" data-i18n="welcomeLanguage">Switch languages in the top right</li>
                 </ul>
             </div>
 
@@ -111,10 +111,10 @@
 
     <!-- Bottom Tab Bar -->
     <nav class="bottom-tab-bar">
-        <a href="index.html" class="tab-item active">
-            <span class="tab-icon">🏠</span>
-            <span class="tab-label" data-i18n="homeTab">Home</span>
-        </a>
+        <button class="tab-item active" id="tabInfoBtn">
+            <span class="tab-icon">ℹ️</span>
+            <span class="tab-label" data-i18n="infoTab">Info</span>
+        </button>
         <a href="my-collections.html" class="tab-item">
             <span class="tab-icon">📋</span>
             <span class="tab-label" data-i18n="collectionsTab">Collections</span>
