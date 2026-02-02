@@ -20,15 +20,6 @@
             <h1 data-i18n="myCollectionsTitle">My Collections</h1>
         </header>
 
-        <!-- AI Smart Sort Search Bar -->
-        <div class="ai-search-section" id="aiSearchSection" style="display:none;">
-            <div class="ai-search-bar">
-                <input type="text" class="ai-search-input" id="aiSearchInput" data-i18n="aiSearchPlaceholder" placeholder="What are you in the mood for?">
-                <button class="ai-search-btn" id="aiSearchBtn" data-i18n="aiSearchBtn">Search</button>
-            </div>
-            <button class="ai-reset-btn" id="aiResetBtn" style="display:none;" data-i18n="aiResetBtn">Reset order</button>
-        </div>
-
         <!-- Genre Filter Pills -->
         <div class="filter-section" id="genreFilterSection" style="display:none;">
             <div class="filter-label" data-i18n="cuisineLabel">Cuisine</div>
@@ -125,6 +116,36 @@
         </div>
     </div>
 
+    <!-- Venue Detail Bottom Sheet -->
+    <div class="venue-sheet-overlay" id="venueSheetOverlay">
+        <div class="venue-sheet" id="venueSheet">
+            <div class="venue-sheet-handle"></div>
+            <button class="venue-sheet-close" id="venueSheetClose">&times;</button>
+
+            <!-- Venue Header -->
+            <div class="venue-sheet-header" id="venueSheetHeader">
+                <h2 class="venue-sheet-name" id="venueSheetName"></h2>
+                <div class="venue-sheet-meta" id="venueSheetMeta"></div>
+            </div>
+
+            <!-- Community Tags Section -->
+            <div class="venue-sheet-section">
+                <h3 data-i18n="communityTags">Community Tags</h3>
+                <div class="venue-sheet-tags" id="venueSheetTags">
+                    <!-- Tag pills rendered dynamically -->
+                </div>
+                <div class="venue-sheet-tags-hint" id="venueSheetTagsHint"></div>
+            </div>
+
+            <!-- My Notes Section (logged in only) -->
+            <div class="venue-sheet-section venue-sheet-memo-section" id="venueSheetMemoSection" style="display:none;">
+                <h3 data-i18n="myNotes">My Notes</h3>
+                <textarea class="venue-sheet-memo" id="venueSheetMemo" data-i18n="memoPlaceholder" placeholder="Add a personal note about this venue..." maxlength="500"></textarea>
+                <button class="venue-sheet-save-btn" id="venueSheetSaveBtn" data-i18n="saveMemo">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Tab Bar -->
     <nav class="bottom-tab-bar">
         <a href="index.html" class="tab-item">
@@ -143,6 +164,7 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/local-collections.js"></script>
+    <script src="js/venue-tags.js"></script>
     <script src="js/ai-sort.js"></script>
     <script src="js/my-collections.js"></script>
 </body>

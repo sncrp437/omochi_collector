@@ -33,13 +33,14 @@ async function aiSortCollections(query, venues) {
 
     var systemPrompt = 'You are a restaurant recommendation assistant. ' +
         'Given a list of restaurants and a user query about what they are in the mood for, ' +
-        'return ONLY a JSON array of restaurant indices ordered by relevance (most relevant first). ' +
-        'Include ALL indices. Do not include any explanation, just the JSON array. ' +
-        'Example response: [2, 0, 3, 1]';
+        'return ONLY a JSON array of indices of restaurants that match the query, ordered by relevance (most relevant first). ' +
+        'Only include venues that genuinely match the query. Exclude venues that are clearly unrelated. ' +
+        'If no venues match, return an empty array []. Do not include any explanation, just the JSON array. ' +
+        'Example response: [2, 0]';
 
     var userPrompt = 'Restaurants:\n' + JSON.stringify(venueList, null, 2) +
         '\n\nUser wants: ' + query +
-        '\n\nReturn ONLY a JSON array of indices ordered by relevance:';
+        '\n\nReturn ONLY a JSON array of indices of matching venues, ordered by relevance. Exclude non-matching venues:';
 
     try {
         var response = await puter.ai.chat(userPrompt, {
@@ -68,13 +69,6 @@ async function aiSortCollections(query, venues) {
         var validIndices = indices.filter(function(idx) {
             return typeof idx === 'number' && idx >= 0 && idx < venues.length;
         });
-
-        // Add any missing indices at the end
-        for (var i = 0; i < venues.length; i++) {
-            if (validIndices.indexOf(i) === -1) {
-                validIndices.push(i);
-            }
-        }
 
         return validIndices;
     } catch (err) {

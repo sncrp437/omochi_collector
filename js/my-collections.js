@@ -6,7 +6,8 @@
 var _allMergedItems = [];
 var _activeGenreFilter = null;
 var _activeLocationFilter = null;
-var _aiSorted = false;
+var _aiFilteredIndices = null;
+var _aiFilterQuery = '';
 
 /**
  * Initialize the collections page
@@ -67,14 +68,7 @@ async function initCollectionsPage() {
     _renderGenreFilters();
     _renderLocationFilters();
 
-    // 7. Show AI search bar
-    var aiSection = document.getElementById('aiSearchSection');
-    if (aiSection && _allMergedItems.length > 1) {
-        aiSection.style.display = 'block';
-        _setupAiSearch();
-    }
-
-    // 8. Show registration prompt if not logged in and has items
+    // 7. Show registration prompt if not logged in and has items
     if (!loggedIn && localItems.length > 0) {
         var banner = document.getElementById('registerPromptBanner');
         if (banner) {
@@ -88,7 +82,7 @@ async function initCollectionsPage() {
         }
     }
 
-    // 9. Show logout button if logged in
+    // 8. Show logout button if logged in
     if (loggedIn) {
         var logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.style.display = 'block';
@@ -186,6 +180,13 @@ function _renderAllCards() {
  * Get filtered items based on active genre and location filters
  */
 function _getFilteredItems() {
+    // If AI filter is active, return only AI-matched items
+    if (_aiFilteredIndices !== null) {
+        return _aiFilteredIndices.map(function(idx) {
+            return _allMergedItems[idx];
+        }).filter(Boolean);
+    }
+
     return _allMergedItems.filter(function(item) {
         var info = _getVenueInfo(item);
 
@@ -267,6 +268,29 @@ function _createUnifiedCard(item) {
         infoDiv.appendChild(addressEl);
     }
 
+    // Tag badges placeholder (populated async)
+    var tagsContainer = document.createElement('div');
+    tagsContainer.className = 'venue-card-tags';
+    infoDiv.appendChild(tagsContainer);
+
+    // Async: load tag badges
+    var venueId = typeof getVenueIdFromItem === 'function' ? getVenueIdFromItem(item) : null;
+    if (venueId && typeof isTagsApiConfigured === 'function' && isTagsApiConfigured()) {
+        fetchVenueTags(venueId).then(function(tagCounts) {
+            var sorted = Object.keys(tagCounts).sort(function(a, b) {
+                return tagCounts[b] - tagCounts[a];
+            });
+            sorted.slice(0, 3).forEach(function(tagKey) {
+                var badge = document.createElement('span');
+                badge.className = 'venue-card-tag-badge';
+                badge.textContent = (typeof getTagIcon === 'function' ? getTagIcon(tagKey) : '') + ' ' +
+                                    (typeof getTagLabel === 'function' ? getTagLabel(tagKey) : tagKey) +
+                                    ' (' + tagCounts[tagKey] + ')';
+                tagsContainer.appendChild(badge);
+            });
+        });
+    }
+
     // Remove button
     var removeBtn = document.createElement('button');
     removeBtn.className = 'venue-card-remove';
@@ -281,13 +305,11 @@ function _createUnifiedCard(item) {
     card.appendChild(infoDiv);
     card.appendChild(removeBtn);
 
-    // Click to visit website (API items only)
-    if (info.website) {
-        card.style.cursor = 'pointer';
-        card.addEventListener('click', function() {
-            window.open(info.website, '_blank');
-        });
-    }
+    // Click to open venue detail bottom sheet
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+        _openVenueSheet(item);
+    });
 
     return card;
 }
@@ -362,7 +384,11 @@ function _renderGenreFilters() {
     });
 
     var genreKeys = Object.keys(genres);
-    if (genreKeys.length < 2) {
+    var hasAi = _allMergedItems.length > 1 && typeof isAiSortAvailable === 'function';
+    var aiActive = _aiFilteredIndices !== null;
+
+    // Show section if 2+ genres or AI is available
+    if (genreKeys.length < 2 && !hasAi) {
         section.style.display = 'none';
         _activeGenreFilter = null;
         return;
@@ -373,9 +399,10 @@ function _renderGenreFilters() {
 
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeGenreFilter ? ' active' : '');
+    allPill.className = 'filter-pill' + (!_activeGenreFilter && !aiActive ? ' active' : '');
     allPill.textContent = t('allGenres');
     allPill.addEventListener('click', function() {
+        _clearAiFilter();
         _activeGenreFilter = null;
         localStorage.setItem('collectionsGenreFilter', '');
         _renderGenreFilters();
@@ -383,11 +410,13 @@ function _renderGenreFilters() {
     });
     container.appendChild(allPill);
 
+    // Genre pills
     genreKeys.sort().forEach(function(genre) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (_activeGenreFilter === genre ? ' active' : '');
+        pill.className = 'filter-pill' + (!aiActive && _activeGenreFilter === genre ? ' active' : '');
         pill.textContent = genre;
         pill.addEventListener('click', function() {
+            _clearAiFilter();
             _activeGenreFilter = genre;
             localStorage.setItem('collectionsGenreFilter', genre);
             _renderGenreFilters();
@@ -395,6 +424,33 @@ function _renderGenreFilters() {
         });
         container.appendChild(pill);
     });
+
+    // AI pill (at the end)
+    if (hasAi) {
+        if (aiActive) {
+            // Show "AI: [query]" pill as active
+            var aiPill = document.createElement('button');
+            aiPill.className = 'filter-pill filter-pill-ai active';
+            var label = t('aiFilterLabel') + ': ' + _aiFilterQuery;
+            if (label.length > 25) label = label.substring(0, 22) + '...';
+            aiPill.textContent = label;
+            aiPill.addEventListener('click', function() {
+                _clearAiFilter();
+                _renderGenreFilters();
+                _renderAllCards();
+            });
+            container.appendChild(aiPill);
+        } else {
+            // Show "AI" pill (inactive, tappable to open input)
+            var aiPill = document.createElement('button');
+            aiPill.className = 'filter-pill filter-pill-ai';
+            aiPill.textContent = t('aiFilterLabel');
+            aiPill.addEventListener('click', function() {
+                _showAiInputInline();
+            });
+            container.appendChild(aiPill);
+        }
+    }
 }
 
 /**
@@ -423,13 +479,17 @@ function _renderLocationFilters() {
     section.style.display = 'block';
     container.innerHTML = '';
 
+    var aiActive = _aiFilteredIndices !== null;
+
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeLocationFilter ? ' active' : '');
+    allPill.className = 'filter-pill' + (!_activeLocationFilter || aiActive ? ' active' : '');
     allPill.textContent = t('allLocations');
     allPill.addEventListener('click', function() {
+        _clearAiFilter();
         _activeLocationFilter = null;
         localStorage.setItem('collectionsLocationFilter', '');
+        _renderGenreFilters();
         _renderLocationFilters();
         _renderAllCards();
     });
@@ -437,11 +497,13 @@ function _renderLocationFilters() {
 
     locationKeys.sort().forEach(function(location) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (_activeLocationFilter === location ? ' active' : '');
+        pill.className = 'filter-pill' + (!aiActive && _activeLocationFilter === location ? ' active' : '');
         pill.textContent = location;
         pill.addEventListener('click', function() {
+            _clearAiFilter();
             _activeLocationFilter = location;
             localStorage.setItem('collectionsLocationFilter', location);
+            _renderGenreFilters();
             _renderLocationFilters();
             _renderAllCards();
         });
@@ -450,108 +512,405 @@ function _renderLocationFilters() {
 }
 
 // =============================================================================
-// AI Smart Sort
+// AI Smart Search (Inline in Genre Filter Row)
 // =============================================================================
 
-function _setupAiSearch() {
-    var searchBtn = document.getElementById('aiSearchBtn');
-    var searchInput = document.getElementById('aiSearchInput');
-    var resetBtn = document.getElementById('aiResetBtn');
-    if (!searchBtn || !searchInput) return;
+/**
+ * Clear AI filter state
+ */
+function _clearAiFilter() {
+    _aiFilteredIndices = null;
+    _aiFilterQuery = '';
+}
 
-    searchBtn.addEventListener('click', function() {
-        _performAiSort();
+/**
+ * Show inline AI search input in the genre filter pill row
+ */
+function _showAiInputInline() {
+    var container = document.getElementById('genreFilterPills');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // Cancel button
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'ai-inline-cancel';
+    cancelBtn.textContent = t('aiSearchCancel');
+    cancelBtn.addEventListener('click', function() {
+        _renderGenreFilters();
     });
 
-    searchInput.addEventListener('keydown', function(e) {
+    // Text input
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'ai-inline-input';
+    input.placeholder = t('aiSearchPlaceholder');
+    input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            _performAiSort();
+            _executeAiFilter(input.value);
         }
     });
 
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function() {
-            _aiSorted = false;
-            resetBtn.style.display = 'none';
-            // Re-render in original order
-            _renderAllCards();
-        });
-    }
+    // Submit button
+    var submitBtn = document.createElement('button');
+    submitBtn.className = 'ai-inline-submit';
+    submitBtn.textContent = t('aiSearchGo');
+    submitBtn.addEventListener('click', function() {
+        _executeAiFilter(input.value);
+    });
+
+    container.appendChild(cancelBtn);
+    container.appendChild(input);
+    container.appendChild(submitBtn);
+
+    input.focus();
 }
 
-async function _performAiSort() {
-    var searchInput = document.getElementById('aiSearchInput');
-    var searchBtn = document.getElementById('aiSearchBtn');
-    var resetBtn = document.getElementById('aiResetBtn');
-    if (!searchInput || !searchInput.value.trim()) return;
+/**
+ * Show Puter.js disclaimer modal before first AI use
+ */
+function _showPuterDisclaimer() {
+    return new Promise(function(resolve) {
+        if (localStorage.getItem('puterDisclaimerAccepted')) {
+            resolve(true);
+            return;
+        }
 
-    var query = searchInput.value.trim();
+        var overlay = document.createElement('div');
+        overlay.className = 'puter-disclaimer-overlay';
+
+        var modal = document.createElement('div');
+        modal.className = 'puter-disclaimer-modal';
+
+        var title = document.createElement('h3');
+        title.textContent = t('puterDisclaimerTitle');
+        modal.appendChild(title);
+
+        var text = document.createElement('p');
+        text.textContent = t('puterDisclaimerText');
+        modal.appendChild(text);
+
+        var btnRow = document.createElement('div');
+        btnRow.className = 'puter-disclaimer-buttons';
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.className = 'puter-disclaimer-btn cancel';
+        cancelBtn.textContent = t('puterDisclaimerCancel');
+        cancelBtn.addEventListener('click', function() {
+            overlay.remove();
+            resolve(false);
+        });
+
+        var continueBtn = document.createElement('button');
+        continueBtn.className = 'puter-disclaimer-btn continue';
+        continueBtn.textContent = t('puterDisclaimerContinue');
+        continueBtn.addEventListener('click', function() {
+            localStorage.setItem('puterDisclaimerAccepted', 'true');
+            overlay.remove();
+            resolve(true);
+        });
+
+        btnRow.appendChild(cancelBtn);
+        btnRow.appendChild(continueBtn);
+        modal.appendChild(btnRow);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    });
+}
+
+/**
+ * Execute AI filter: send query to AI, store matching indices, re-render
+ */
+async function _executeAiFilter(query) {
+    if (!query || !query.trim()) return;
+    query = query.trim();
+
+    // Show Puter disclaimer on first use
+    var accepted = await _showPuterDisclaimer();
+    if (!accepted) {
+        _renderGenreFilters();
+        return;
+    }
 
     // Check AI availability
     if (typeof aiSortCollections !== 'function' || typeof isAiSortAvailable !== 'function' || !isAiSortAvailable()) {
         if (typeof showToast === 'function') {
             showToast(t('aiUnavailable'));
         }
+        _renderGenreFilters();
         return;
     }
 
-    // Show loading state
-    if (searchBtn) {
-        searchBtn.disabled = true;
-        searchBtn.classList.add('loading');
+    // Show loading state in pill area
+    var container = document.getElementById('genreFilterPills');
+    if (container) {
+        container.innerHTML = '';
+        var loadingPill = document.createElement('span');
+        loadingPill.className = 'ai-loading-pill';
+        loadingPill.textContent = t('aiSorting');
+        container.appendChild(loadingPill);
     }
 
-    // Build venue metadata for AI
-    var filtered = _getFilteredItems();
-    var venues = filtered.map(function(item) {
+    // Build venue metadata for ALL items
+    var venues = _allMergedItems.map(function(item) {
         return _getVenueInfo(item);
     });
 
     try {
-        var sortedIndices = await aiSortCollections(query, venues);
+        var matchedIndices = await aiSortCollections(query, venues);
 
-        if (sortedIndices && sortedIndices.length > 0) {
-            // Reorder the filtered items
-            var reordered = sortedIndices.map(function(idx) {
-                return filtered[idx];
-            }).filter(Boolean);
-
-            // Re-render cards in AI order
-            var cardsListEl = document.getElementById('venueCardsList');
-            if (cardsListEl) {
-                cardsListEl.innerHTML = '';
-                cardsListEl.style.display = 'flex';
-                reordered.forEach(function(item, i) {
-                    var card = _createUnifiedCard(item);
-                    // Add AI badge to top results
-                    if (i < 3) {
-                        var badge = document.createElement('span');
-                        badge.className = 'ai-badge';
-                        badge.textContent = 'AI';
-                        var nameEl = card.querySelector('.venue-card-name');
-                        if (nameEl) nameEl.appendChild(badge);
-                    }
-                    cardsListEl.appendChild(card);
-                });
-            }
-
-            _aiSorted = true;
-            if (resetBtn) resetBtn.style.display = 'block';
+        if (matchedIndices && matchedIndices.length > 0) {
+            _aiFilteredIndices = matchedIndices;
+            _aiFilterQuery = query;
+            _activeGenreFilter = null;
+            _activeLocationFilter = null;
+            localStorage.setItem('collectionsGenreFilter', '');
+            localStorage.setItem('collectionsLocationFilter', '');
+            _renderGenreFilters();
+            _renderLocationFilters();
+            _renderAllCards();
         } else {
+            _aiFilteredIndices = null;
+            _aiFilterQuery = '';
             if (typeof showToast === 'function') {
-                showToast(t('aiUnavailable'));
+                showToast(t('aiNoMatches'));
             }
+            _renderGenreFilters();
+            _renderAllCards();
         }
     } catch (err) {
-        console.error('AI sort failed:', err);
+        console.error('AI filter failed:', err);
+        _aiFilteredIndices = null;
+        _aiFilterQuery = '';
         if (typeof showToast === 'function') {
             showToast(t('aiUnavailable'));
         }
-    } finally {
-        if (searchBtn) {
-            searchBtn.disabled = false;
-            searchBtn.classList.remove('loading');
+        _renderGenreFilters();
+        _renderAllCards();
+    }
+}
+
+// =============================================================================
+// Venue Detail Bottom Sheet
+// =============================================================================
+
+var _currentSheetItem = null;
+
+/**
+ * Open the venue detail bottom sheet for a collection item
+ */
+async function _openVenueSheet(item) {
+    var overlay = document.getElementById('venueSheetOverlay');
+    if (!overlay) return;
+
+    _currentSheetItem = item;
+    var info = _getVenueInfo(item);
+    var venueId = typeof getVenueIdFromItem === 'function' ? getVenueIdFromItem(item) : null;
+
+    // Populate header
+    var nameEl = document.getElementById('venueSheetName');
+    var metaEl = document.getElementById('venueSheetMeta');
+    if (nameEl) nameEl.textContent = info.name;
+    if (metaEl) {
+        var metaParts = [];
+        if (info.genre) metaParts.push(info.genre);
+        if (info.nearest_station) metaParts.push('\uD83D\uDCCD ' + info.nearest_station);
+        if (info.address) metaParts.push(info.address);
+        metaEl.textContent = metaParts.join(' \u00B7 ');
+    }
+
+    // Render tags
+    await _renderSheetTags(venueId);
+
+    // Render memo section
+    await _renderSheetMemo(venueId);
+
+    // Show overlay
+    overlay.classList.add('active');
+
+    // Setup close handlers
+    var closeBtn = document.getElementById('venueSheetClose');
+    var overlayEl = document.getElementById('venueSheetOverlay');
+
+    if (closeBtn) closeBtn.onclick = _closeVenueSheet;
+    if (overlayEl) {
+        overlayEl.onclick = function(e) {
+            if (e.target === overlayEl) _closeVenueSheet();
+        };
+    }
+}
+
+function _closeVenueSheet() {
+    var overlay = document.getElementById('venueSheetOverlay');
+    if (overlay) overlay.classList.remove('active');
+    _currentSheetItem = null;
+}
+
+/**
+ * Render community tag pills in the bottom sheet
+ */
+async function _renderSheetTags(venueId) {
+    var container = document.getElementById('venueSheetTags');
+    var hintEl = document.getElementById('venueSheetTagsHint');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    var loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
+    var tagCounts = {};
+    var myTags = [];
+
+    if (venueId && typeof isTagsApiConfigured === 'function' && isTagsApiConfigured()) {
+        tagCounts = await fetchVenueTags(venueId);
+        if (loggedIn) {
+            myTags = await fetchMyTags(venueId);
         }
+    }
+
+    var hasAnyTags = Object.keys(tagCounts).length > 0;
+
+    VENUE_TAGS.forEach(function(tagDef) {
+        var count = tagCounts[tagDef.key] || 0;
+        var isMyTag = myTags.indexOf(tagDef.key) !== -1;
+
+        var pill = document.createElement('button');
+        pill.className = 'venue-tag-pill' + (isMyTag ? ' active' : '') + (!loggedIn ? ' readonly' : '');
+
+        var iconSpan = document.createElement('span');
+        iconSpan.className = 'tag-icon';
+        iconSpan.textContent = tagDef.icon;
+        pill.appendChild(iconSpan);
+
+        var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+        var labelSpan = document.createElement('span');
+        labelSpan.textContent = tagDef[lang] || tagDef.en;
+        pill.appendChild(labelSpan);
+
+        if (count > 0) {
+            var countSpan = document.createElement('span');
+            countSpan.className = 'tag-count';
+            countSpan.textContent = '(' + count + ')';
+            pill.appendChild(countSpan);
+        }
+
+        if (loggedIn && venueId) {
+            pill.addEventListener('click', function() {
+                _toggleTag(venueId, tagDef.key, pill, count, isMyTag);
+            });
+        } else if (!loggedIn) {
+            pill.addEventListener('click', function() {
+                if (typeof showAuthModal === 'function') {
+                    showAuthModal('login');
+                } else if (typeof showToast === 'function') {
+                    showToast(t('loginToTag'));
+                }
+            });
+        }
+
+        container.appendChild(pill);
+    });
+
+    // Hint text
+    if (hintEl) {
+        if (!loggedIn) {
+            hintEl.textContent = t('loginToTag');
+        } else if (!hasAnyTags) {
+            hintEl.textContent = t('noTagsYet');
+        } else {
+            hintEl.textContent = '';
+        }
+    }
+}
+
+/**
+ * Toggle a tag on/off
+ */
+async function _toggleTag(venueId, tagKey, pillEl, currentCount, wasActive) {
+    // Optimistic UI update
+    var isNowActive = !wasActive;
+    pillEl.classList.toggle('active');
+
+    var countSpan = pillEl.querySelector('.tag-count');
+    var newCount = isNowActive ? currentCount + 1 : Math.max(0, currentCount - 1);
+    if (newCount > 0) {
+        if (!countSpan) {
+            countSpan = document.createElement('span');
+            countSpan.className = 'tag-count';
+            pillEl.appendChild(countSpan);
+        }
+        countSpan.textContent = '(' + newCount + ')';
+    } else if (countSpan) {
+        countSpan.remove();
+    }
+
+    var success;
+    if (isNowActive) {
+        success = await addVenueTag(venueId, tagKey);
+    } else {
+        success = await removeVenueTag(venueId, tagKey);
+    }
+
+    if (success) {
+        if (typeof showToast === 'function') {
+            showToast(isNowActive ? t('tagAdded') : t('tagRemoved'));
+        }
+    } else {
+        // Revert on failure
+        pillEl.classList.toggle('active');
+        if (currentCount > 0) {
+            if (!countSpan) {
+                countSpan = document.createElement('span');
+                countSpan.className = 'tag-count';
+                pillEl.appendChild(countSpan);
+            }
+            countSpan.textContent = '(' + currentCount + ')';
+        } else if (countSpan) {
+            countSpan.remove();
+        }
+        if (typeof showToast === 'function') {
+            showToast(t('tagFailed'));
+        }
+    }
+}
+
+/**
+ * Render the memo section in the bottom sheet
+ */
+async function _renderSheetMemo(venueId) {
+    var section = document.getElementById('venueSheetMemoSection');
+    var textarea = document.getElementById('venueSheetMemo');
+    var saveBtn = document.getElementById('venueSheetSaveBtn');
+    if (!section) return;
+
+    var loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
+
+    if (!loggedIn) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    if (textarea) textarea.value = '';
+
+    // Load existing memo
+    if (venueId && typeof fetchMemo === 'function') {
+        var memo = await fetchMemo(venueId);
+        if (memo && textarea) textarea.value = memo;
+    }
+
+    // Save handler
+    if (saveBtn) {
+        saveBtn.onclick = async function() {
+            if (!textarea || !venueId) return;
+            saveBtn.disabled = true;
+
+            var success = await saveMemo(venueId, textarea.value);
+            saveBtn.disabled = false;
+
+            if (typeof showToast === 'function') {
+                showToast(success ? t('memoSaved') : t('memoSaveFailed'));
+            }
+        };
     }
 }
 

@@ -94,12 +94,38 @@ const translations = {
         cuisineLabel: 'Cuisine',
         areaLabel: 'Area',
 
-        // AI Smart Sort
+        // AI Smart Search
         aiSearchPlaceholder: 'What are you in the mood for?',
-        aiSearchBtn: 'Search',
+        aiSearchGo: 'Go',
+        aiSearchCancel: 'Cancel',
         aiSorting: 'Finding best matches...',
-        aiResetBtn: 'Reset order',
-        aiUnavailable: 'AI search is loading, please try again shortly.'
+        aiUnavailable: 'AI search is loading, please try again shortly.',
+        aiNoMatches: 'No matching venues found',
+        aiFilterLabel: 'AI',
+
+        // Puter disclaimer
+        puterDisclaimerTitle: 'AI Search Disclaimer',
+        puterDisclaimerText: 'AI search is powered by Puter.js. You may be asked to create a free Puter account (one-time only). No personal information from this app is shared — only restaurant names are sent for searching.',
+        puterDisclaimerContinue: 'Continue',
+        puterDisclaimerCancel: 'Cancel',
+
+        // Venue tags & memos
+        communityTags: 'Community Tags',
+        myNotes: 'My Notes',
+        memoPlaceholder: 'Add a personal note about this venue...',
+        saveMemo: 'Save',
+        memoSaved: 'Note saved!',
+        memoSaveFailed: 'Failed to save note',
+        tagAdded: 'Tag added!',
+        tagRemoved: 'Tag removed',
+        tagFailed: 'Failed to update tag',
+        loginToTag: 'Log in to add tags',
+        loginToMemo: 'Log in to save notes',
+        noTagsYet: 'No community tags yet. Be the first!',
+        tagCount: 'person',
+        tagCountPlural: 'people',
+        closeBtn: 'Close',
+        venueDetails: 'Venue Details'
     },
     ja: {
         // Index page
@@ -190,12 +216,38 @@ const translations = {
         cuisineLabel: '料理',
         areaLabel: 'エリア',
 
-        // AI Smart Sort
+        // AI Smart Search
         aiSearchPlaceholder: 'どんな気分？',
-        aiSearchBtn: '検索',
+        aiSearchGo: '検索',
+        aiSearchCancel: '戻る',
         aiSorting: 'おすすめを検索中...',
-        aiResetBtn: '順序をリセット',
-        aiUnavailable: 'AI検索を読み込み中です。しばらくしてからお試しください。'
+        aiUnavailable: 'AI検索を読み込み中です。しばらくしてからお試しください。',
+        aiNoMatches: '一致する店舗が見つかりません',
+        aiFilterLabel: 'AI',
+
+        // Puter disclaimer
+        puterDisclaimerTitle: 'AI検索について',
+        puterDisclaimerText: 'AI検索はPuter.jsを利用しています。無料のPuterアカウント作成が求められる場合があります（初回のみ）。このアプリの個人情報は一切共有されません。検索のためにレストラン名のみが送信されます。',
+        puterDisclaimerContinue: '続ける',
+        puterDisclaimerCancel: 'キャンセル',
+
+        // Venue tags & memos
+        communityTags: 'みんなのタグ',
+        myNotes: 'マイメモ',
+        memoPlaceholder: 'この店舗についてメモを追加...',
+        saveMemo: '保存',
+        memoSaved: 'メモを保存しました！',
+        memoSaveFailed: 'メモの保存に失敗しました',
+        tagAdded: 'タグを追加しました！',
+        tagRemoved: 'タグを削除しました',
+        tagFailed: 'タグの更新に失敗しました',
+        loginToTag: 'タグを追加するにはログインしてください',
+        loginToMemo: 'メモを保存するにはログインしてください',
+        noTagsYet: 'まだタグがありません。最初のタグを追加しましょう！',
+        tagCount: '人',
+        tagCountPlural: '人',
+        closeBtn: '閉じる',
+        venueDetails: '店舗詳細'
     }
 };
 

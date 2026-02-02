@@ -1221,109 +1221,387 @@ body.collections-body {
     font-weight: 600;
 }
 
+.filter-pill.filter-pill-ai.active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
 /* =============================================================================
-   AI Smart Sort Search Bar
+   Puter.js Disclaimer Modal
    ============================================================================= */
 
-.ai-search-section {
-    margin-bottom: 16px;
-}
-
-.ai-search-bar {
+.puter-disclaimer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
-    gap: 8px;
     align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
 }
 
-.ai-search-input {
-    flex: 1;
-    padding: 10px 16px;
-    background: #2a2a2a;
-    border: 1px solid #444;
-    border-radius: 20px;
+.puter-disclaimer-modal {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    width: 100%;
     color: #fff;
+}
+
+.puter-disclaimer-modal h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.puter-disclaimer-modal p {
+    margin: 0 0 20px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.puter-disclaimer-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.puter-disclaimer-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.puter-disclaimer-btn:hover {
+    opacity: 0.85;
+}
+
+.puter-disclaimer-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.puter-disclaimer-btn.continue {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+}
+
+/* =============================================================================
+   Venue Detail Bottom Sheet
+   ============================================================================= */
+
+.venue-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.venue-sheet-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.venue-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 75vh;
+    background: #1a1a2e;
+    border-radius: 20px 20px 0 0;
+    padding: 12px 20px 100px;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 9001;
+}
+
+.venue-sheet-overlay.active .venue-sheet {
+    transform: translateY(0);
+}
+
+.venue-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+}
+
+.venue-sheet-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.venue-sheet-close:hover {
+    color: #fff;
+}
+
+.venue-sheet-header {
+    margin-bottom: 20px;
+}
+
+.venue-sheet-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 6px 0;
+}
+
+.venue-sheet-meta {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+}
+
+.venue-sheet-section {
+    margin-bottom: 20px;
+}
+
+.venue-sheet-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 10px 0;
+}
+
+/* Tag pills in bottom sheet */
+.venue-sheet-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.venue-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.venue-tag-pill:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.venue-tag-pill.active {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: rgba(168, 85, 247, 0.5);
+    color: #d4a5ff;
+}
+
+.venue-tag-pill.readonly {
+    cursor: default;
+}
+
+.venue-tag-pill .tag-icon {
+    font-size: 14px;
+}
+
+.venue-tag-pill .tag-count {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.venue-sheet-tags-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 8px;
+}
+
+/* Memo section */
+.venue-sheet-memo {
+    width: 100%;
+    min-height: 80px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px 12px;
     font-size: 13px;
     font-family: inherit;
-    transition: border-color 0.2s ease;
-}
-
-.ai-search-input:focus {
-    border-color: #fff;
+    resize: vertical;
     outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
-.ai-search-input::placeholder {
-    color: #777;
+.venue-sheet-memo:focus {
+    border-color: rgba(168, 85, 247, 0.5);
 }
 
-.ai-search-btn {
-    padding: 10px 16px;
-    background: #fff;
-    color: #000;
+.venue-sheet-memo::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.venue-sheet-save-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
     border: none;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
+    transition: opacity 0.2s;
 }
 
-.ai-search-btn:hover {
-    background: #f0f0f0;
-    transform: scale(0.98);
+.venue-sheet-save-btn:hover {
+    opacity: 0.85;
 }
 
-.ai-search-btn:disabled {
-    opacity: 0.6;
+.venue-sheet-save-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.ai-search-btn.loading {
-    position: relative;
-    color: transparent;
+/* Small tag badges on venue cards */
+.venue-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
 }
 
-.ai-search-btn.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 14px;
-    height: 14px;
-    margin: -7px 0 0 -7px;
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-.ai-badge {
-    display: inline-block;
+.venue-card-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     padding: 2px 8px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 600;
+    background: rgba(168, 85, 247, 0.15);
     border-radius: 10px;
-    margin-left: 8px;
-    vertical-align: middle;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
 }
 
-.ai-reset-btn {
-    background: none;
-    border: none;
-    color: #666;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px 8px;
-    margin-top: 8px;
-    transition: color 0.2s;
+.venue-card-memo-preview {
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.ai-reset-btn:hover {
+/* =============================================================================
+   AI Search Inline (Genre Filter Row)
+   ============================================================================= */
+
+.filter-pill.filter-pill-ai {
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    color: rgba(168, 85, 247, 0.9);
+    background: transparent;
+}
+
+.filter-pill.filter-pill-ai:hover {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+}
+
+.ai-inline-input {
+    flex: 1;
+    padding: 6px 12px;
+    background: #2a2a2a;
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 18px;
     color: #fff;
+    font-size: 12px;
+    font-family: inherit;
+    min-width: 0;
+}
+
+.ai-inline-input:focus {
+    border-color: #a855f7;
+    outline: none;
+}
+
+.ai-inline-input::placeholder {
+    color: #777;
+}
+
+.ai-inline-cancel,
+.ai-inline-submit {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.ai-inline-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.ai-inline-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.ai-inline-submit {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+}
+
+.ai-inline-submit:hover {
+    opacity: 0.9;
+}
+
+.ai-inline-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-loading-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 18px;
+    color: #fff;
+    font-size: 12px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 /* Mobile adjustments for new elements */
@@ -1355,13 +1633,14 @@ body.collections-body {
         font-size: 11px;
     }
 
-    .ai-search-input {
-        font-size: 12px;
-        padding: 8px 14px;
+    .ai-inline-input {
+        font-size: 11px;
+        padding: 5px 10px;
     }
 
-    .ai-search-btn {
-        font-size: 12px;
-        padding: 8px 14px;
+    .ai-inline-cancel,
+    .ai-inline-submit {
+        font-size: 11px;
+        padding: 5px 10px;
     }
 }
