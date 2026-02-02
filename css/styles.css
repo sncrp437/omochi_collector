@@ -40,24 +40,25 @@ body {
 .language-selector {
     position: fixed;
     top: 20px;
-    left: 44px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 999;
     display: flex;
-    gap: 8px;
+    gap: 4px;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
-    padding: 6px;
+    padding: 4px;
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .lang-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background-color: transparent;
     color: rgba(255, 255, 255, 0.7);
     border: none;
     border-radius: 16px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -529,14 +530,13 @@ body.has-tab-bar .video-wrapper {
 
     .language-selector {
         top: 12px;
-        left: 36px;
-        padding: 4px;
-        gap: 6px;
+        padding: 3px;
+        gap: 3px;
     }
 
     .lang-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 5px 10px;
+        font-size: 11px;
     }
 
     .collection-selector {
