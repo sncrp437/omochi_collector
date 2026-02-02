@@ -40,7 +40,7 @@ body {
 .language-selector {
     position: fixed;
     top: 20px;
-    right: 20px;
+    left: 44px;
     z-index: 999;
     display: flex;
     gap: 8px;
@@ -529,7 +529,7 @@ body.has-tab-bar .video-wrapper {
 
     .language-selector {
         top: 12px;
-        right: 12px;
+        left: 36px;
         padding: 4px;
         gap: 6px;
     }
