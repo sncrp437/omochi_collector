@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="My saved restaurant collections">
-    <title>My Collections</title>
+    <meta name="description" content="omochi_collector - My Collections">
+    <title>omochi_collector - My Collections</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="collections-body">
@@ -19,6 +19,33 @@
             <a href="index.html" class="back-btn">&larr; <span data-i18n="backBtn">Back</span></a>
             <h1 data-i18n="myCollectionsTitle">My Collections</h1>
         </header>
+
+        <!-- AI Smart Sort Search Bar -->
+        <div class="ai-search-section" id="aiSearchSection" style="display:none;">
+            <div class="ai-search-bar">
+                <input type="text" class="ai-search-input" id="aiSearchInput" data-i18n="aiSearchPlaceholder" placeholder="What are you in the mood for?">
+                <button class="ai-search-btn" id="aiSearchBtn" data-i18n="aiSearchBtn">Search</button>
+            </div>
+            <button class="ai-reset-btn" id="aiResetBtn" style="display:none;" data-i18n="aiResetBtn">Reset order</button>
+        </div>
+
+        <!-- Genre Filter Pills -->
+        <div class="filter-section" id="genreFilterSection" style="display:none;">
+            <div class="filter-label" data-i18n="cuisineLabel">Cuisine</div>
+            <div class="filter-pills" id="genreFilterPills"></div>
+        </div>
+
+        <!-- Location Filter Pills -->
+        <div class="filter-section" id="locationFilterSection" style="display:none;">
+            <div class="filter-label" data-i18n="areaLabel">Area</div>
+            <div class="filter-pills" id="locationFilterPills"></div>
+        </div>
+
+        <!-- Register Prompt Banner (shown for non-logged-in users with local collections) -->
+        <div class="register-prompt-banner" id="registerPromptBanner" style="display:none;">
+            <p data-i18n="registerToKeepCollections">Register (free) to keep your collections permanently and access them from any device.</p>
+            <button class="auth-btn auth-btn-primary" id="registerPromptBtn" data-i18n="registerBtn">Register</button>
+        </div>
 
         <!-- Loading state -->
         <div class="collections-loading" id="collectionsLoading">
@@ -45,6 +72,14 @@
         <!-- Logout link (shown when logged in) -->
         <div style="text-align:center; margin-top:24px;">
             <button class="logout-link" id="logoutBtn" style="display:none;" data-i18n="logoutBtn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer">
+        <div class="toast" id="toast">
+            <span class="toast-icon">&#10003;</span>
+            <span class="toast-message" id="toastMessage"></span>
         </div>
     </div>
 
@@ -103,9 +138,12 @@
     </nav>
 
     <!-- Scripts -->
+    <script src="https://js.puter.com/v2/"></script>
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/local-collections.js"></script>
+    <script src="js/ai-sort.js"></script>
     <script src="js/my-collections.js"></script>
 </body>
 </html>

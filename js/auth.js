@@ -2,8 +2,8 @@
 // Authentication Module - Omochi Backend Integration
 // =============================================================================
 
-// Pending collect action (set when user clicks Collect before login)
-window._pendingCollect = null;
+// Post-login sync flag
+window._pendingCollect = null; // kept for backwards compatibility with my-collections.js override
 
 /**
  * Check if user is currently logged in
@@ -282,16 +282,18 @@ async function _handleRegister() {
 }
 
 /**
- * After successful login/register, handle any pending collect action
+ * After successful login/register, sync local collections to API
  */
 async function _handlePendingCollect() {
-    if (window._pendingCollect && typeof collectVenue === 'function') {
-        const video = window._pendingCollect;
-        window._pendingCollect = null;
-        // Find the collect button for this video if visible
-        const btn = document.querySelector(`.collect-btn[data-video-id="${video.id}"]`);
-        await collectVenue(video, btn);
+    // Sync any unsynced local collections to the API
+    if (typeof syncLocalCollectionsToApi === 'function') {
+        await syncLocalCollectionsToApi();
     }
+    // Update collect buttons to reflect synced state
+    var collectBtns = document.querySelectorAll('.collect-btn.collected');
+    collectBtns.forEach(function(btn) {
+        // Already showing collected state, no change needed
+    });
 }
 
 /**

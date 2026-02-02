@@ -81,7 +81,25 @@ const translations = {
         collectionsTab: 'Collections',
 
         // Auth status
-        loggedIn: 'Logged in!'
+        loggedIn: 'Logged in!',
+
+        // Toast / Local collections
+        collectSaved: 'Saved to collection!',
+        alreadyCollected: 'Already in your collection',
+        registerToKeepCollections: 'Register (free) to keep your collections permanently and access them from any device.',
+
+        // Collection filters
+        allGenres: 'All',
+        allLocations: 'All',
+        cuisineLabel: 'Cuisine',
+        areaLabel: 'Area',
+
+        // AI Smart Sort
+        aiSearchPlaceholder: 'What are you in the mood for?',
+        aiSearchBtn: 'Search',
+        aiSorting: 'Finding best matches...',
+        aiResetBtn: 'Reset order',
+        aiUnavailable: 'AI search is loading, please try again shortly.'
     },
     ja: {
         // Index page
@@ -159,7 +177,25 @@ const translations = {
         collectionsTab: 'コレクション',
 
         // Auth status
-        loggedIn: 'ログインしました！'
+        loggedIn: 'ログインしました！',
+
+        // Toast / Local collections
+        collectSaved: 'コレクションに保存しました！',
+        alreadyCollected: 'すでにコレクションに追加済みです',
+        registerToKeepCollections: '無料登録でコレクションを永久保存。どのデバイスからでもアクセスできます。',
+
+        // Collection filters
+        allGenres: 'すべて',
+        allLocations: 'すべて',
+        cuisineLabel: '料理',
+        areaLabel: 'エリア',
+
+        // AI Smart Sort
+        aiSearchPlaceholder: 'どんな気分？',
+        aiSearchBtn: '検索',
+        aiSorting: 'おすすめを検索中...',
+        aiResetBtn: '順序をリセット',
+        aiUnavailable: 'AI検索を読み込み中です。しばらくしてからお試しください。'
     }
 };
 
@@ -224,10 +260,14 @@ function updateTranslations() {
     // Update video captions based on language
     updateVideoCaptions();
 
-    // Update collect button text (dynamically created)
+    // Update collect button text (dynamically created) - preserve collected state
     const collectBtns = document.querySelectorAll('.collect-btn');
     collectBtns.forEach(btn => {
-        btn.textContent = t('collectBtn');
+        if (btn.classList.contains('collected')) {
+            btn.textContent = t('collected');
+        } else {
+            btn.textContent = t('collectBtn');
+        }
     });
 }
 

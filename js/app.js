@@ -162,8 +162,15 @@ function createOverlay(video) {
     // Collect button
     const collectBtn = document.createElement('button');
     collectBtn.className = 'collect-btn';
-    collectBtn.textContent = t('collectBtn');
     collectBtn.dataset.videoId = video.id || '';
+
+    // Check if already collected locally
+    if (typeof isLocallyCollected === 'function' && video.id && isLocallyCollected(video.id)) {
+        collectBtn.textContent = t('collected') || 'Collected!';
+        collectBtn.classList.add('collected');
+    } else {
+        collectBtn.textContent = t('collectBtn');
+    }
 
     collectBtn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -173,24 +180,34 @@ function createOverlay(video) {
             logCollectEvent(video.id);
         }
 
-        // Check if video has a venue UUID for API integration
-        if (!video.venue_uuid) {
-            // Fallback: navigate to collect.html if no venue UUID mapped
-            window.location.href = 'collect.html';
-            return;
-        }
-
-        // Check auth
-        if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
-            window._pendingCollect = video;
-            if (typeof showAuthModal === 'function') {
-                showAuthModal('login');
+        // Save to localStorage immediately (no auth required)
+        if (typeof saveLocalCollection === 'function') {
+            var isNew = saveLocalCollection(video);
+            if (isNew) {
+                if (typeof showToast === 'function') {
+                    showToast(t('collectSaved'));
+                }
+                collectBtn.textContent = t('collected') || 'Collected!';
+                collectBtn.classList.add('collected');
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(t('alreadyCollected'));
+                }
+                return;
             }
-            return;
         }
 
-        // Call API to save venue
-        await collectVenue(video, collectBtn);
+        // If logged in and has venue_uuid, also sync to API silently
+        if (video.venue_uuid && typeof isLoggedIn === 'function' && isLoggedIn()) {
+            try {
+                await apiPost('/api/stocked-venues/', { venue: video.venue_uuid });
+                if (typeof markLocalCollectionSynced === 'function') {
+                    markLocalCollectionSynced(video.id);
+                }
+            } catch (err) {
+                console.warn('API sync failed, will retry later:', err);
+            }
+        }
     });
 
     overlay.appendChild(caption);
