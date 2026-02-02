@@ -1,4 +1,0 @@
-User-agent: Mediapartners-Google
-Allow: /
-
-Sitemap: http://localhost:8000/sitemap.xml

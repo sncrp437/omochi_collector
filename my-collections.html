@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="My saved restaurant collections">
+    <title>My Collections</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="collections-body">
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en" data-i18n="english">English</button>
+        <button class="lang-btn" data-lang="ja" data-i18n="japanese">日本語</button>
+    </div>
+
+    <div class="my-collections-page">
+        <header class="collection-header">
+            <a href="index.html" class="back-btn">&larr; <span data-i18n="backBtn">Back</span></a>
+            <h1 data-i18n="myCollectionsTitle">My Collections</h1>
+        </header>
+
+        <!-- Loading state -->
+        <div class="collections-loading" id="collectionsLoading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Auth required state -->
+        <div class="collections-auth-required" id="collectionsAuthRequired" style="display:none;">
+            <p data-i18n="loginToViewCollections">Please log in to view your saved venues.</p>
+            <button class="auth-btn auth-btn-primary" id="collectionsLoginBtn" data-i18n="loginBtn">Log In</button>
+        </div>
+
+        <!-- Empty state -->
+        <div class="collections-empty" id="collectionsEmpty" style="display:none;">
+            <p data-i18n="noSavedVenues">You haven't saved any venues yet.</p>
+            <a href="index.html" class="btn-primary" data-i18n="discoverVenues">Discover Venues</a>
+        </div>
+
+        <!-- Venue cards list -->
+        <div class="venue-cards-list" id="venueCardsList" style="display:none;">
+            <!-- Cards rendered dynamically -->
+        </div>
+
+        <!-- Logout link (shown when logged in) -->
+        <div style="text-align:center; margin-top:24px;">
+            <button class="logout-link" id="logoutBtn" style="display:none;" data-i18n="logoutBtn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-overlay" id="authModalOverlay"></div>
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" id="authModalClose">&times;</button>
+
+            <!-- Login Form -->
+            <div class="auth-form" id="loginForm">
+                <h2 data-i18n="loginTitle">Log In</h2>
+                <div class="auth-error" id="loginError"></div>
+                <input type="email" id="loginEmail" data-i18n="emailPlaceholder" placeholder="Email" required>
+                <input type="password" id="loginPassword" data-i18n="passwordPlaceholder" placeholder="Password" required>
+                <button class="auth-btn auth-btn-primary" id="loginSubmit" data-i18n="loginBtn">Log In</button>
+                <p class="auth-toggle">
+                    <span data-i18n="noAccount">Don't have an account?</span>
+                    <a href="#" id="showRegister" data-i18n="registerBtn">Register</a>
+                </p>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm" style="display:none;">
+                <h2 data-i18n="registerTitle">Create Account</h2>
+                <div class="auth-error" id="registerError"></div>
+                <input type="text" id="regFirstName" data-i18n="firstNamePlaceholder" placeholder="First Name" required>
+                <input type="text" id="regLastName" data-i18n="lastNamePlaceholder" placeholder="Last Name">
+                <input type="email" id="regEmail" data-i18n="emailPlaceholder" placeholder="Email" required>
+                <input type="tel" id="regPhone" data-i18n="phonePlaceholder" placeholder="Phone Number" required>
+                <input type="password" id="regPassword" data-i18n="passwordPlaceholder" placeholder="Password (6-12 chars)" required>
+                <input type="password" id="regPasswordConfirm" data-i18n="passwordConfirmPlaceholder" placeholder="Confirm Password" required>
+                <div class="auth-form-divider">Address</div>
+                <input type="text" id="regPrefecture" data-i18n="prefecturePlaceholder" placeholder="Prefecture" required>
+                <input type="text" id="regCity" data-i18n="cityPlaceholder" placeholder="City" required>
+                <input type="text" id="regAddressDetail" data-i18n="addressDetailPlaceholder" placeholder="Address Detail" required>
+                <button class="auth-btn auth-btn-primary" id="registerSubmit" data-i18n="registerBtn">Register</button>
+                <p class="auth-toggle">
+                    <span data-i18n="hasAccount">Already have an account?</span>
+                    <a href="#" id="showLogin" data-i18n="loginBtn">Log In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="bottom-tab-bar">
+        <a href="index.html" class="tab-item">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label" data-i18n="homeTab">Home</span>
+        </a>
+        <a href="my-collections.html" class="tab-item active">
+            <span class="tab-icon">📋</span>
+            <span class="tab-label" data-i18n="collectionsTab">Collections</span>
+        </a>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/my-collections.js"></script>
+</body>
+</html>

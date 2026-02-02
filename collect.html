@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Your Collection">
+    <title>Collection</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en" data-i18n="english">English</button>
+        <button class="lang-btn" data-lang="ja" data-i18n="japanese">日本語</button>
+    </div>
+
+    <div class="collection-page">
+        <header class="collection-header">
+            <a href="index.html" class="back-btn">&larr; <span data-i18n="backBtn">Back</span></a>
+            <h1 data-i18n="collectionTitle">Your Collection</h1>
+        </header>
+
+        <div class="collection-content">
+            <div class="success-message">
+                <div class="success-icon">✓</div>
+                <h2 data-i18n="collectedTitle">Item Collected!</h2>
+                <p data-i18n="collectedMessage">Your item has been successfully added to your collection.</p>
+            </div>
+
+            <div class="collection-actions">
+                <a href="index.html" class="btn-primary" data-i18n="continueBrowsing">Continue Browsing</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+</body>
+</html>

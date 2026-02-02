@@ -1,1 +1,0 @@
-# Placeholder for any future non-API views for the areas app. 

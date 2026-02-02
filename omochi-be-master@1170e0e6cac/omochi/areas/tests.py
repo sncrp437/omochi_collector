@@ -1,1 +1,0 @@
-# Placeholder for tests for the areas app. 

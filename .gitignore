@@ -1,0 +1,18 @@
+# Omochi backend/frontend source (reference copies - not for public)
+omochi-be-master@1170e0e6cac/
+omochi-fe-master@86f1b3461ee/
+
+# Internal docs with API URLs and dev details
+STANDALONE_FRONTEND_API_NOTES.md
+ARCHITECTURE_NOTES.md
+\# AWS App Integration Strategy.md
+DEV_API_TESTING_REPORT.md
+CLAUDE.md
+cors-test.html
+
+# Temp/junk files
+UsersMiningBaseomochi_source_codetemp_bundle.js
+nul
+
+# Claude internal
+.claude/

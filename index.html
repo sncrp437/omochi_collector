@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Instagram Reels style video player">
+    <title>Reels Style Player</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="has-tab-bar">
+    <!-- Info Button -->
+    <button class="info-btn" id="infoBtn" aria-label="Information">ℹ️</button>
+
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en" data-i18n="english">English</button>
+        <button class="lang-btn" data-lang="ja" data-i18n="japanese">日本語</button>
+    </div>
+
+    <!-- Collection Selector -->
+    <div class="collection-selector" id="collectionSelector">
+        <!-- Collection pills will be dynamically inserted here -->
+    </div>
+
+    <!-- Main video feed container -->
+    <div class="reels-container" id="reelsContainer">
+        <!-- Loading indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Video items will be dynamically inserted here -->
+    </div>
+
+    <!-- Authentication Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-overlay" id="authModalOverlay"></div>
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" id="authModalClose">&times;</button>
+
+            <!-- Login Form -->
+            <div class="auth-form" id="loginForm">
+                <h2 data-i18n="loginTitle">Log In</h2>
+                <div class="auth-error" id="loginError"></div>
+                <input type="email" id="loginEmail" data-i18n="emailPlaceholder" placeholder="Email" required>
+                <input type="password" id="loginPassword" data-i18n="passwordPlaceholder" placeholder="Password" required>
+                <button class="auth-btn auth-btn-primary" id="loginSubmit" data-i18n="loginBtn">Log In</button>
+                <p class="auth-toggle">
+                    <span data-i18n="noAccount">Don't have an account?</span>
+                    <a href="#" id="showRegister" data-i18n="registerBtn">Register</a>
+                </p>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm" style="display:none;">
+                <h2 data-i18n="registerTitle">Create Account</h2>
+                <div class="auth-error" id="registerError"></div>
+                <input type="text" id="regFirstName" data-i18n="firstNamePlaceholder" placeholder="First Name" required>
+                <input type="text" id="regLastName" data-i18n="lastNamePlaceholder" placeholder="Last Name">
+                <input type="email" id="regEmail" data-i18n="emailPlaceholder" placeholder="Email" required>
+                <input type="tel" id="regPhone" data-i18n="phonePlaceholder" placeholder="Phone Number" required>
+                <input type="password" id="regPassword" data-i18n="passwordPlaceholder" placeholder="Password (6-12 chars)" required>
+                <input type="password" id="regPasswordConfirm" data-i18n="passwordConfirmPlaceholder" placeholder="Confirm Password" required>
+                <div class="auth-form-divider">Address</div>
+                <input type="text" id="regPrefecture" data-i18n="prefecturePlaceholder" placeholder="Prefecture" required>
+                <input type="text" id="regCity" data-i18n="cityPlaceholder" placeholder="City" required>
+                <input type="text" id="regAddressDetail" data-i18n="addressDetailPlaceholder" placeholder="Address Detail" required>
+                <button class="auth-btn auth-btn-primary" id="registerSubmit" data-i18n="registerBtn">Register</button>
+                <p class="auth-toggle">
+                    <span data-i18n="hasAccount">Already have an account?</span>
+                    <a href="#" id="showLogin" data-i18n="loginBtn">Log In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div class="auth-modal" id="welcomeModal">
+        <div class="auth-modal-overlay" id="welcomeModalOverlay"></div>
+        <div class="auth-modal-content welcome-modal-content">
+            <button class="auth-modal-close" id="welcomeModalClose">&times;</button>
+
+            <div class="welcome-icon">🍜</div>
+            <h2 data-i18n="welcomeTitle">Welcome to Food Discovery</h2>
+
+            <div class="welcome-section">
+                <h3 data-i18n="welcomeAboutTitle">About</h3>
+                <p data-i18n="welcomeAboutText">Discover amazing restaurants and food venues through vertical video stories.</p>
+            </div>
+
+            <div class="welcome-section">
+                <h3 data-i18n="welcomeHowToTitle">How to Use</h3>
+                <ul class="welcome-list">
+                    <li data-i18n="welcomeSwipe">Swipe up/down to browse videos</li>
+                    <li data-i18n="welcomeCollect">Tap "Collect" to save favorites</li>
+                    <li data-i18n="welcomeCollections">Select collections at the top to filter</li>
+                    <li data-i18n="welcomeLanguage">Switch languages in the top right</li>
+                </ul>
+            </div>
+
+            <div class="welcome-section">
+                <p class="welcome-current-collection">
+                    <span data-i18n="welcomeNowShowing">Now showing:</span>
+                    <strong id="welcomeCollectionName">All Videos</strong>
+                </p>
+            </div>
+
+            <button class="auth-btn auth-btn-primary" id="welcomeGetStarted" data-i18n="welcomeGetStarted">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="bottom-tab-bar">
+        <a href="index.html" class="tab-item active">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label" data-i18n="homeTab">Home</span>
+        </a>
+        <a href="my-collections.html" class="tab-item">
+            <span class="tab-icon">📋</span>
+            <span class="tab-label" data-i18n="collectionsTab">Collections</span>
+        </a>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/collections.js"></script>
+    <script src="js/welcome.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
