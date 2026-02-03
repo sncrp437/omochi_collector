@@ -42,6 +42,11 @@ async function init() {
             filteredVideos = await initCollections(videos, rawData.collections);
         }
 
+        // Initialize location filter (if available)
+        if (typeof initLocationFilter === 'function') {
+            initLocationFilter(videos);
+        }
+
         // Initialize category selector (if available)
         if (typeof initCategorySelector === 'function') {
             initCategorySelector();

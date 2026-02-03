@@ -158,10 +158,14 @@ function _openCategoryStrip() {
     var trigger = document.getElementById('categoryTrigger');
     var strip = document.getElementById('categoryStrip');
     var overlay = document.getElementById('categoryStripOverlay');
+    var collectionSel = document.getElementById('collectionSelector');
+    var locationSel = document.getElementById('locationSelector');
 
     if (trigger) trigger.classList.add('active');
     if (strip) strip.classList.add('active');
     if (overlay) overlay.classList.add('active');
+    if (collectionSel) collectionSel.classList.add('strip-open');
+    if (locationSel) locationSel.classList.add('strip-open');
 }
 
 function _closeCategoryStrip() {
@@ -169,10 +173,14 @@ function _closeCategoryStrip() {
     var trigger = document.getElementById('categoryTrigger');
     var strip = document.getElementById('categoryStrip');
     var overlay = document.getElementById('categoryStripOverlay');
+    var collectionSel = document.getElementById('collectionSelector');
+    var locationSel = document.getElementById('locationSelector');
 
     if (trigger) trigger.classList.remove('active');
     if (strip) strip.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
+    if (collectionSel) collectionSel.classList.remove('strip-open');
+    if (locationSel) locationSel.classList.remove('strip-open');
 }
 
 /**

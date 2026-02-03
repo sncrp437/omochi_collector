@@ -61,6 +61,8 @@ function getSampleData() {
                 venue_name: 'Sample Ramen House',
                 genre: 'Japanese',
                 address: '123 Food St, Sample City',
+                nearest_station: 'Shibuya',
+                nearest_station_en: 'Shibuya',
                 tags: 'ramen,japanese,noodles',
                 collection: 'tokyo-ramen,trending',
                 priority: 5
@@ -73,6 +75,8 @@ function getSampleData() {
                 venue_name: 'Sample Pizza Co',
                 genre: 'Italian',
                 address: '456 Main Ave, Sample City',
+                nearest_station: 'Roppongi',
+                nearest_station_en: 'Roppongi',
                 tags: 'pizza,italian,woodfired',
                 collection: 'best-pizza',
                 priority: 5
@@ -85,6 +89,8 @@ function getSampleData() {
                 venue_name: 'Sample Sushi Bar',
                 genre: 'Japanese',
                 address: '789 Ocean Blvd, Sample City',
+                nearest_station: 'Shibuya',
+                nearest_station_en: 'Shibuya',
                 tags: 'sushi,japanese,fresh',
                 collection: 'trending',
                 priority: 5

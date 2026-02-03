@@ -25,6 +25,7 @@ const translations = {
 
         // Collections
         allVideos: 'All Videos',
+        allAreas: 'All',
         noVideosInCollection: 'No videos in this collection',
 
         // Welcome Modal
@@ -174,6 +175,7 @@ const translations = {
 
         // Collections
         allVideos: 'すべての動画',
+        allAreas: 'すべて',
         noVideosInCollection: 'このコレクションには動画がありません',
 
         // Welcome Modal

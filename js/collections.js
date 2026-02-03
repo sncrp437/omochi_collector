@@ -6,6 +6,7 @@
 let allVideos = [];
 let allCollections = [];
 let selectedCollection = 'all';
+let selectedLocation = 'all';
 
 /**
  * Initialize collections system
@@ -115,13 +116,21 @@ function updateActiveCollection() {
  * @returns {Array} Filtered videos
  */
 function filterVideosByCollection(collectionId) {
-    if (collectionId === 'all') return allVideos;
+    let result = allVideos;
 
-    return allVideos.filter(video => {
-        if (!video.collection) return false;
-        const collections = video.collection.split(',').map(c => c.trim());
-        return collections.includes(collectionId);
-    });
+    if (collectionId !== 'all') {
+        result = result.filter(video => {
+            if (!video.collection) return false;
+            const collections = video.collection.split(',').map(c => c.trim());
+            return collections.includes(collectionId);
+        });
+    }
+
+    if (selectedLocation !== 'all') {
+        result = result.filter(video => video.nearest_station === selectedLocation);
+    }
+
+    return result;
 }
 
 /**
@@ -219,4 +228,80 @@ function updateCollectionNames() {
             nameElement.textContent = name;
         }
     });
+}
+
+/**
+ * Initialize location filter from video data
+ * @param {Array} videosData - Array of video objects
+ */
+function initLocationFilter(videosData) {
+    const container = document.getElementById('locationSelector');
+    if (!container) return;
+
+    // Extract unique nearest_station values
+    const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+    const stations = {};
+    videosData.forEach(video => {
+        const station = (currentLang === 'en' && video.nearest_station_en)
+            ? video.nearest_station_en
+            : (video.nearest_station || '');
+        if (station) {
+            stations[station] = (stations[station] || 0) + 1;
+        }
+    });
+
+    const stationNames = Object.keys(stations).sort();
+    if (stationNames.length === 0) return;
+
+    // Restore selection
+    selectedLocation = localStorage.getItem('selectedLocation') || 'all';
+
+    // Render pills
+    container.innerHTML = '';
+
+    // "All" pill
+    const allLabel = typeof t === 'function' ? t('allAreas') : 'All';
+    const allPill = document.createElement('button');
+    allPill.className = 'collection-pill' + (selectedLocation === 'all' ? ' active' : '');
+    allPill.innerHTML = `<span class="collection-pill-name">${allLabel}</span>`;
+    allPill.addEventListener('click', function() { selectLocation('all'); });
+    container.appendChild(allPill);
+
+    // Station pills
+    stationNames.forEach(function(station) {
+        const pill = document.createElement('button');
+        pill.className = 'collection-pill' + (selectedLocation === station ? ' active' : '');
+        pill.innerHTML = `<span class="collection-pill-name">${station}</span> <span class="collection-pill-count">(${stations[station]})</span>`;
+        pill.addEventListener('click', function() { selectLocation(station); });
+        container.appendChild(pill);
+    });
+
+    container.style.display = '';
+}
+
+/**
+ * Select a location and re-filter feed
+ * @param {string} station - Station name or 'all'
+ */
+function selectLocation(station) {
+    selectedLocation = station;
+    localStorage.setItem('selectedLocation', station);
+
+    // Update active pill
+    const container = document.getElementById('locationSelector');
+    if (container) {
+        container.querySelectorAll('.collection-pill').forEach(function(pill) {
+            const pillName = pill.querySelector('.collection-pill-name');
+            const allLabel = typeof t === 'function' ? t('allAreas') : 'All';
+            const pillStation = pillName ? pillName.textContent : '';
+            const isAll = pillStation === allLabel;
+            if ((station === 'all' && isAll) || station === pillStation) {
+                pill.classList.add('active');
+            } else {
+                pill.classList.remove('active');
+            }
+        });
+    }
+
+    filterAndRerenderFeed(selectedCollection);
 }
