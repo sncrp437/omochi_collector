@@ -143,7 +143,16 @@ const translations = {
         memoPrivateHint: 'Only you can see this',
         memoPlaceholderFriendly: 'What did you think? Add your personal note...',
         memoLoginPrompt: 'Tap to add your personal note',
-        memoLoginHint: 'Log in to save private notes'
+        memoLoginHint: 'Log in to save private notes',
+
+        // Category selector
+        categoryFood: 'Food',
+        categoryNightlife: 'Nightlife',
+        categoryEntertainment: 'Entertainment',
+        categoryShopping: 'Shopping',
+        categoryBeauty: 'Beauty',
+        categoryTravel: 'Travel',
+        categoryComingSoon: 'Coming soon!'
     },
     ja: {
         // Index page
@@ -283,7 +292,16 @@ const translations = {
         memoPrivateHint: '自分だけに見えます',
         memoPlaceholderFriendly: 'どうでしたか？メモを追加...',
         memoLoginPrompt: 'タップしてメモを追加',
-        memoLoginHint: 'ログインしてメモを保存'
+        memoLoginHint: 'ログインしてメモを保存',
+
+        // Category selector
+        categoryFood: '飲食',
+        categoryNightlife: 'ナイトライフ',
+        categoryEntertainment: 'エンタメ',
+        categoryShopping: 'ショッピング',
+        categoryBeauty: '美容',
+        categoryTravel: '旅行',
+        categoryComingSoon: '近日公開！'
     }
 };
 
@@ -321,6 +339,11 @@ function setLanguage(lang) {
     // Update collection pill names (if collections exist)
     if (typeof updateCollectionNames === 'function') {
         updateCollectionNames();
+    }
+
+    // Update category names (if category selector exists)
+    if (typeof updateCategoryNames === 'function') {
+        updateCategoryNames();
     }
 
     // Update language selector state

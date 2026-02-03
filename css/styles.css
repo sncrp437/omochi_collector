@@ -80,10 +80,172 @@ body {
     background-color: #f0f0f0;
 }
 
+/* Category Selector - Trigger Button */
+.category-trigger {
+    position: fixed;
+    top: 52px;
+    left: 16px;
+    z-index: 997;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(26, 26, 26, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.category-trigger:active {
+    background: rgba(40, 40, 40, 0.95);
+    transform: scale(0.97);
+}
+
+.category-trigger-icon {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.category-trigger-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.category-trigger-label {
+    white-space: nowrap;
+}
+
+.category-trigger-arrow {
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+    opacity: 0.6;
+}
+
+.category-trigger.active .category-trigger-arrow {
+    transform: rotate(180deg);
+}
+
+/* Category Strip - Overlay */
+.category-strip-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 996;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.category-strip-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Category Strip - Container */
+.category-strip {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 0;
+    z-index: 997;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.category-strip.active {
+    max-height: 100px;
+    opacity: 1;
+}
+
+.category-strip-inner {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.category-strip-inner::-webkit-scrollbar {
+    display: none;
+}
+
+/* Category Option Pills */
+.category-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 72px;
+}
+
+.category-option:active {
+    transform: scale(0.95);
+}
+
+.category-option.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: 600;
+}
+
+.category-option.coming-soon {
+    opacity: 0.45;
+}
+
+.category-option.coming-soon:active {
+    transform: scale(0.95);
+}
+
+.category-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-option-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.category-option-label {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+}
+
 /* Collection Selector */
 .collection-selector {
     position: fixed;
-    top: 70px;
+    top: 88px;
     left: 0;
     right: 0;
     z-index: 998;
@@ -610,8 +772,49 @@ body.has-tab-bar .video-wrapper {
         font-size: 11px;
     }
 
+    .category-trigger {
+        top: 44px;
+        left: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .category-trigger-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .category-strip {
+        top: 44px;
+    }
+
+    .category-strip-inner {
+        gap: 8px;
+        padding: 12px 12px;
+    }
+
+    .category-strip.active {
+        max-height: 88px;
+    }
+
+    .category-option {
+        padding: 7px 12px;
+        gap: 4px;
+        min-width: 64px;
+        border-radius: 12px;
+    }
+
+    .category-option-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .category-option-label {
+        font-size: 9px;
+    }
+
     .collection-selector {
-        top: 60px;
+        top: 76px;
         padding: 10px 12px;
     }
 

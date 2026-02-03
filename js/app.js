@@ -42,6 +42,11 @@ async function init() {
             filteredVideos = await initCollections(videos, rawData.collections);
         }
 
+        // Initialize category selector (if available)
+        if (typeof initCategorySelector === 'function') {
+            initCategorySelector();
+        }
+
         // Render video feed with filtered videos
         renderVideoFeed(filteredVideos);
 
