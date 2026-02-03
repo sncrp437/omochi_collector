@@ -299,7 +299,9 @@ body.has-tab-bar .video-wrapper {
 
 /* Collect button */
 .collect-btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 12px 24px;
     background-color: #fff;
     color: #000;
@@ -311,6 +313,10 @@ body.has-tab-bar .video-wrapper {
     text-decoration: none;
     transition: transform 0.2s ease, background-color 0.2s ease;
     box-shadow: 0 2px 8px rgba(255,255,255,0.2);
+}
+
+.collect-btn svg {
+    flex-shrink: 0;
 }
 
 .collect-btn:hover,
@@ -979,6 +985,14 @@ body.has-tab-bar .video-wrapper {
 .tab-icon {
     font-size: 22px;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-icon svg {
+    width: 22px;
+    height: 22px;
 }
 
 .tab-label {

@@ -352,9 +352,9 @@ function updateTranslations() {
     const collectBtns = document.querySelectorAll('.collect-btn');
     collectBtns.forEach(btn => {
         if (btn.classList.contains('collected')) {
-            btn.textContent = t('collected');
+            btn.innerHTML = (typeof BOOKMARK_FILLED !== 'undefined' ? BOOKMARK_FILLED : '') + ' ' + t('collected');
         } else {
-            btn.textContent = t('collectBtn');
+            btn.innerHTML = (typeof BOOKMARK_OUTLINE !== 'undefined' ? BOOKMARK_OUTLINE : '') + ' ' + t('collectBtn');
         }
     });
 }

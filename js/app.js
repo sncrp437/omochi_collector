@@ -2,6 +2,10 @@
  * Main application logic for Instagram Reels-style video player
  */
 
+// Bookmark SVG icons
+const BOOKMARK_OUTLINE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+const BOOKMARK_FILLED = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+
 // Global state
 let videos = [];
 let currentVideoIndex = 0;
@@ -187,10 +191,10 @@ function createOverlay(video) {
 
     // Check if already collected locally
     if (typeof isLocallyCollected === 'function' && video.id && isLocallyCollected(video.id)) {
-        collectBtn.textContent = t('collected') || 'Collected!';
+        collectBtn.innerHTML = BOOKMARK_FILLED + ' ' + (t('collected') || 'Collected!');
         collectBtn.classList.add('collected');
     } else {
-        collectBtn.textContent = t('collectBtn');
+        collectBtn.innerHTML = BOOKMARK_OUTLINE + ' ' + t('collectBtn');
     }
 
     collectBtn.addEventListener('click', async (e) => {
@@ -208,7 +212,7 @@ function createOverlay(video) {
                 if (typeof showToast === 'function') {
                     showToast(t('collectSaved'));
                 }
-                collectBtn.textContent = t('collected') || 'Collected!';
+                collectBtn.innerHTML = BOOKMARK_FILLED + ' ' + (t('collected') || 'Collected!');
                 collectBtn.classList.add('collected');
             } else {
                 if (typeof showToast === 'function') {
