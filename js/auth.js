@@ -315,7 +315,7 @@ function _showAuthSuccess(onComplete) {
     const successEl = document.createElement('div');
     successEl.className = 'auth-success-overlay';
     successEl.innerHTML = `
-        <div class="auth-success-icon">✓</div>
+        <div class="auth-success-icon"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
         <div class="auth-success-text">${t('loggedIn') || 'Logged in!'}</div>
     `;
     modalContent.appendChild(successEl);

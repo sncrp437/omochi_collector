@@ -95,7 +95,7 @@ function getSampleData() {
                 collection_id: 'all',
                 name_en: 'All Videos',
                 name_ja: 'すべての動画',
-                icon: '🎬',
+                icon: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>',
                 display_order: 0,
                 active: true
             },
@@ -103,7 +103,7 @@ function getSampleData() {
                 collection_id: 'tokyo-ramen',
                 name_en: 'Tokyo Ramen',
                 name_ja: '東京ラーメン',
-                icon: '🍜',
+                icon: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2l1.578 4.657A2 2 0 0 0 6.487 8H17.513a2 2 0 0 0 1.909-1.343L21 2"/><path d="M12 12v6"/><path d="M8 22h8"/><path d="M12 18c-4.418 0-8-2.239-8-5V8h16v5c0 2.761-3.582 5-8 5z"/></svg>',
                 display_order: 1,
                 active: true
             },
@@ -111,7 +111,7 @@ function getSampleData() {
                 collection_id: 'best-pizza',
                 name_en: 'Best Pizza',
                 name_ja: '最高のピザ',
-                icon: '🍕',
+                icon: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 19.5h20L12 2z"/><circle cx="10" cy="13" r="1"/><circle cx="14" cy="11" r="1"/><circle cx="12" cy="16" r="1"/></svg>',
                 display_order: 2,
                 active: true
             },
@@ -119,7 +119,7 @@ function getSampleData() {
                 collection_id: 'trending',
                 name_en: 'Trending Now',
                 name_ja: 'トレンド',
-                icon: '🔥',
+                icon: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
                 display_order: 3,
                 active: true
             }

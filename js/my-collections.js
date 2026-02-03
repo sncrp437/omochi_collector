@@ -240,14 +240,14 @@ function _createUnifiedCard(item) {
             this.style.display = 'none';
             var placeholder = document.createElement('span');
             placeholder.className = 'venue-card-logo-placeholder';
-            placeholder.textContent = '\uD83C\uDF7D\uFE0F';
+            placeholder.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2l1.578 4.657A2 2 0 0 0 6.487 8H17.513a2 2 0 0 0 1.909-1.343L21 2"/><path d="M12 12v6"/><path d="M8 22h8"/><path d="M12 18c-4.418 0-8-2.239-8-5V8h16v5c0 2.761-3.582 5-8 5z"/></svg>';
             this.parentNode.appendChild(placeholder);
         };
         logoDiv.appendChild(img);
     } else {
         var placeholder = document.createElement('span');
         placeholder.className = 'venue-card-logo-placeholder';
-        placeholder.textContent = '\uD83C\uDF7D\uFE0F';
+        placeholder.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2l1.578 4.657A2 2 0 0 0 6.487 8H17.513a2 2 0 0 0 1.909-1.343L21 2"/><path d="M12 12v6"/><path d="M8 22h8"/><path d="M12 18c-4.418 0-8-2.239-8-5V8h16v5c0 2.761-3.582 5-8 5z"/></svg>';
         logoDiv.appendChild(placeholder);
     }
 
@@ -267,7 +267,7 @@ function _createUnifiedCard(item) {
     var memoIndicator = document.createElement('span');
     memoIndicator.className = 'venue-card-memo-indicator';
     memoIndicator.style.display = 'none';
-    memoIndicator.textContent = '\u270F\uFE0F';
+    memoIndicator.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
     memoIndicator.title = t('myNoteTitle');
     nameRow.appendChild(memoIndicator);
 
@@ -294,7 +294,7 @@ function _createUnifiedCard(item) {
     if (info.nearest_station) {
         var stationEl = document.createElement('div');
         stationEl.className = 'venue-card-station';
-        stationEl.textContent = '\uD83D\uDCCD ' + info.nearest_station;
+        stationEl.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + info.nearest_station;
         infoDiv.appendChild(stationEl);
     }
 
@@ -782,7 +782,7 @@ async function _openVenueSheet(item) {
     if (metaEl) {
         var metaParts = [];
         if (info.genre) metaParts.push(info.genre);
-        if (info.nearest_station) metaParts.push('\uD83D\uDCCD ' + info.nearest_station);
+        if (info.nearest_station) metaParts.push(info.nearest_station);
         if (info.address) metaParts.push(info.address);
         metaEl.textContent = metaParts.join(' \u00B7 ');
     }
@@ -961,7 +961,7 @@ async function _renderSheetTags(venueId) {
 
         var iconSpan = document.createElement('span');
         iconSpan.className = 'tag-icon';
-        iconSpan.textContent = tagDef.icon;
+        iconSpan.innerHTML = tagDef.icon;
         pill.appendChild(iconSpan);
 
         var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';

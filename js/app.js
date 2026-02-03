@@ -191,10 +191,10 @@ function createOverlay(video) {
 
     // Check if already collected locally
     if (typeof isLocallyCollected === 'function' && video.id && isLocallyCollected(video.id)) {
-        collectBtn.innerHTML = BOOKMARK_FILLED + ' ' + (t('collected') || 'Collected!');
+        collectBtn.innerHTML = BOOKMARK_FILLED;
         collectBtn.classList.add('collected');
     } else {
-        collectBtn.innerHTML = BOOKMARK_OUTLINE + ' ' + t('collectBtn');
+        collectBtn.innerHTML = BOOKMARK_OUTLINE;
     }
 
     collectBtn.addEventListener('click', async (e) => {
@@ -212,7 +212,7 @@ function createOverlay(video) {
                 if (typeof showToast === 'function') {
                     showToast(t('collectSaved'));
                 }
-                collectBtn.innerHTML = BOOKMARK_FILLED + ' ' + (t('collected') || 'Collected!');
+                collectBtn.innerHTML = BOOKMARK_FILLED;
                 collectBtn.classList.add('collected');
             } else {
                 if (typeof showToast === 'function') {
@@ -333,20 +333,20 @@ async function collectVenue(video, buttonEl) {
 
         if (response.ok || response.status === 200 || response.status === 201) {
             if (buttonEl) {
-                buttonEl.textContent = t('collected') || 'Collected!';
+                buttonEl.innerHTML = BOOKMARK_FILLED;
                 buttonEl.classList.add('collected');
             }
         } else {
             const errData = await response.json().catch(() => ({}));
             console.error('Collect failed:', errData);
             if (buttonEl) {
-                buttonEl.textContent = t('collectBtn');
+                buttonEl.innerHTML = BOOKMARK_OUTLINE;
             }
         }
     } catch (err) {
         console.error('Collect error:', err);
         if (buttonEl) {
-            buttonEl.textContent = t('collectBtn');
+            buttonEl.innerHTML = BOOKMARK_OUTLINE;
         }
     } finally {
         if (buttonEl) {

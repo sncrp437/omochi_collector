@@ -130,7 +130,8 @@ body {
 }
 
 .collection-pill-icon {
-    font-size: 16px;
+    display: flex;
+    align-items: center;
 }
 
 .collection-pill-count {
@@ -297,22 +298,22 @@ body.has-tab-bar .video-wrapper {
     background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.3) 80%, transparent 100%);
 }
 
-/* Collect button */
+/* Collect button (icon-only bookmark) */
 .collect-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 12px 24px;
-    background-color: #fff;
-    color: #000;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    border-radius: 50%;
     cursor: pointer;
     text-decoration: none;
     transition: transform 0.2s ease, background-color 0.2s ease;
-    box-shadow: 0 2px 8px rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
 }
 
 .collect-btn svg {
@@ -321,8 +322,8 @@ body.has-tab-bar .video-wrapper {
 
 .collect-btn:hover,
 .collect-btn:active {
-    background-color: #f0f0f0;
-    transform: scale(0.98);
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: scale(0.95);
 }
 
 /* Loading spinner */
@@ -372,6 +373,13 @@ body.has-tab-bar .video-wrapper {
     text-decoration: none;
     font-size: 16px;
     transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.back-btn svg {
+    flex-shrink: 0;
 }
 
 .back-btn:hover {
@@ -402,7 +410,6 @@ body.has-tab-bar .video-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
     color: #fff;
     margin: 0 auto 20px;
 }
@@ -478,9 +485,13 @@ body.has-tab-bar .video-wrapper {
 }
 
 .welcome-icon {
-    font-size: 48px;
     text-align: center;
     margin-bottom: 16px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.welcome-icon svg {
+    display: inline-block;
 }
 
 .welcome-modal-content h2 {
@@ -539,10 +550,15 @@ body.has-tab-bar .video-wrapper {
     gap: 10px;
 }
 
-.welcome-list li::before {
-    content: attr(data-icon);
-    font-size: 16px;
+.welcome-list-icon {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.welcome-list-icon svg {
+    display: block;
 }
 
 .welcome-current-collection {
@@ -610,16 +626,17 @@ body.has-tab-bar .video-wrapper {
     }
 
     .collect-btn {
-        padding: 10px 20px;
-        font-size: 13px;
+        width: 40px;
+        height: 40px;
     }
 
     .welcome-modal-content {
         padding: 28px 20px 20px;
     }
 
-    .welcome-icon {
-        font-size: 40px;
+    .welcome-icon svg {
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -675,8 +692,6 @@ body.has-tab-bar .video-wrapper {
     background: transparent;
     border: none;
     color: #aaa;
-    font-size: 32px;
-    line-height: 1;
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -881,7 +896,6 @@ body.has-tab-bar .video-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
     color: #fff;
 }
 
@@ -926,13 +940,12 @@ body.has-tab-bar .video-wrapper {
    ============================================================================= */
 
 .collect-btn.collected {
-    background-color: #4CAF50;
+    background-color: rgba(255, 255, 255, 0.15);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .collect-btn.collected:hover {
-    background-color: #43A047;
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 .collect-btn:disabled {
@@ -983,8 +996,6 @@ body.has-tab-bar .video-wrapper {
 }
 
 .tab-icon {
-    font-size: 22px;
-    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1198,8 +1209,8 @@ body.collections-body {
 
 .toast-icon {
     color: #4CAF50;
-    font-weight: bold;
-    font-size: 16px;
+    display: flex;
+    align-items: center;
 }
 
 /* =============================================================================
@@ -1411,10 +1422,11 @@ body.collections-body {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 24px;
     cursor: pointer;
     padding: 4px 8px;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .venue-sheet-close:hover {
@@ -1487,7 +1499,8 @@ body.collections-body {
 }
 
 .venue-tag-pill .tag-icon {
-    font-size: 14px;
+    display: flex;
+    align-items: center;
 }
 
 .venue-tag-pill .tag-count {
@@ -1587,7 +1600,8 @@ body.collections-body {
 }
 
 .memo-login-icon {
-    font-size: 24px;
+    display: flex;
+    align-items: center;
     opacity: 0.7;
 }
 
@@ -1616,7 +1630,8 @@ body.collections-body {
 }
 
 .venue-card-memo-indicator {
-    font-size: 12px;
+    display: flex;
+    align-items: center;
     opacity: 0.6;
     flex-shrink: 0;
 }
@@ -1650,7 +1665,9 @@ body.collections-body {
 }
 
 .venue-action-icon {
-    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .venue-action-label {

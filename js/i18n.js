@@ -348,13 +348,13 @@ function updateTranslations() {
     // Update video captions based on language
     updateVideoCaptions();
 
-    // Update collect button text (dynamically created) - preserve collected state
+    // Update collect button icon (dynamically created) - preserve collected state
     const collectBtns = document.querySelectorAll('.collect-btn');
     collectBtns.forEach(btn => {
         if (btn.classList.contains('collected')) {
-            btn.innerHTML = (typeof BOOKMARK_FILLED !== 'undefined' ? BOOKMARK_FILLED : '') + ' ' + t('collected');
+            btn.innerHTML = (typeof BOOKMARK_FILLED !== 'undefined' ? BOOKMARK_FILLED : '');
         } else {
-            btn.innerHTML = (typeof BOOKMARK_OUTLINE !== 'undefined' ? BOOKMARK_OUTLINE : '') + ' ' + t('collectBtn');
+            btn.innerHTML = (typeof BOOKMARK_OUTLINE !== 'undefined' ? BOOKMARK_OUTLINE : '');
         }
     });
 }
