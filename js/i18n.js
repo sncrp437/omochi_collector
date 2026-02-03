@@ -14,7 +14,7 @@ const translations = {
         signInMessage: 'Please log in or register to collect videos and save your favorites.',
         loginBtn: 'Log In',
         registerBtn: 'Register',
-        collectBtn: 'Collect',
+        collectBtn: 'Want to Go!',
 
         // Collect page
         backBtn: 'Back',
@@ -33,7 +33,7 @@ const translations = {
         welcomeAboutText: 'Discover amazing restaurants and food venues through vertical video stories.',
         welcomeHowToTitle: 'How to Use',
         welcomeSwipe: 'Swipe up/down to browse videos',
-        welcomeCollect: 'Tap "Collect" to save favorites',
+        welcomeCollect: 'Tap "Want to Go!" to save favorites',
         welcomeCollections: 'Select collections at the top to filter',
         welcomeLanguage: 'Switch languages in the top right',
         welcomeNowShowing: 'Now showing:',
@@ -69,7 +69,7 @@ const translations = {
         loginToViewCollections: 'Please log in to view your saved venues.',
         noSavedVenues: "You haven't saved any venues yet.",
         discoverVenues: 'Discover Venues',
-        collected: 'Collected!',
+        collected: 'Saved!',
         removeVenue: 'Remove',
 
         // Errors
@@ -154,7 +154,7 @@ const translations = {
         signInMessage: 'ビデオをコレクションに追加してお気に入りを保存するには、ログインまたは登録してください。',
         loginBtn: 'ログイン',
         registerBtn: '登録',
-        collectBtn: 'コレクション',
+        collectBtn: '行きたい！',
 
         // Collect page
         backBtn: '戻る',
@@ -173,7 +173,7 @@ const translations = {
         welcomeAboutText: '縦型動画で素晴らしいレストランや飲食店を発見しましょう。',
         welcomeHowToTitle: '使い方',
         welcomeSwipe: '上下にスワイプして動画を閲覧',
-        welcomeCollect: '「コレクション」をタップしてお気に入りを保存',
+        welcomeCollect: '「行きたい！」をタップしてお気に入りを保存',
         welcomeCollections: '上部でコレクションを選択してフィルタリング',
         welcomeLanguage: '右上で言語を切り替え',
         welcomeNowShowing: '現在表示中:',
@@ -209,7 +209,7 @@ const translations = {
         loginToViewCollections: '保存した店舗を表示するにはログインしてください。',
         noSavedVenues: 'まだ保存した店舗がありません。',
         discoverVenues: '店舗を探す',
-        collected: 'コレクション済み！',
+        collected: '保存済み！',
         removeVenue: '削除',
 
         // Errors

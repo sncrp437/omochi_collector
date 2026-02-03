@@ -246,6 +246,55 @@ body.has-tab-bar .video-wrapper {
     line-height: 1.4;
     margin-bottom: 15px;
     max-width: 80%;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+    transition: max-height 0.3s ease, -webkit-line-clamp 0s;
+    position: relative;
+}
+
+/* "more" indicator for truncated captions */
+.reel-caption.truncated::after {
+    content: '... more';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(to right, transparent, rgba(0,0,0,0.7) 30%);
+    padding-left: 20px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* Expanded caption */
+.reel-caption.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    max-height: 70vh;
+    overflow-y: auto;
+    max-width: 90%;
+    padding-right: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.reel-caption.expanded::after {
+    display: none;
+}
+
+/* Scrollbar styling for expanded caption */
+.reel-caption.expanded::-webkit-scrollbar {
+    width: 3px;
+}
+
+.reel-caption.expanded::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+/* Expanded overlay gets taller gradient */
+.reel-overlay.caption-expanded {
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.3) 80%, transparent 100%);
 }
 
 /* Collect button */

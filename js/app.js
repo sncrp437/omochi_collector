@@ -159,6 +159,27 @@ function createOverlay(video) {
     const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
     caption.textContent = currentLang === 'ja' ? caption.dataset.captionJa : caption.dataset.captionEn;
 
+    // Check if caption is truncated after render, add expand/collapse behavior
+    requestAnimationFrame(() => {
+        if (caption.scrollHeight > caption.clientHeight) {
+            caption.classList.add('truncated');
+        }
+    });
+
+    caption.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = caption.classList.contains('expanded');
+        if (isExpanded) {
+            caption.classList.remove('expanded');
+            caption.classList.add('truncated');
+            overlay.classList.remove('caption-expanded');
+        } else {
+            caption.classList.remove('truncated');
+            caption.classList.add('expanded');
+            overlay.classList.add('caption-expanded');
+        }
+    });
+
     // Collect button
     const collectBtn = document.createElement('button');
     collectBtn.className = 'collect-btn';
