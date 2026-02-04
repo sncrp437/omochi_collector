@@ -223,14 +223,14 @@ async function _handleRegister() {
     const formData = {
         email: document.getElementById('regEmail')?.value?.trim(),
         first_name: document.getElementById('regFirstName')?.value?.trim(),
-        last_name: document.getElementById('regLastName')?.value?.trim(),
+        last_name: '---',
         phone_number: document.getElementById('regPhone')?.value?.trim(),
         password: document.getElementById('regPassword')?.value,
         password_confirm: document.getElementById('regPasswordConfirm')?.value,
         address: {
             prefecture: document.getElementById('regPrefecture')?.value?.trim(),
-            city: document.getElementById('regCity')?.value?.trim(),
-            detail: document.getElementById('regAddressDetail')?.value?.trim()
+            city: '---',
+            detail: '---'
         }
     };
 
