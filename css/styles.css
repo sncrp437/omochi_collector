@@ -1859,6 +1859,48 @@ body.collections-body {
     background: rgba(168, 85, 247, 0.12);
 }
 
+/* Venue Map Section */
+.venue-sheet-map-section {
+    margin-bottom: 16px;
+}
+
+.venue-sheet-map-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.venue-sheet-map-container {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.venue-sheet-map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.venue-sheet-map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(59, 130, 246, 0.9);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.venue-sheet-map-link:hover {
+    color: rgba(59, 130, 246, 1);
+}
+
 /* Venue Detail Info Section */
 .venue-sheet-description {
     font-size: 13px;

@@ -793,6 +793,9 @@ async function _openVenueSheet(item) {
     // Populate action buttons
     _renderActionButtons(item, info, venueId);
 
+    // Render map
+    _renderVenueMap(info);
+
     // Populate venue details
     _renderVenueDetails(info);
 
@@ -923,10 +926,49 @@ function _renderVenueDetails(info) {
     if (detailsEl) detailsEl.style.display = hasDetails ? 'block' : 'none';
 }
 
+/**
+ * Render Google Maps embed in the bottom sheet (no API key needed)
+ */
+function _renderVenueMap(info) {
+    var section = document.getElementById('venueSheetMapSection');
+    var container = document.getElementById('venueSheetMapContainer');
+    var link = document.getElementById('venueSheetMapLink');
+    if (!section || !container) return;
+
+    container.innerHTML = '';
+
+    var address = info.address;
+    if (!address || !address.trim()) {
+        section.style.display = 'none';
+        return;
+    }
+
+    var encodedAddress = encodeURIComponent(address.trim());
+    var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://maps.google.com/maps?q=' + encodedAddress + '&t=m&z=15&output=embed&hl=' + lang;
+    iframe.setAttribute('loading', 'lazy');
+    iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.title = info.name + ' - ' + (typeof t === 'function' ? t('mapLabel') : 'Location');
+    container.appendChild(iframe);
+
+    if (link) {
+        link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodedAddress;
+        link.style.display = 'inline-flex';
+    }
+
+    section.style.display = 'block';
+}
+
 function _closeVenueSheet() {
     var overlay = document.getElementById('venueSheetOverlay');
     if (overlay) overlay.classList.remove('active');
     _currentSheetItem = null;
+
+    var mapContainer = document.getElementById('venueSheetMapContainer');
+    if (mapContainer) mapContainer.innerHTML = '';
 }
 
 /**

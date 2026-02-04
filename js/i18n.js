@@ -133,6 +133,10 @@ const translations = {
         webReserveBtn: 'Reserve',
         viewOnAppBtn: 'Omochi App',
 
+        // Venue bottom sheet - map
+        mapLabel: 'Location',
+        openInGoogleMaps: 'Open in Google Maps',
+
         // Venue bottom sheet - details
         hoursLabel: 'Hours',
         dineIn: 'Dine-in',
@@ -285,6 +289,10 @@ const translations = {
         callBtn: '電話する',
         webReserveBtn: '予約',
         viewOnAppBtn: 'Omochiアプリ',
+
+        // Venue bottom sheet - map
+        mapLabel: '場所',
+        openInGoogleMaps: 'Google マップで開く',
 
         // Venue bottom sheet - details
         hoursLabel: '営業時間',
