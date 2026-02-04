@@ -1,6 +1,7 @@
 /**
  * Collections Module
- * Handles Instagram-style collection filtering and UI
+ * Handles collection filtering, location filtering, and feed re-rendering.
+ * UI rendering is delegated to the branched filter controller (categories.js).
  */
 
 let allVideos = [];
@@ -9,7 +10,7 @@ let selectedCollection = 'all';
 let selectedLocation = 'all';
 
 /**
- * Initialize collections system
+ * Initialize collections system (no UI rendering)
  * @param {Array} videosData - Array of video objects
  * @param {Array} collectionsData - Array of collection metadata
  * @returns {Array} Filtered videos based on stored selection
@@ -21,38 +22,31 @@ async function initCollections(videosData, collectionsData) {
     // Restore last selected collection from localStorage
     selectedCollection = localStorage.getItem('selectedCollection') || 'all';
 
-    // Render collection selector UI
-    renderCollectionSelector();
-
     // Return filtered videos
     return filterVideosByCollection(selectedCollection);
 }
 
 /**
  * Parse and sort collections data
- * @param {Array} data - Raw collections data from API
- * @returns {Array} Sorted and filtered collections
  */
 function parseCollections(data) {
     if (!data || data.length === 0) return [];
-
     return data
         .filter(c => c.active !== false && c.active !== 'FALSE')
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 }
 
 /**
- * Render collection selector pills
+ * Render collection pills into a provided container element
+ * @param {HTMLElement} containerEl - Target container
  */
-function renderCollectionSelector() {
-    const container = document.getElementById('collectionSelector');
-    if (!container) return;
+function renderCollectionPillsInContainer(containerEl) {
+    if (!containerEl) return;
+    containerEl.innerHTML = '';
 
-    container.innerHTML = '';
-
-    allCollections.forEach(collection => {
-        const pill = createCollectionPill(collection);
-        container.appendChild(pill);
+    allCollections.forEach(function(collection) {
+        var pill = createCollectionPill(collection);
+        containerEl.appendChild(pill);
     });
 
     updateActiveCollection();
@@ -60,35 +54,28 @@ function renderCollectionSelector() {
 
 /**
  * Create a collection pill button
- * @param {Object} collection - Collection metadata
- * @returns {HTMLElement} Pill button element
  */
 function createCollectionPill(collection) {
-    const pill = document.createElement('button');
+    var pill = document.createElement('button');
     pill.className = 'collection-pill';
     pill.dataset.collectionId = collection.collection_id;
 
-    // Get current language for display name
-    const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
-    const name = currentLang === 'ja' ? (collection.name_ja || collection.name_en) : collection.name_en;
+    var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+    var name = currentLang === 'ja' ? (collection.name_ja || collection.name_en) : collection.name_en;
+    var icon = collection.icon || '';
+    var count = getCollectionVideoCount(collection.collection_id);
 
-    const icon = collection.icon || '';
-    const count = getCollectionVideoCount(collection.collection_id);
+    pill.innerHTML =
+        (icon ? '<span class="collection-pill-icon">' + icon + '</span>' : '') +
+        '<span class="collection-pill-name">' + name + '</span>' +
+        '<span class="collection-pill-count">(' + count + ')</span>';
 
-    pill.innerHTML = `
-        ${icon ? `<span class="collection-pill-icon">${icon}</span>` : ''}
-        <span class="collection-pill-name">${name}</span>
-        <span class="collection-pill-count">(${count})</span>
-    `;
-
-    pill.addEventListener('click', () => selectCollection(collection.collection_id));
-
+    pill.addEventListener('click', function() { selectCollection(collection.collection_id); });
     return pill;
 }
 
 /**
  * Select a collection and filter feed
- * @param {string} collectionId - ID of collection to select
  */
 function selectCollection(collectionId) {
     selectedCollection = collectionId;
@@ -101,7 +88,7 @@ function selectCollection(collectionId) {
  * Update active state of collection pills
  */
 function updateActiveCollection() {
-    document.querySelectorAll('.collection-pill').forEach(pill => {
+    document.querySelectorAll('.collection-pill').forEach(function(pill) {
         if (pill.dataset.collectionId === selectedCollection) {
             pill.classList.add('active');
         } else {
@@ -111,23 +98,23 @@ function updateActiveCollection() {
 }
 
 /**
- * Filter videos by collection ID
- * @param {string} collectionId - Collection ID to filter by
- * @returns {Array} Filtered videos
+ * Filter videos by collection ID and selected location
  */
 function filterVideosByCollection(collectionId) {
-    let result = allVideos;
+    var result = allVideos;
 
     if (collectionId !== 'all') {
-        result = result.filter(video => {
+        result = result.filter(function(video) {
             if (!video.collection) return false;
-            const collections = video.collection.split(',').map(c => c.trim());
+            var collections = video.collection.split(',').map(function(c) { return c.trim(); });
             return collections.includes(collectionId);
         });
     }
 
     if (selectedLocation !== 'all') {
-        result = result.filter(video => video.nearest_station === selectedLocation);
+        result = result.filter(function(video) {
+            return video.nearest_station === selectedLocation;
+        });
     }
 
     return result;
@@ -135,43 +122,35 @@ function filterVideosByCollection(collectionId) {
 
 /**
  * Filter and re-render the video feed
- * @param {string} collectionId - Collection ID to show
  */
 function filterAndRerenderFeed(collectionId) {
-    const container = document.getElementById('reelsContainer');
+    var container = document.getElementById('reelsContainer');
     if (!container) return;
 
-    // Fade out animation
     container.style.opacity = '0';
     container.style.transition = 'opacity 0.3s ease';
 
-    setTimeout(() => {
-        // Clear existing videos
-        const videos = container.querySelectorAll('.reel-item');
-        videos.forEach(v => v.remove());
+    setTimeout(function() {
+        var videos = container.querySelectorAll('.reel-item');
+        videos.forEach(function(v) { v.remove(); });
 
-        // Get filtered videos
-        const filteredVideos = filterVideosByCollection(collectionId);
+        var filteredVideos = filterVideosByCollection(collectionId);
 
-        // Handle empty state
         if (filteredVideos.length === 0) {
             showEmptyState(container);
         } else {
-            // Re-render videos
-            filteredVideos.forEach((video, index) => {
+            filteredVideos.forEach(function(video, index) {
                 if (typeof createReelItem === 'function') {
-                    const reelItem = createReelItem(video, index);
+                    var reelItem = createReelItem(video, index);
                     container.appendChild(reelItem);
                 }
             });
 
-            // Re-setup intersection observer
             if (typeof setupIntersectionObserver === 'function') {
                 setupIntersectionObserver();
             }
         }
 
-        // Fade in and scroll to top
         container.style.opacity = '1';
         container.scrollTo(0, 0);
     }, 300);
@@ -179,8 +158,6 @@ function filterAndRerenderFeed(collectionId) {
 
 /**
  * Get video count for a collection
- * @param {string} collectionId - Collection ID
- * @returns {number} Number of videos in collection
  */
 function getCollectionVideoCount(collectionId) {
     return filterVideosByCollection(collectionId).length;
@@ -188,27 +165,24 @@ function getCollectionVideoCount(collectionId) {
 
 /**
  * Get current collection display name
- * @returns {string} Display name in current language
  */
 function getCurrentCollectionName() {
-    const collection = allCollections.find(c => c.collection_id === selectedCollection);
+    var collection = allCollections.find(function(c) { return c.collection_id === selectedCollection; });
     if (!collection) {
         return typeof t === 'function' ? t('allVideos') : 'All Videos';
     }
-
-    const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+    var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
     return currentLang === 'ja' ? (collection.name_ja || collection.name_en) : collection.name_en;
 }
 
 /**
  * Show empty collection state
- * @param {HTMLElement} container - Container element
  */
 function showEmptyState(container) {
-    const emptyDiv = document.createElement('div');
+    var emptyDiv = document.createElement('div');
     emptyDiv.className = 'empty-collection';
-    const message = typeof t === 'function' ? t('noVideosInCollection') : 'No videos in this collection';
-    emptyDiv.innerHTML = `<p>${message}</p>`;
+    var message = typeof t === 'function' ? t('noVideosInCollection') : 'No videos in this collection';
+    emptyDiv.innerHTML = '<p>' + message + '</p>';
     container.appendChild(emptyDiv);
 }
 
@@ -216,14 +190,14 @@ function showEmptyState(container) {
  * Update collection pill names when language changes
  */
 function updateCollectionNames() {
-    allCollections.forEach(collection => {
-        const pill = document.querySelector(`.collection-pill[data-collection-id="${collection.collection_id}"]`);
+    allCollections.forEach(function(collection) {
+        var pill = document.querySelector('.collection-pill[data-collection-id="' + collection.collection_id + '"]');
         if (!pill) return;
 
-        const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
-        const name = currentLang === 'ja' ? (collection.name_ja || collection.name_en) : collection.name_en;
+        var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+        var name = currentLang === 'ja' ? (collection.name_ja || collection.name_en) : collection.name_en;
 
-        const nameElement = pill.querySelector('.collection-pill-name');
+        var nameElement = pill.querySelector('.collection-pill-name');
         if (nameElement) {
             nameElement.textContent = name;
         }
@@ -231,77 +205,36 @@ function updateCollectionNames() {
 }
 
 /**
- * Initialize location filter from video data
+ * Get unique stations from video data
  * @param {Array} videosData - Array of video objects
+ * @returns {Object} { stationName: count } sorted by name
  */
-function initLocationFilter(videosData) {
-    const container = document.getElementById('locationSelector');
-    if (!container) return;
-
-    // Extract unique nearest_station values
-    const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
-    const stations = {};
-    videosData.forEach(video => {
-        const station = (currentLang === 'en' && video.nearest_station_en)
+function getUniqueStations(videosData) {
+    var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+    var stations = {};
+    videosData.forEach(function(video) {
+        var station = (currentLang === 'en' && video.nearest_station_en)
             ? video.nearest_station_en
             : (video.nearest_station || '');
         if (station) {
             stations[station] = (stations[station] || 0) + 1;
         }
     });
-
-    const stationNames = Object.keys(stations).sort();
-    if (stationNames.length === 0) return;
-
-    // Restore selection
-    selectedLocation = localStorage.getItem('selectedLocation') || 'all';
-
-    // Render pills
-    container.innerHTML = '';
-
-    // "All" pill
-    const allLabel = typeof t === 'function' ? t('allAreas') : 'All';
-    const allPill = document.createElement('button');
-    allPill.className = 'collection-pill' + (selectedLocation === 'all' ? ' active' : '');
-    allPill.innerHTML = `<span class="collection-pill-name">${allLabel}</span>`;
-    allPill.addEventListener('click', function() { selectLocation('all'); });
-    container.appendChild(allPill);
-
-    // Station pills
-    stationNames.forEach(function(station) {
-        const pill = document.createElement('button');
-        pill.className = 'collection-pill' + (selectedLocation === station ? ' active' : '');
-        pill.innerHTML = `<span class="collection-pill-name">${station}</span> <span class="collection-pill-count">(${stations[station]})</span>`;
-        pill.addEventListener('click', function() { selectLocation(station); });
-        container.appendChild(pill);
-    });
-
-    container.style.display = '';
+    return stations;
 }
 
 /**
- * Select a location and re-filter feed
+ * Set location filter without rendering UI
  * @param {string} station - Station name or 'all'
  */
-function selectLocation(station) {
+function setLocationFilter(station) {
     selectedLocation = station;
     localStorage.setItem('selectedLocation', station);
+}
 
-    // Update active pill
-    const container = document.getElementById('locationSelector');
-    if (container) {
-        container.querySelectorAll('.collection-pill').forEach(function(pill) {
-            const pillName = pill.querySelector('.collection-pill-name');
-            const allLabel = typeof t === 'function' ? t('allAreas') : 'All';
-            const pillStation = pillName ? pillName.textContent : '';
-            const isAll = pillStation === allLabel;
-            if ((station === 'all' && isAll) || station === pillStation) {
-                pill.classList.add('active');
-            } else {
-                pill.classList.remove('active');
-            }
-        });
-    }
-
+/**
+ * Re-filter feed with current filters (called by branched filter)
+ */
+function refilterFeed() {
     filterAndRerenderFeed(selectedCollection);
 }

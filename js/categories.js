@@ -1,10 +1,10 @@
 /**
- * Category Selector Module
- * Top-level category switching (Food, Nightlife, Entertainment, etc.)
- * Currently only Food is active; others show "Coming soon!" toast.
+ * Branched Filter Controller
+ * Cascading filter: Genre -> Area -> Video Genre (Collection)
+ * Replaces the old category selector, location selector, and collection selector.
  */
 
-const CATEGORIES = [
+var CATEGORIES = [
     {
         id: 'food',
         nameKey: 'categoryFood',
@@ -43,177 +43,323 @@ const CATEGORIES = [
     }
 ];
 
-let _currentCategory = 'food';
-let _isCategoryStripOpen = false;
+var _bfStep = 'genre'; // 'genre' | 'area' | 'collection'
+var _bfSelectedGenre = null;
+var _bfSelectedArea = null;
+var _bfVideosData = [];
+
+var BACK_ARROW_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
 
 /**
- * Initialize category selector
+ * Initialize branched filter
+ * @param {Array} videosData - All loaded video objects
  */
-function initCategorySelector() {
-    _currentCategory = localStorage.getItem('selectedCategory') || 'food';
-    _renderCategoryTrigger();
-    _renderCategoryStrip();
-    _setupCategoryEvents();
-}
+function initBranchedFilter(videosData) {
+    _bfVideosData = videosData;
 
-/**
- * Render trigger button icon and label
- */
-function _renderCategoryTrigger() {
-    const category = CATEGORIES.find(c => c.id === _currentCategory);
-    if (!category) return;
-
-    const iconEl = document.getElementById('categoryTriggerIcon');
-    const labelEl = document.getElementById('categoryTriggerLabel');
-
-    if (iconEl) iconEl.innerHTML = category.icon;
-    if (labelEl) {
-        labelEl.setAttribute('data-i18n', category.nameKey);
-        labelEl.textContent = typeof t === 'function' ? t(category.nameKey) : category.id;
+    // Migrate old localStorage keys
+    var oldCategory = localStorage.getItem('selectedCategory');
+    var oldLocation = localStorage.getItem('selectedLocation');
+    if (oldCategory && !localStorage.getItem('bf_genre')) {
+        localStorage.setItem('bf_genre', oldCategory);
+        localStorage.removeItem('selectedCategory');
     }
+    if (oldLocation && oldLocation !== 'all') {
+        if (!localStorage.getItem('bf_area')) {
+            localStorage.setItem('bf_area', oldLocation);
+        }
+        localStorage.removeItem('selectedLocation');
+    }
+
+    // Restore state
+    var storedGenre = localStorage.getItem('bf_genre');
+    var storedArea = localStorage.getItem('bf_area');
+
+    if (storedGenre) {
+        var cat = CATEGORIES.find(function(c) { return c.id === storedGenre && !c.comingSoon; });
+        if (cat) {
+            _bfSelectedGenre = storedGenre;
+
+            if (storedArea) {
+                // Verify area still exists in data
+                var stations = getUniqueStations(_bfVideosData);
+                if (stations[storedArea]) {
+                    _bfSelectedArea = storedArea;
+                    setLocationFilter(storedArea);
+                    _bfStep = 'collection';
+                    _renderCollectionStep();
+                } else {
+                    localStorage.removeItem('bf_area');
+                    _bfStep = 'area';
+                    _renderAreaStep();
+                }
+            } else {
+                // Check if there are any stations; if not, skip to collection
+                var stationCheck = getUniqueStations(_bfVideosData);
+                if (Object.keys(stationCheck).length === 0) {
+                    _bfStep = 'collection';
+                    _renderCollectionStep();
+                } else {
+                    _bfStep = 'area';
+                    _renderAreaStep();
+                }
+            }
+            return;
+        }
+    }
+
+    // Default: show genre pills
+    _bfStep = 'genre';
+    _renderGenrePills();
 }
 
 /**
- * Render strip with all category options
+ * Render genre pills with pulse animation
  */
-function _renderCategoryStrip() {
-    const stripInner = document.getElementById('categoryStripInner');
-    if (!stripInner) return;
+function _renderGenrePills() {
+    var genreEl = document.getElementById('filterStepGenre');
+    var areaEl = document.getElementById('filterStepArea');
+    var collEl = document.getElementById('filterStepCollection');
+    if (!genreEl) return;
 
-    stripInner.innerHTML = '';
+    genreEl.style.display = '';
+    if (areaEl) areaEl.style.display = 'none';
+    if (collEl) collEl.style.display = 'none';
+
+    genreEl.innerHTML = '';
+    var row = document.createElement('div');
+    row.className = 'filter-step-row';
 
     CATEGORIES.forEach(function(category) {
-        var option = document.createElement('button');
-        option.className = 'category-option';
-        option.dataset.categoryId = category.id;
-
-        if (category.id === _currentCategory) option.classList.add('active');
-        if (category.comingSoon) option.classList.add('coming-soon');
+        var pill = document.createElement('button');
+        pill.className = 'genre-pill genre-pill-pulse';
+        if (category.comingSoon) pill.classList.add('coming-soon');
 
         var label = typeof t === 'function' ? t(category.nameKey) : category.id;
+        pill.innerHTML =
+            '<span class="genre-pill-icon">' + category.icon + '</span>' +
+            '<span class="genre-pill-label" data-i18n="' + category.nameKey + '">' + label + '</span>';
 
-        option.innerHTML =
-            '<span class="category-option-icon">' + category.icon + '</span>' +
-            '<span class="category-option-label" data-i18n="' + category.nameKey + '">' + label + '</span>';
-
-        option.addEventListener('click', function() {
-            _handleCategoryClick(category);
+        pill.addEventListener('click', function() {
+            if (category.comingSoon) {
+                var msg = typeof t === 'function' ? t('categoryComingSoon') : 'Coming soon!';
+                if (typeof showToast === 'function') showToast(msg);
+                return;
+            }
+            _selectGenre(category.id);
         });
 
-        stripInner.appendChild(option);
+        row.appendChild(pill);
     });
+
+    genreEl.appendChild(row);
 }
 
 /**
- * Handle category click
+ * Select a genre and transition to area step
  */
-function _handleCategoryClick(category) {
-    if (category.comingSoon) {
-        var msg = typeof t === 'function' ? t('categoryComingSoon') : 'Coming soon!';
-        if (typeof showToast === 'function') {
-            showToast(msg);
-        }
-        return;
-    }
+function _selectGenre(genreId) {
+    _bfSelectedGenre = genreId;
+    _bfSelectedArea = null;
+    localStorage.setItem('bf_genre', genreId);
+    localStorage.removeItem('bf_area');
 
-    if (category.id === _currentCategory) {
-        _closeCategoryStrip();
-        return;
-    }
-
-    _currentCategory = category.id;
-    localStorage.setItem('selectedCategory', category.id);
-    _updateCategoryUI();
-    _closeCategoryStrip();
+    // Reset location filter
+    setLocationFilter('all');
 
     if (typeof logAnalyticsEvent === 'function') {
-        logAnalyticsEvent('category_select', category.id);
+        logAnalyticsEvent('genre_select', genreId);
     }
-}
 
-/**
- * Update active states on trigger and options
- */
-function _updateCategoryUI() {
-    _renderCategoryTrigger();
-
-    document.querySelectorAll('.category-option').forEach(function(el) {
-        el.classList.toggle('active', el.dataset.categoryId === _currentCategory);
-    });
-}
-
-/**
- * Toggle strip open/close
- */
-function _toggleCategoryStrip() {
-    if (_isCategoryStripOpen) {
-        _closeCategoryStrip();
+    // Check if areas exist
+    var stations = getUniqueStations(_bfVideosData);
+    if (Object.keys(stations).length === 0) {
+        // No areas available, skip to collection step
+        _bfStep = 'collection';
+        _renderCollectionStep();
     } else {
-        _openCategoryStrip();
+        _bfStep = 'area';
+        _renderAreaStep();
     }
-}
 
-function _openCategoryStrip() {
-    _isCategoryStripOpen = true;
-    var trigger = document.getElementById('categoryTrigger');
-    var strip = document.getElementById('categoryStrip');
-    var overlay = document.getElementById('categoryStripOverlay');
-    var collectionSel = document.getElementById('collectionSelector');
-    var locationSel = document.getElementById('locationSelector');
-
-    if (trigger) trigger.classList.add('active');
-    if (strip) strip.classList.add('active');
-    if (overlay) overlay.classList.add('active');
-    if (collectionSel) collectionSel.classList.add('strip-open');
-    if (locationSel) locationSel.classList.add('strip-open');
-}
-
-function _closeCategoryStrip() {
-    _isCategoryStripOpen = false;
-    var trigger = document.getElementById('categoryTrigger');
-    var strip = document.getElementById('categoryStrip');
-    var overlay = document.getElementById('categoryStripOverlay');
-    var collectionSel = document.getElementById('collectionSelector');
-    var locationSel = document.getElementById('locationSelector');
-
-    if (trigger) trigger.classList.remove('active');
-    if (strip) strip.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
-    if (collectionSel) collectionSel.classList.remove('strip-open');
-    if (locationSel) locationSel.classList.remove('strip-open');
+    // Re-filter feed (genre selected, no area yet = show all for this genre)
+    refilterFeed();
 }
 
 /**
- * Set up event listeners
+ * Render area step: combined pill (genre) + area pills
  */
-function _setupCategoryEvents() {
-    var trigger = document.getElementById('categoryTrigger');
-    if (trigger) {
-        trigger.addEventListener('click', _toggleCategoryStrip);
-    }
+function _renderAreaStep() {
+    var genreEl = document.getElementById('filterStepGenre');
+    var areaEl = document.getElementById('filterStepArea');
+    var collEl = document.getElementById('filterStepCollection');
+    if (!areaEl) return;
 
-    var overlay = document.getElementById('categoryStripOverlay');
-    if (overlay) {
-        overlay.addEventListener('click', _closeCategoryStrip);
-    }
+    if (genreEl) genreEl.style.display = 'none';
+    areaEl.style.display = '';
+    if (collEl) collEl.style.display = 'none';
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && _isCategoryStripOpen) {
-            _closeCategoryStrip();
-        }
+    areaEl.innerHTML = '';
+    var row = document.createElement('div');
+    row.className = 'filter-step-row';
+
+    // Combined pill (genre only)
+    var combinedPill = _createCombinedPill();
+    row.appendChild(combinedPill);
+
+    // Area pills
+    var stations = getUniqueStations(_bfVideosData);
+    var stationNames = Object.keys(stations).sort();
+
+    stationNames.forEach(function(station) {
+        var pill = document.createElement('button');
+        pill.className = 'area-pill';
+        pill.innerHTML =
+            '<span class="area-pill-name">' + station + '</span>' +
+            '<span class="area-pill-count">(' + stations[station] + ')</span>';
+
+        pill.addEventListener('click', function() {
+            _selectArea(station);
+        });
+
+        row.appendChild(pill);
     });
+
+    areaEl.appendChild(row);
 }
 
 /**
- * Update labels on language change
+ * Select an area and transition to collection step
  */
-function updateCategoryNames() {
-    _renderCategoryTrigger();
+function _selectArea(station) {
+    _bfSelectedArea = station;
+    localStorage.setItem('bf_area', station);
 
-    document.querySelectorAll('.category-option-label').forEach(function(label) {
-        var key = label.getAttribute('data-i18n');
-        if (key && typeof t === 'function') {
-            label.textContent = t(key);
-        }
+    // Set location filter
+    setLocationFilter(station);
+
+    if (typeof logAnalyticsEvent === 'function') {
+        logAnalyticsEvent('area_select', station);
+    }
+
+    _bfStep = 'collection';
+    _renderCollectionStep();
+
+    // Re-filter feed with area applied
+    refilterFeed();
+}
+
+/**
+ * Render collection step: combined pill (genre x area) + video genre pills
+ */
+function _renderCollectionStep() {
+    var genreEl = document.getElementById('filterStepGenre');
+    var areaEl = document.getElementById('filterStepArea');
+    var collEl = document.getElementById('filterStepCollection');
+    if (!collEl) return;
+
+    if (genreEl) genreEl.style.display = 'none';
+    if (areaEl) areaEl.style.display = 'none';
+    collEl.style.display = '';
+
+    collEl.innerHTML = '';
+
+    // First row: combined pill
+    var topRow = document.createElement('div');
+    topRow.className = 'filter-step-row';
+    var combinedPill = _createCombinedPill();
+    topRow.appendChild(combinedPill);
+    collEl.appendChild(topRow);
+
+    // Second row: collection/video genre pills
+    var pillsRow = document.createElement('div');
+    pillsRow.className = 'collection-pills-row';
+    renderCollectionPillsInContainer(pillsRow);
+    collEl.appendChild(pillsRow);
+}
+
+/**
+ * Create the combined status pill (tappable to go back)
+ */
+function _createCombinedPill() {
+    var pill = document.createElement('button');
+    pill.className = 'combined-pill';
+
+    var genreCat = CATEGORIES.find(function(c) { return c.id === _bfSelectedGenre; });
+    var genreLabel = '';
+    if (genreCat) {
+        genreLabel = typeof t === 'function' ? t(genreCat.nameKey) : genreCat.id;
+    }
+
+    var label = genreLabel;
+    if (_bfSelectedArea) {
+        var separator = typeof t === 'function' ? t('combinedPillSeparator') : ' x ';
+        label = genreLabel + separator + _bfSelectedArea;
+    }
+
+    pill.innerHTML =
+        '<span class="combined-pill-back">' + BACK_ARROW_SVG + '</span>' +
+        '<span class="combined-pill-label">' + label + '</span>';
+
+    pill.addEventListener('click', function() {
+        _goBackOneStep();
     });
+
+    return pill;
+}
+
+/**
+ * Go back one step in the filter cascade
+ */
+function _goBackOneStep() {
+    if (_bfStep === 'collection') {
+        // Go back to area selection (keep genre)
+        _bfSelectedArea = null;
+        localStorage.removeItem('bf_area');
+        setLocationFilter('all');
+
+        // Reset collection selection
+        selectedCollection = 'all';
+        localStorage.setItem('selectedCollection', 'all');
+
+        // Check if areas exist
+        var stations = getUniqueStations(_bfVideosData);
+        if (Object.keys(stations).length === 0) {
+            // No areas, go back to genre
+            _bfSelectedGenre = null;
+            localStorage.removeItem('bf_genre');
+            _bfStep = 'genre';
+            _renderGenrePills();
+        } else {
+            _bfStep = 'area';
+            _renderAreaStep();
+        }
+
+        refilterFeed();
+    } else if (_bfStep === 'area') {
+        // Go back to genre selection
+        _bfSelectedGenre = null;
+        _bfSelectedArea = null;
+        localStorage.removeItem('bf_genre');
+        localStorage.removeItem('bf_area');
+        setLocationFilter('all');
+
+        _bfStep = 'genre';
+        _renderGenrePills();
+
+        refilterFeed();
+    }
+}
+
+/**
+ * Update pill labels on language change
+ */
+function updateBranchedFilterNames() {
+    if (_bfStep === 'genre') {
+        _renderGenrePills();
+    } else if (_bfStep === 'area') {
+        _renderAreaStep();
+    } else if (_bfStep === 'collection') {
+        _renderCollectionStep();
+    }
 }

@@ -153,7 +153,10 @@ const translations = {
         categoryShopping: 'Shopping',
         categoryBeauty: 'Beauty',
         categoryTravel: 'Travel',
-        categoryComingSoon: 'Coming soon!'
+        categoryComingSoon: 'Coming soon!',
+
+        // Branched filter
+        combinedPillSeparator: ' x '
     },
     ja: {
         // Index page
@@ -303,7 +306,10 @@ const translations = {
         categoryShopping: 'ショッピング',
         categoryBeauty: '美容',
         categoryTravel: '旅行',
-        categoryComingSoon: '近日公開！'
+        categoryComingSoon: '近日公開！',
+
+        // Branched filter
+        combinedPillSeparator: ' x '
     }
 };
 
@@ -343,9 +349,9 @@ function setLanguage(lang) {
         updateCollectionNames();
     }
 
-    // Update category names (if category selector exists)
-    if (typeof updateCategoryNames === 'function') {
-        updateCategoryNames();
+    // Update branched filter names (if branched filter exists)
+    if (typeof updateBranchedFilterNames === 'function') {
+        updateBranchedFilterNames();
     }
 
     // Update language selector state

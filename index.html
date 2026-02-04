@@ -17,25 +17,11 @@
         <button class="lang-btn" data-lang="ja">JA</button>
     </div>
 
-    <!-- Category Selector -->
-    <button class="category-trigger" id="categoryTrigger">
-        <span class="category-trigger-icon" id="categoryTriggerIcon"></span>
-        <span class="category-trigger-label" id="categoryTriggerLabel" data-i18n="categoryFood">Food</span>
-        <span class="category-trigger-arrow"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-    </button>
-    <div class="category-strip-overlay" id="categoryStripOverlay"></div>
-    <div class="category-strip" id="categoryStrip">
-        <div class="category-strip-inner" id="categoryStripInner">
-            <!-- Category options inserted by JS -->
-        </div>
-    </div>
-
-    <!-- Location Selector (area) -->
-    <div class="location-selector" id="locationSelector" style="display:none;"></div>
-
-    <!-- Collection Selector (video genre) -->
-    <div class="collection-selector" id="collectionSelector">
-        <!-- Collection pills will be dynamically inserted here -->
+    <!-- Branched Filter (Genre -> Area -> Video Genre) -->
+    <div class="branched-filter" id="branchedFilter">
+        <div class="filter-step" id="filterStepGenre"></div>
+        <div class="filter-step" id="filterStepArea" style="display:none;"></div>
+        <div class="filter-step" id="filterStepCollection" style="display:none;"></div>
     </div>
 
     <!-- Main video feed container -->

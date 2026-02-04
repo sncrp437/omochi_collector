@@ -4,6 +4,7 @@ omochi-fe-master@86f1b3461ee/
 
 # Internal docs with API URLs and dev details
 STANDALONE_FRONTEND_API_NOTES.md
+ARCHITECTURE.md
 ARCHITECTURE_NOTES.md
 \# AWS App Integration Strategy.md
 DEV_API_TESTING_REPORT.md
