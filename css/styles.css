@@ -374,6 +374,28 @@ body.has-tab-bar .video-wrapper {
     object-fit: contain; /* Prevent stretching */
 }
 
+/* X/Twitter embed wrapper - centered in reel slot */
+.video-wrapper.x-embed {
+    aspect-ratio: auto;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.video-wrapper.x-embed iframe {
+    position: relative;
+    width: 100%;
+    max-width: 550px;
+    height: 85%;
+    border: none;
+    border-radius: 12px;
+    background: #15202b;
+}
+
 /* Overlay content */
 .reel-overlay {
     position: absolute;
@@ -1404,7 +1426,7 @@ body.collections-body {
 
 .ad-placeholder {
     width: 100%;
-    min-height: 100px;
+    min-height: 50px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px dashed rgba(255, 255, 255, 0.15);
     border-radius: 8px;
@@ -1424,7 +1446,7 @@ body.collections-body {
 
 @media (min-width: 728px) {
     .ad-placeholder {
-        min-height: 90px;
+        min-height: 50px;
         max-width: 728px;
         margin-left: auto;
         margin-right: auto;

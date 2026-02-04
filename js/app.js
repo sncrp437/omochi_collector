@@ -111,9 +111,12 @@ function createReelItem(video, index) {
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
 
-    // Create 9:16 aspect ratio wrapper
+    // Create aspect ratio wrapper (9:16 for YouTube, flexible for X)
     const videoWrapper = document.createElement('div');
     videoWrapper.className = 'video-wrapper';
+    if (video.video_type === 'x') {
+        videoWrapper.classList.add('x-embed');
+    }
 
     // Create iframe based on video type
     const iframe = createVideoIframe(video, index);
@@ -131,20 +134,48 @@ function createReelItem(video, index) {
 }
 
 /**
- * Creates YouTube Shorts iframe element
+ * Creates video iframe element (YouTube or X/Twitter)
  * @param {Object} video - Video data object
  * @param {number} index - Video index
  * @returns {HTMLIFrameElement} iframe element
  */
 function createVideoIframe(video, index) {
+    if (video.video_type === 'x') {
+        return createXEmbed(video, index);
+    }
+    return createYouTubeIframe(video, index);
+}
+
+/**
+ * Creates YouTube Shorts iframe element
+ */
+function createYouTubeIframe(video, index) {
     const iframe = document.createElement('iframe');
     iframe.dataset.videoIndex = index;
+    iframe.dataset.videoType = 'youtube';
 
-    // YouTube Shorts embed with autoplay control via API
     iframe.src = `${video.url}?enablejsapi=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     iframe.allowFullscreen = true;
     iframe.title = video.caption || 'YouTube Short';
+
+    return iframe;
+}
+
+/**
+ * Creates X/Twitter tweet embed iframe
+ * Uses platform.twitter.com direct iframe (no widgets.js needed)
+ */
+function createXEmbed(video, index) {
+    const iframe = document.createElement('iframe');
+    iframe.dataset.videoIndex = index;
+    iframe.dataset.videoType = 'x';
+
+    iframe.src = `https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${video.tweet_id}&theme=dark`;
+    iframe.allow = 'autoplay; fullscreen';
+    iframe.allowFullscreen = true;
+    iframe.title = video.caption || 'X Post';
+    iframe.style.border = 'none';
 
     return iframe;
 }
@@ -287,12 +318,12 @@ function setupIntersectionObserver() {
 }
 
 /**
- * Play video (works for YouTube iframes)
+ * Play video (works for YouTube iframes; no-op for X embeds)
  * @param {HTMLIFrameElement} iframe - Video iframe element
  */
 function playVideo(iframe) {
     try {
-        // Send postMessage to YouTube iframe to play
+        if (iframe.dataset.videoType === 'x') return;
         iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     } catch (error) {
         console.error('Error playing video:', error);
@@ -300,12 +331,12 @@ function playVideo(iframe) {
 }
 
 /**
- * Pause video (works for YouTube iframes)
+ * Pause video (works for YouTube iframes; no-op for X embeds)
  * @param {HTMLIFrameElement} iframe - Video iframe element
  */
 function pauseVideo(iframe) {
     try {
-        // Send postMessage to YouTube iframe to pause
+        if (iframe.dataset.videoType === 'x') return;
         iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     } catch (error) {
         console.error('Error pausing video:', error);

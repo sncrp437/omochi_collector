@@ -37,6 +37,11 @@
             <h1 data-i18n="myCollectionsTitle">My Collections</h1>
         </header>
 
+        <!-- Ad Placeholder -->
+        <div class="ad-placeholder" id="adPlaceholder">
+            <span class="ad-placeholder-label">AD</span>
+        </div>
+
         <!-- Genre Filter Pills -->
         <div class="filter-section" id="genreFilterSection" style="display:none;">
             <div class="filter-label" data-i18n="cuisineLabel">Cuisine</div>
@@ -47,11 +52,6 @@
         <div class="filter-section" id="locationFilterSection" style="display:none;">
             <div class="filter-label" data-i18n="areaLabel">Area</div>
             <div class="filter-pills" id="locationFilterPills"></div>
-        </div>
-
-        <!-- Ad Placeholder -->
-        <div class="ad-placeholder" id="adPlaceholder">
-            <span class="ad-placeholder-label">AD</span>
         </div>
 
         <!-- Register Prompt Banner (shown for non-logged-in users with local collections) -->
@@ -124,7 +124,7 @@
                 <input type="tel" id="regPhone" data-i18n="phonePlaceholder" placeholder="Phone Number" required>
                 <input type="password" id="regPassword" data-i18n="passwordPlaceholder" placeholder="Password (6-12 chars)" required>
                 <input type="password" id="regPasswordConfirm" data-i18n="passwordConfirmPlaceholder" placeholder="Confirm Password" required>
-                <input type="text" id="regPrefecture" data-i18n="prefecturePlaceholder" placeholder="Prefecture" required>
+                <input type="text" id="regPrefecture" data-i18n="prefecturePlaceholder" placeholder="Country, City" required>
                 <button class="auth-btn auth-btn-primary" id="registerSubmit" data-i18n="registerBtn">Register</button>
                 <p class="auth-toggle">
                     <span data-i18n="hasAccount">Already have an account?</span>

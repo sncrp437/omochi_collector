@@ -1,6 +1,6 @@
 /**
  * Data fetching module for Google Sheets integration
- * Fetches YouTube Shorts data from Google Apps Script
+ * Fetches video data from Google Apps Script (supports YouTube and X/Twitter embeds)
  *
  * IMPORTANT: Replace GOOGLE_SHEETS_API_URL with your actual Google Apps Script web app URL
  */
@@ -39,7 +39,7 @@ async function fetchVideoData() {
  * Expected data structure from Google Sheets:
  * {
  *   id: "video_001",
- *   url: "https://www.youtube.com/embed/VIDEO_ID",
+ *   url: "https://www.youtube.com/embed/VIDEO_ID" or "https://x.com/user/status/TWEET_ID",
  *   caption_en: "English caption text",
  *   caption_ja: "Japanese caption text",
  *   venue_name: "Restaurant Name" (required),
@@ -49,6 +49,10 @@ async function fetchVideoData() {
  *   active: true (optional),
  *   tags: "tag1,tag2" (optional)
  * }
+ *
+ * Supported URL formats:
+ *   YouTube: https://www.youtube.com/embed/VIDEO_ID
+ *   X/Twitter: https://x.com/user/status/TWEET_ID or https://twitter.com/user/status/TWEET_ID
  */
 function getSampleData() {
     return {
@@ -94,6 +98,34 @@ function getSampleData() {
                 tags: 'sushi,japanese,fresh',
                 collection: 'trending',
                 priority: 5
+            },
+            {
+                id: 'sample_x_video_001',
+                url: 'https://x.com/SpoonUniv/status/1889814071781576891',
+                caption_en: 'Check out this amazing food video from X! Street food at its finest - crispy, juicy, and bursting with flavor.',
+                caption_ja: 'Xからの素晴らしいフードビデオ！最高のストリートフード - カリカリ、ジューシー、風味豊か。',
+                venue_name: 'X Video Food Post',
+                genre: 'Street Food',
+                address: 'Tokyo, Japan',
+                nearest_station: 'Shibuya',
+                nearest_station_en: 'Shibuya',
+                tags: 'streetfood,video,x',
+                collection: 'trending',
+                priority: 4
+            },
+            {
+                id: 'sample_x_text_001',
+                url: 'https://x.com/Eloha_JP/status/1886706336147763459',
+                caption_en: 'A great food recommendation tweet - discover hidden gems through the community!',
+                caption_ja: '素晴らしいグルメ情報ツイート - コミュニティを通じて隠れた名店を発見！',
+                venue_name: 'X Text Food Post',
+                genre: 'Japanese',
+                address: 'Osaka, Japan',
+                nearest_station: 'Roppongi',
+                nearest_station_en: 'Roppongi',
+                tags: 'recommendation,text,x',
+                collection: 'trending',
+                priority: 3
             }
         ],
         collections: [
@@ -134,7 +166,29 @@ function getSampleData() {
 }
 
 /**
- * Parses and validates YouTube Shorts data
+ * Detects video type from URL
+ * @param {string} url - Video URL
+ * @returns {string|null} 'youtube', 'x', or null if unsupported
+ */
+function detectVideoType(url) {
+    if (!url) return null;
+    if (url.includes('youtube.com/embed/')) return 'youtube';
+    if (url.includes('x.com/') || url.includes('twitter.com/')) return 'x';
+    return null;
+}
+
+/**
+ * Extracts tweet ID from an X/Twitter URL
+ * @param {string} url - X or Twitter URL (e.g., https://x.com/user/status/123456)
+ * @returns {string} Tweet ID or empty string
+ */
+function extractTweetId(url) {
+    var match = url.match(/status\/(\d+)/);
+    return match ? match[1] : '';
+}
+
+/**
+ * Parses and validates video data (YouTube and X/Twitter)
  * @param {Object|Array} rawData - Raw data from Google Sheets (new format: {videos, collections} or old format: array)
  * @returns {Array} Validated video data
  */
@@ -143,15 +197,16 @@ function parseVideoData(rawData) {
     const videosArray = rawData.videos || rawData;
 
     return videosArray.filter(item => {
-        // Validate required fields (id, url, caption_en)
+        // Validate required fields (url, caption_en)
         if (!item.url || !item.caption_en) {
             console.warn('Invalid video data - missing url or caption_en:', item);
             return false;
         }
 
-        // Ensure URL is a YouTube embed URL
-        if (!item.url.includes('youtube.com/embed/')) {
-            console.warn('Invalid video URL - must be YouTube embed format:', item.url);
+        // Detect video type from URL
+        var type = detectVideoType(item.url);
+        if (!type) {
+            console.warn('Unsupported video URL format:', item.url);
             return false;
         }
 
@@ -159,12 +214,18 @@ function parseVideoData(rawData) {
     }).map(item => {
         // Ensure all items have an id
         if (!item.id) {
-            item.id = 'video_' + Math.random().toString(36).substr(2, 9);
+            item.id = 'video_' + Math.random().toString(36).substring(2, 11);
         }
 
         // Ensure caption_ja exists (fallback to caption_en if not provided)
         if (!item.caption_ja) {
             item.caption_ja = item.caption_en;
+        }
+
+        // Attach video type and tweet_id for X posts
+        item.video_type = detectVideoType(item.url);
+        if (item.video_type === 'x') {
+            item.tweet_id = extractTweetId(item.url);
         }
 
         return item;
