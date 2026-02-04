@@ -219,6 +219,10 @@ function createOverlay(video) {
                 }
                 collectBtn.innerHTML = BOOKMARK_FILLED;
                 collectBtn.classList.add('collected');
+                // Meta Pixel: track collect as AddToWishlist
+                if (typeof fbq === 'function') {
+                    fbq('track', 'AddToWishlist', { content_name: video.venue_name || video.caption || video.id });
+                }
             } else {
                 if (typeof showToast === 'function') {
                     showToast(t('alreadyCollected'));
