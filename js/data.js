@@ -101,7 +101,7 @@ function getSampleData() {
             },
             {
                 id: 'sample_x_video_001',
-                url: 'https://x.com/SpoonUniv/status/1889814071781576891',
+                url: 'https://x.com/OmochiTeam/status/1994169145060151709',
                 caption_en: 'Check out this amazing food video from X! Street food at its finest - crispy, juicy, and bursting with flavor.',
                 caption_ja: 'Xからの素晴らしいフードビデオ！最高のストリートフード - カリカリ、ジューシー、風味豊か。',
                 venue_name: 'X Video Food Post',
