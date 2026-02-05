@@ -35,6 +35,9 @@
         <header class="collection-header">
             <a href="index.html" class="back-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> <span data-i18n="backBtn">Back</span></a>
             <h1 data-i18n="myCollectionsTitle">My Collections</h1>
+            <button class="folder-drawer-trigger" id="folderDrawerTrigger" title="Folders">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </button>
         </header>
 
         <!-- Ad Placeholder -->
@@ -146,6 +149,15 @@
                 <div class="venue-sheet-meta" id="venueSheetMeta"></div>
             </div>
 
+            <!-- Folder Row -->
+            <div class="venue-sheet-folder-row" id="venueSheetFolderRow" style="display:none;">
+                <div class="venue-sheet-folder-label">
+                    <span class="venue-sheet-folder-dot" id="venueSheetFolderDot"></span>
+                    <span class="venue-sheet-folder-name" id="venueSheetFolderName" data-i18n="uncategorized">Uncategorized</span>
+                </div>
+                <button class="venue-sheet-folder-change" id="venueSheetFolderChange" data-i18n="changeFolder">Change</button>
+            </div>
+
             <!-- My Note Section (always visible, prominent) -->
             <div class="venue-sheet-section venue-sheet-memo-section" id="venueSheetMemoSection">
                 <div class="venue-sheet-memo-header">
@@ -211,6 +223,56 @@
                 </div>
                 <div class="venue-sheet-tags-hint" id="venueSheetTagsHint"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Folder Sidebar Drawer -->
+    <div class="folder-drawer-overlay" id="folderDrawerOverlay"></div>
+    <aside class="folder-drawer" id="folderDrawer">
+        <div class="folder-drawer-header">
+            <h2 data-i18n="myFolders">My Folders</h2>
+            <button class="folder-drawer-close" id="folderDrawerClose">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="folder-drawer-list" id="folderDrawerList">
+            <!-- Folder items rendered dynamically -->
+        </div>
+        <div class="folder-drawer-actions">
+            <button class="folder-create-btn" id="folderCreateBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span data-i18n="createFolder">Create Folder</span>
+            </button>
+            <button class="folder-edit-btn" id="folderEditBtn" data-i18n="editFolders">Edit Folders</button>
+        </div>
+    </aside>
+
+    <!-- Folder Create/Edit Modal -->
+    <div class="folder-modal" id="folderModal">
+        <div class="folder-modal-overlay" id="folderModalOverlay"></div>
+        <div class="folder-modal-content">
+            <h3 id="folderModalTitle" data-i18n="createFolder">Create Folder</h3>
+            <input type="text" id="folderNameInput" data-i18n="folderNamePlaceholder" placeholder="Folder name" maxlength="20">
+            <div class="folder-color-picker" id="folderColorPicker">
+                <!-- Color buttons rendered dynamically -->
+            </div>
+            <div class="folder-modal-actions">
+                <button class="folder-modal-cancel" id="folderModalCancel" data-i18n="cancelBtn">Cancel</button>
+                <button class="folder-modal-save" id="folderModalSave" data-i18n="saveMemo">Save</button>
+            </div>
+            <button class="folder-modal-delete" id="folderModalDelete" style="display:none;" data-i18n="deleteFolder">Delete Folder</button>
+        </div>
+    </div>
+
+    <!-- Folder Picker (for changing venue folder from bottom sheet) -->
+    <div class="folder-picker-modal" id="folderPickerModal">
+        <div class="folder-picker-overlay" id="folderPickerOverlay"></div>
+        <div class="folder-picker-content">
+            <h3 data-i18n="selectFolder">Select Folder</h3>
+            <div class="folder-picker-list" id="folderPickerList">
+                <!-- Folder options rendered dynamically -->
+            </div>
+            <button class="folder-picker-cancel" id="folderPickerCancel" data-i18n="cancelBtn">Cancel</button>
         </div>
     </div>
 

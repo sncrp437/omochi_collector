@@ -1,11 +1,13 @@
 /**
- * Google Apps Script for Venue Tags & Memos
+ * Google Apps Script for Venue Tags, Memos & Folders
  * Deploy as Web App: Execute as me, Anyone can access
  *
  * Spreadsheet tabs required:
- *   tags        - timestamp | venue_id | tag_key | user_hash | session_id
- *   memos       - timestamp | venue_id | user_hash | memo_text
- *   rate_limits - timestamp | user_hash | action_type
+ *   tags          - timestamp | venue_id | tag_key | user_hash | session_id
+ *   memos         - timestamp | venue_id | user_hash | memo_text
+ *   folders       - timestamp | folder_id | user_hash | folder_name | color | order
+ *   venue_folders - timestamp | venue_id | folder_id | user_hash
+ *   rate_limits   - timestamp | user_hash | action_type
  */
 
 // === CONFIGURATION ===
@@ -16,9 +18,22 @@ var VALID_TAGS = [
   'lively_fun', 'pet_friendly', 'great_drinks', 'photogenic'
 ];
 
-var RATE_LIMITS = { tag: 30, memo: 10 }; // per user_hash per hour
+var RATE_LIMITS = { tag: 30, memo: 10, folder: 20 }; // per user_hash per hour
 var MEMO_MAX_LENGTH = 500;
+var FOLDER_NAME_MAX_LENGTH = 20;
+var MAX_FOLDERS_PER_USER = 20;
 var BATCH_MAX_VENUE_IDS = 20;
+
+var FOLDER_COLORS = [
+  '#FF6B9D', // Pink
+  '#4A90D9', // Blue
+  '#50C878', // Green
+  '#FFB347', // Orange
+  '#9B59B6', // Purple
+  '#F39C12', // Gold
+  '#1ABC9C', // Teal
+  '#E74C3C'  // Red
+];
 
 var ALLOWED_ORIGINS = [
   'https://sncrp437.github.io',
@@ -94,6 +109,22 @@ function _sanitizeMemo(text) {
   return text.substring(0, MEMO_MAX_LENGTH).trim();
 }
 
+function _sanitizeFolderName(name) {
+  if (!name || typeof name !== 'string') return '';
+  // Strip HTML tags
+  name = name.replace(/<[^>]*>/g, '');
+  // Trim to max length
+  return name.substring(0, FOLDER_NAME_MAX_LENGTH).trim();
+}
+
+function _isValidFolderId(id) {
+  return id && typeof id === 'string' && /^folder_\d+$/.test(id);
+}
+
+function _isValidColor(color) {
+  return color && typeof color === 'string' && FOLDER_COLORS.indexOf(color) !== -1;
+}
+
 // === GET HANDLERS ===
 
 function doGet(e) {
@@ -108,6 +139,10 @@ function doGet(e) {
       return _handleGetMyTags(e);
     case 'get_memo':
       return _handleGetMemo(e);
+    case 'get_folders':
+      return _handleGetFolders(e);
+    case 'get_venue_folders':
+      return _handleGetVenueFolders(e);
     default:
       return _errorResponse('Unknown action: ' + action);
   }
@@ -202,6 +237,52 @@ function _handleGetMemo(e) {
   return _jsonResponse({ status: 'ok', venue_id: venueId, memo: null });
 }
 
+function _handleGetFolders(e) {
+  var userHash = e.parameter.user_hash;
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('folders');
+  if (!sheet) return _jsonResponse({ status: 'ok', folders: [] });
+
+  var data = sheet.getDataRange().getValues();
+  var folders = [];
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === userHash) {
+      folders.push({
+        id: data[i][1],
+        name: data[i][3],
+        color: data[i][4],
+        order: data[i][5] || 0
+      });
+    }
+  }
+
+  // Sort by order
+  folders.sort(function(a, b) { return a.order - b.order; });
+
+  return _jsonResponse({ status: 'ok', folders: folders });
+}
+
+function _handleGetVenueFolders(e) {
+  var userHash = e.parameter.user_hash;
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('venue_folders');
+  if (!sheet) return _jsonResponse({ status: 'ok', venue_folders: {} });
+
+  var data = sheet.getDataRange().getValues();
+  var venueFolders = {};
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][3] === userHash) {
+      venueFolders[data[i][1]] = data[i][2]; // venue_id -> folder_id
+    }
+  }
+
+  return _jsonResponse({ status: 'ok', venue_folders: venueFolders });
+}
+
 // === POST HANDLERS ===
 
 function doPost(e) {
@@ -221,6 +302,14 @@ function doPost(e) {
       return _handleRemoveTag(body);
     case 'save_memo':
       return _handleSaveMemo(body);
+    case 'save_folder':
+      return _handleSaveFolder(body);
+    case 'delete_folder':
+      return _handleDeleteFolder(body);
+    case 'set_venue_folder':
+      return _handleSetVenueFolder(body);
+    case 'remove_venue_folder':
+      return _handleRemoveVenueFolder(body);
     default:
       return _errorResponse('Unknown action: ' + action);
   }
@@ -316,4 +405,162 @@ function _handleSaveMemo(body) {
   _logRateLimit(userHash, 'memo');
 
   return _jsonResponse({ status: 'ok', action: 'saved' });
+}
+
+// === FOLDER HANDLERS ===
+
+function _handleSaveFolder(body) {
+  var folderId = body.folder_id;
+  var userHash = body.user_hash;
+  var folderName = _sanitizeFolderName(body.folder_name);
+  var color = body.color;
+  var order = typeof body.order === 'number' ? body.order : 0;
+
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+  if (!folderName) return _errorResponse('Folder name is required');
+  if (!_isValidColor(color)) color = FOLDER_COLORS[0]; // Default to first color
+
+  // Rate limit check
+  if (!_checkRateLimit(userHash, 'folder')) {
+    return _errorResponse('Rate limit exceeded. Try again later.', 429);
+  }
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('folders');
+  if (!sheet) return _errorResponse('Folders sheet not found');
+
+  var data = sheet.getDataRange().getValues();
+
+  // Count existing folders for this user
+  var userFolderCount = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === userHash) userFolderCount++;
+  }
+
+  // If new folder (no folderId), check limit
+  if (!folderId && userFolderCount >= MAX_FOLDERS_PER_USER) {
+    return _errorResponse('Maximum folder limit reached (' + MAX_FOLDERS_PER_USER + ')');
+  }
+
+  // Generate new folder ID if not provided
+  if (!folderId) {
+    folderId = 'folder_' + Date.now();
+  } else if (!_isValidFolderId(folderId)) {
+    return _errorResponse('Invalid folder_id format');
+  }
+
+  // Check if updating existing folder
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === folderId && data[i][2] === userHash) {
+      // Update existing folder
+      sheet.getRange(i + 1, 1).setValue(new Date());      // timestamp
+      sheet.getRange(i + 1, 4).setValue(folderName);       // folder_name
+      sheet.getRange(i + 1, 5).setValue(color);            // color
+      sheet.getRange(i + 1, 6).setValue(order);            // order
+      _logRateLimit(userHash, 'folder');
+      return _jsonResponse({ status: 'ok', action: 'updated', folder_id: folderId });
+    }
+  }
+
+  // New folder
+  sheet.appendRow([new Date(), folderId, userHash, folderName, color, order]);
+  _logRateLimit(userHash, 'folder');
+
+  return _jsonResponse({ status: 'ok', action: 'created', folder_id: folderId });
+}
+
+function _handleDeleteFolder(body) {
+  var folderId = body.folder_id;
+  var userHash = body.user_hash;
+
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+  if (!_isValidFolderId(folderId)) return _errorResponse('Invalid folder_id');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('folders');
+  if (!sheet) return _errorResponse('Folders sheet not found');
+
+  // Find and delete the folder
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === folderId && data[i][2] === userHash) {
+      sheet.deleteRow(i + 1);
+
+      // Also remove all venue-folder associations for this folder
+      _removeAllVenueFolderAssociations(folderId, userHash);
+
+      return _jsonResponse({ status: 'ok', action: 'deleted' });
+    }
+  }
+
+  return _jsonResponse({ status: 'ok', action: 'not_found' });
+}
+
+function _removeAllVenueFolderAssociations(folderId, userHash) {
+  var sheet = SpreadsheetApp.getActive().getSheetByName('venue_folders');
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  // Delete from bottom to top to avoid index shifting issues
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][2] === folderId && data[i][3] === userHash) {
+      sheet.deleteRow(i + 1);
+    }
+  }
+}
+
+function _handleSetVenueFolder(body) {
+  var venueId = body.venue_id;
+  var folderId = body.folder_id;
+  var userHash = body.user_hash;
+
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+  if (!_isValidVenueId(venueId)) return _errorResponse('Invalid venue_id');
+  if (!_isValidFolderId(folderId)) return _errorResponse('Invalid folder_id');
+
+  // Rate limit check
+  if (!_checkRateLimit(userHash, 'folder')) {
+    return _errorResponse('Rate limit exceeded. Try again later.', 429);
+  }
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('venue_folders');
+  if (!sheet) return _errorResponse('Venue folders sheet not found');
+
+  var data = sheet.getDataRange().getValues();
+
+  // Check if venue already has a folder assignment
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === venueId && data[i][3] === userHash) {
+      // Update existing assignment
+      sheet.getRange(i + 1, 1).setValue(new Date());       // timestamp
+      sheet.getRange(i + 1, 3).setValue(folderId);          // folder_id
+      _logRateLimit(userHash, 'folder');
+      return _jsonResponse({ status: 'ok', action: 'updated' });
+    }
+  }
+
+  // New assignment
+  sheet.appendRow([new Date(), venueId, folderId, userHash]);
+  _logRateLimit(userHash, 'folder');
+
+  return _jsonResponse({ status: 'ok', action: 'assigned' });
+}
+
+function _handleRemoveVenueFolder(body) {
+  var venueId = body.venue_id;
+  var userHash = body.user_hash;
+
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+  if (!_isValidVenueId(venueId)) return _errorResponse('Invalid venue_id');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('venue_folders');
+  if (!sheet) return _errorResponse('Venue folders sheet not found');
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === venueId && data[i][3] === userHash) {
+      sheet.deleteRow(i + 1);
+      return _jsonResponse({ status: 'ok', action: 'removed' });
+    }
+  }
+
+  return _jsonResponse({ status: 'ok', action: 'not_found' });
 }

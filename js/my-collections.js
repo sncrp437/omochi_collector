@@ -6,8 +6,12 @@
 var _allMergedItems = [];
 var _activeGenreFilter = null;
 var _activeLocationFilter = null;
+var _activeFolderFilter = null; // null = All, 'uncategorized' = no folder, folder_id = specific folder
 var _aiFilteredIndices = null;
 var _aiFilterQuery = '';
+var _userFolders = [];
+var _venueFolders = {};
+var _editingFolderId = null; // For folder edit modal
 
 /**
  * Initialize the collections page
@@ -87,6 +91,10 @@ async function initCollectionsPage() {
         var logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.style.display = 'block';
     }
+
+    // 9. Load folders and setup drawer
+    await _loadFolders();
+    _setupFolderDrawer();
 }
 
 /**
@@ -190,7 +198,7 @@ function _renderAllCards() {
 }
 
 /**
- * Get filtered items based on active genre and location filters
+ * Get filtered items based on active folder, genre, and location filters
  */
 function _getFilteredItems() {
     // If AI filter is active, return only AI-matched items
@@ -202,6 +210,17 @@ function _getFilteredItems() {
 
     return _allMergedItems.filter(function(item) {
         var info = _getVenueInfo(item);
+        var venueId = _getItemVenueId(item);
+
+        // Folder filter
+        if (_activeFolderFilter !== null) {
+            var itemFolder = venueId ? _venueFolders[venueId] : null;
+            if (_activeFolderFilter === 'uncategorized') {
+                if (itemFolder) return false; // Has a folder, skip
+            } else {
+                if (itemFolder !== _activeFolderFilter) return false;
+            }
+        }
 
         if (_activeGenreFilter && info.genre !== _activeGenreFilter) {
             return false;
@@ -211,6 +230,16 @@ function _getFilteredItems() {
         }
         return true;
     });
+}
+
+/**
+ * Get venue ID from merged item (for folder lookups)
+ */
+function _getItemVenueId(item) {
+    if (item.source === 'api') {
+        return item.data.venue || item.data.id || null;
+    }
+    return item.data.venue_uuid || item.data.video_id || item.data.id || null;
 }
 
 /**
@@ -303,6 +332,20 @@ function _createUnifiedCard(item) {
         addressEl.className = 'venue-card-address';
         addressEl.textContent = info.address;
         infoDiv.appendChild(addressEl);
+    }
+
+    // Folder indicator
+    var cardVenueId = _getItemVenueId(item);
+    var cardFolderId = cardVenueId ? _venueFolders[cardVenueId] : null;
+    if (cardFolderId) {
+        var folder = _userFolders.find(function(f) { return f.id === cardFolderId; });
+        if (folder) {
+            var folderEl = document.createElement('div');
+            folderEl.className = 'venue-card-folder';
+            folderEl.innerHTML = '<span class="venue-card-folder-dot" style="background:' + folder.color + ';"></span>' +
+                                 _escapeHtml(folder.name);
+            infoDiv.appendChild(folderEl);
+        }
     }
 
     // Tag badges placeholder (populated async)
@@ -728,6 +771,503 @@ async function _executeAiFilter(query) {
 }
 
 // =============================================================================
+// Folder Drawer & Management
+// =============================================================================
+
+/**
+ * Load folders from API (or localStorage for guests)
+ */
+async function _loadFolders() {
+    if (typeof fetchFolders === 'function') {
+        _userFolders = await fetchFolders();
+    } else {
+        _userFolders = getLocalFolders ? getLocalFolders() : [];
+    }
+
+    if (typeof fetchVenueFolders === 'function') {
+        _venueFolders = await fetchVenueFolders();
+    } else {
+        _venueFolders = getLocalVenueFolders ? getLocalVenueFolders() : {};
+    }
+}
+
+/**
+ * Setup folder drawer event handlers
+ */
+function _setupFolderDrawer() {
+    var trigger = document.getElementById('folderDrawerTrigger');
+    var drawer = document.getElementById('folderDrawer');
+    var overlay = document.getElementById('folderDrawerOverlay');
+    var closeBtn = document.getElementById('folderDrawerClose');
+    var createBtn = document.getElementById('folderCreateBtn');
+    var editBtn = document.getElementById('folderEditBtn');
+
+    if (trigger) {
+        trigger.addEventListener('click', function() {
+            _openFolderDrawer();
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            _closeFolderDrawer();
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            _closeFolderDrawer();
+        });
+    }
+
+    if (createBtn) {
+        createBtn.addEventListener('click', function() {
+            _openFolderModal(null); // null = create new
+        });
+    }
+
+    if (editBtn) {
+        editBtn.addEventListener('click', function() {
+            // Toggle edit mode (show edit buttons on folders)
+            editBtn.classList.toggle('active');
+            _renderFolderDrawerList();
+        });
+    }
+
+    // Setup folder modal
+    _setupFolderModal();
+}
+
+/**
+ * Open the folder drawer
+ */
+function _openFolderDrawer() {
+    var drawer = document.getElementById('folderDrawer');
+    var overlay = document.getElementById('folderDrawerOverlay');
+    if (drawer) drawer.classList.add('active');
+    if (overlay) overlay.classList.add('active');
+    _renderFolderDrawerList();
+}
+
+/**
+ * Close the folder drawer
+ */
+function _closeFolderDrawer() {
+    var drawer = document.getElementById('folderDrawer');
+    var overlay = document.getElementById('folderDrawerOverlay');
+    var editBtn = document.getElementById('folderEditBtn');
+    if (drawer) drawer.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    if (editBtn) editBtn.classList.remove('active');
+}
+
+/**
+ * Render the folder list inside the drawer
+ */
+function _renderFolderDrawerList() {
+    var container = document.getElementById('folderDrawerList');
+    if (!container) return;
+
+    var isEditMode = document.getElementById('folderEditBtn')?.classList.contains('active');
+    container.innerHTML = '';
+
+    // Count venues per folder
+    var folderCounts = { all: _allMergedItems.length, uncategorized: 0 };
+    _userFolders.forEach(function(f) { folderCounts[f.id] = 0; });
+
+    _allMergedItems.forEach(function(item) {
+        var venueId = _getItemVenueId(item);
+        var folderId = venueId ? _venueFolders[venueId] : null;
+        if (folderId && folderCounts[folderId] !== undefined) {
+            folderCounts[folderId]++;
+        } else {
+            folderCounts.uncategorized++;
+        }
+    });
+
+    // "All" item
+    var allItem = document.createElement('div');
+    allItem.className = 'folder-drawer-item' + (_activeFolderFilter === null ? ' active' : '');
+    allItem.innerHTML = '<div class="folder-drawer-color" style="background:#888;"></div>' +
+                        '<span class="folder-drawer-name">' + t('allGenres') + '</span>' +
+                        '<span class="folder-drawer-count">' + folderCounts.all + '</span>';
+    allItem.addEventListener('click', function() {
+        _activeFolderFilter = null;
+        localStorage.setItem('collectionsFolderFilter', '');
+        _closeFolderDrawer();
+        _renderAllCards();
+    });
+    container.appendChild(allItem);
+
+    // User folders
+    _userFolders.forEach(function(folder) {
+        var item = document.createElement('div');
+        item.className = 'folder-drawer-item' + (_activeFolderFilter === folder.id ? ' active' : '');
+
+        var colorDot = '<div class="folder-drawer-color" style="background:' + folder.color + ';"></div>';
+        var nameSpan = '<span class="folder-drawer-name">' + _escapeHtml(folder.name) + '</span>';
+        var countSpan = '<span class="folder-drawer-count">' + (folderCounts[folder.id] || 0) + '</span>';
+
+        if (isEditMode) {
+            // Add edit button
+            item.innerHTML = colorDot + nameSpan + countSpan +
+                '<button class="folder-drawer-edit-btn" data-folder-id="' + folder.id + '">' +
+                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+                '</button>';
+            var editBtnEl = item.querySelector('.folder-drawer-edit-btn');
+            if (editBtnEl) {
+                editBtnEl.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    _openFolderModal(folder.id);
+                });
+            }
+        } else {
+            item.innerHTML = colorDot + nameSpan + countSpan;
+        }
+
+        item.addEventListener('click', function(e) {
+            if (e.target.closest('.folder-drawer-edit-btn')) return;
+            _activeFolderFilter = folder.id;
+            localStorage.setItem('collectionsFolderFilter', folder.id);
+            _closeFolderDrawer();
+            _renderAllCards();
+        });
+        container.appendChild(item);
+    });
+
+    // Divider
+    if (_userFolders.length > 0 || folderCounts.uncategorized > 0) {
+        var divider = document.createElement('div');
+        divider.className = 'folder-drawer-divider';
+        container.appendChild(divider);
+    }
+
+    // "Uncategorized" item
+    if (folderCounts.uncategorized > 0) {
+        var uncatItem = document.createElement('div');
+        uncatItem.className = 'folder-drawer-item' + (_activeFolderFilter === 'uncategorized' ? ' active' : '');
+        uncatItem.innerHTML = '<div class="folder-drawer-color" style="background:#555;"></div>' +
+                              '<span class="folder-drawer-name">' + t('uncategorized') + '</span>' +
+                              '<span class="folder-drawer-count">' + folderCounts.uncategorized + '</span>';
+        uncatItem.addEventListener('click', function() {
+            _activeFolderFilter = 'uncategorized';
+            localStorage.setItem('collectionsFolderFilter', 'uncategorized');
+            _closeFolderDrawer();
+            _renderAllCards();
+        });
+        container.appendChild(uncatItem);
+    }
+}
+
+/**
+ * Setup folder create/edit modal
+ */
+function _setupFolderModal() {
+    var modal = document.getElementById('folderModal');
+    var overlay = document.getElementById('folderModalOverlay');
+    var cancelBtn = document.getElementById('folderModalCancel');
+    var saveBtn = document.getElementById('folderModalSave');
+    var deleteBtn = document.getElementById('folderModalDelete');
+    var colorPicker = document.getElementById('folderColorPicker');
+
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            _closeFolderModal();
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            _closeFolderModal();
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            _saveFolderFromModal();
+        });
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            _deleteFolderFromModal();
+        });
+    }
+
+    // Render color buttons
+    if (colorPicker && typeof FOLDER_COLORS !== 'undefined') {
+        colorPicker.innerHTML = '';
+        FOLDER_COLORS.forEach(function(color, idx) {
+            var btn = document.createElement('button');
+            btn.className = 'folder-color-btn' + (idx === 0 ? ' active' : '');
+            btn.style.background = color;
+            btn.dataset.color = color;
+            btn.addEventListener('click', function() {
+                colorPicker.querySelectorAll('.folder-color-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+            });
+            colorPicker.appendChild(btn);
+        });
+    }
+}
+
+/**
+ * Open folder modal for create or edit
+ */
+function _openFolderModal(folderId) {
+    var modal = document.getElementById('folderModal');
+    var titleEl = document.getElementById('folderModalTitle');
+    var nameInput = document.getElementById('folderNameInput');
+    var deleteBtn = document.getElementById('folderModalDelete');
+    var colorPicker = document.getElementById('folderColorPicker');
+
+    _editingFolderId = folderId;
+
+    if (folderId) {
+        // Edit mode
+        var folder = _userFolders.find(function(f) { return f.id === folderId; });
+        if (!folder) return;
+
+        if (titleEl) titleEl.textContent = t('editFolder');
+        if (nameInput) nameInput.value = folder.name;
+        if (deleteBtn) deleteBtn.style.display = 'block';
+
+        // Select color
+        if (colorPicker) {
+            colorPicker.querySelectorAll('.folder-color-btn').forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.color === folder.color);
+            });
+        }
+    } else {
+        // Create mode
+        if (titleEl) titleEl.textContent = t('createFolder');
+        if (nameInput) nameInput.value = '';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+
+        // Select first color
+        if (colorPicker) {
+            colorPicker.querySelectorAll('.folder-color-btn').forEach(function(btn, idx) {
+                btn.classList.toggle('active', idx === 0);
+            });
+        }
+    }
+
+    if (modal) modal.classList.add('active');
+    if (nameInput) nameInput.focus();
+}
+
+/**
+ * Close folder modal
+ */
+function _closeFolderModal() {
+    var modal = document.getElementById('folderModal');
+    if (modal) modal.classList.remove('active');
+    _editingFolderId = null;
+}
+
+/**
+ * Save folder from modal
+ */
+async function _saveFolderFromModal() {
+    var nameInput = document.getElementById('folderNameInput');
+    var colorPicker = document.getElementById('folderColorPicker');
+
+    var name = nameInput ? nameInput.value.trim() : '';
+    if (!name) {
+        nameInput?.focus();
+        return;
+    }
+
+    var activeColorBtn = colorPicker?.querySelector('.folder-color-btn.active');
+    var color = activeColorBtn ? activeColorBtn.dataset.color : FOLDER_COLORS[0];
+
+    // Save folder
+    if (typeof saveFolder === 'function') {
+        var folder = await saveFolder(_editingFolderId, name, color);
+        if (folder) {
+            // Refresh folders
+            await _loadFolders();
+            _renderFolderDrawerList();
+        }
+    }
+
+    _closeFolderModal();
+}
+
+/**
+ * Delete folder from modal
+ */
+async function _deleteFolderFromModal() {
+    if (!_editingFolderId) return;
+
+    if (typeof deleteFolder === 'function') {
+        await deleteFolder(_editingFolderId);
+        // If we were filtering by this folder, reset
+        if (_activeFolderFilter === _editingFolderId) {
+            _activeFolderFilter = null;
+            localStorage.setItem('collectionsFolderFilter', '');
+        }
+        await _loadFolders();
+        _renderFolderDrawerList();
+        _renderAllCards();
+    }
+
+    _closeFolderModal();
+}
+
+/**
+ * Escape HTML for safe rendering
+ */
+function _escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// =============================================================================
+// Folder Picker (for changing venue folder from bottom sheet)
+// =============================================================================
+
+var _folderPickerVenueId = null;
+
+/**
+ * Render folder row in bottom sheet
+ */
+function _renderSheetFolderRow(venueId) {
+    var row = document.getElementById('venueSheetFolderRow');
+    var dotEl = document.getElementById('venueSheetFolderDot');
+    var nameEl = document.getElementById('venueSheetFolderName');
+    var changeBtn = document.getElementById('venueSheetFolderChange');
+
+    if (!row) return;
+
+    // Always show folder row (even uncategorized)
+    row.style.display = 'flex';
+
+    var folderId = venueId ? _venueFolders[venueId] : null;
+    var folder = folderId ? _userFolders.find(function(f) { return f.id === folderId; }) : null;
+
+    if (folder) {
+        if (dotEl) dotEl.style.background = folder.color;
+        if (nameEl) nameEl.textContent = folder.name;
+    } else {
+        if (dotEl) dotEl.style.background = '#555';
+        if (nameEl) nameEl.textContent = t('uncategorized');
+    }
+
+    // Setup change button
+    if (changeBtn) {
+        changeBtn.onclick = function() {
+            _openFolderPicker(venueId);
+        };
+    }
+}
+
+/**
+ * Open folder picker modal
+ */
+function _openFolderPicker(venueId) {
+    var modal = document.getElementById('folderPickerModal');
+    var overlay = document.getElementById('folderPickerOverlay');
+    var cancelBtn = document.getElementById('folderPickerCancel');
+    var list = document.getElementById('folderPickerList');
+
+    if (!modal || !list) return;
+
+    _folderPickerVenueId = venueId;
+    var currentFolderId = venueId ? _venueFolders[venueId] : null;
+
+    // Render folder options
+    list.innerHTML = '';
+
+    // "None" option (uncategorized)
+    var noneItem = document.createElement('div');
+    noneItem.className = 'folder-picker-item' + (!currentFolderId ? ' active' : '');
+    noneItem.innerHTML = '<span class="folder-picker-item-dot" style="background:#555;"></span>' +
+                         '<span class="folder-picker-item-name">' + t('uncategorized') + '</span>' +
+                         '<svg class="folder-picker-item-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    noneItem.addEventListener('click', function() {
+        _selectFolderForVenue(venueId, null);
+    });
+    list.appendChild(noneItem);
+
+    // User folders
+    _userFolders.forEach(function(folder) {
+        var item = document.createElement('div');
+        item.className = 'folder-picker-item' + (currentFolderId === folder.id ? ' active' : '');
+        item.innerHTML = '<span class="folder-picker-item-dot" style="background:' + folder.color + ';"></span>' +
+                         '<span class="folder-picker-item-name">' + _escapeHtml(folder.name) + '</span>' +
+                         '<svg class="folder-picker-item-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+        item.addEventListener('click', function() {
+            _selectFolderForVenue(venueId, folder.id);
+        });
+        list.appendChild(item);
+    });
+
+    // Setup close handlers
+    if (overlay) {
+        overlay.onclick = function() {
+            _closeFolderPicker();
+        };
+    }
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            _closeFolderPicker();
+        };
+    }
+
+    modal.classList.add('active');
+}
+
+/**
+ * Close folder picker modal
+ */
+function _closeFolderPicker() {
+    var modal = document.getElementById('folderPickerModal');
+    if (modal) modal.classList.remove('active');
+    _folderPickerVenueId = null;
+}
+
+/**
+ * Select a folder for a venue
+ */
+async function _selectFolderForVenue(venueId, folderId) {
+    if (!venueId) {
+        _closeFolderPicker();
+        return;
+    }
+
+    // Update local cache
+    if (folderId) {
+        _venueFolders[venueId] = folderId;
+    } else {
+        delete _venueFolders[venueId];
+    }
+
+    // Sync to API
+    if (typeof setVenueFolder === 'function') {
+        await setVenueFolder(venueId, folderId);
+    }
+
+    // Update bottom sheet folder row
+    _renderSheetFolderRow(venueId);
+
+    // Re-render cards in case filter is active
+    _renderAllCards();
+
+    _closeFolderPicker();
+
+    // Show toast
+    if (typeof showToast === 'function') {
+        var folder = folderId ? _userFolders.find(function(f) { return f.id === folderId; }) : null;
+        var msg = folder ? t('movedToFolder').replace('{folder}', folder.name) : t('removedFromFolder');
+        showToast(msg);
+    }
+}
+
+// =============================================================================
 // Venue Detail Bottom Sheet
 // =============================================================================
 
@@ -786,6 +1326,9 @@ async function _openVenueSheet(item) {
         if (info.address) metaParts.push(info.address);
         metaEl.textContent = metaParts.join(' \u00B7 ');
     }
+
+    // Render folder row (before memo)
+    _renderSheetFolderRow(venueId);
 
     // Render memo section (prominent, always visible)
     await _renderSheetMemo(venueId);

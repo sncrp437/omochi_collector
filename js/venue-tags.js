@@ -26,10 +26,24 @@ var VENUE_TAGS = [
     { key: 'photogenic', icon: _tagSvg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'), en: 'Photogenic', ja: '\u30D5\u30A9\u30C8\u30B8\u30A7\u30CB\u30C3\u30AF' }
 ];
 
-// Session cache for tags/memos to avoid redundant API calls
+// Session cache for tags/memos/folders to avoid redundant API calls
 var _tagsCache = {};
 var _memosCache = {};
 var _myTagsCache = {};
+var _foldersCache = null;
+var _venueFoldersCache = null;
+
+// Folder color presets (must match Apps Script)
+var FOLDER_COLORS = [
+    '#FF6B9D', // Pink
+    '#4A90D9', // Blue
+    '#50C878', // Green
+    '#FFB347', // Orange
+    '#9B59B6', // Purple
+    '#F39C12', // Gold
+    '#1ABC9C', // Teal
+    '#E74C3C'  // Red
+];
 
 /**
  * Check if the tags API is configured
@@ -295,4 +309,276 @@ function getVenueIdFromItem(item) {
         return item.data.venue || item.data.id || null;
     }
     return item.data.venue_uuid || item.data.id || null;
+}
+
+// =============================================================================
+// Folder Operations
+// =============================================================================
+
+/**
+ * Fetch all folders for the current user
+ */
+async function fetchFolders() {
+    if (!isTagsApiConfigured()) return [];
+
+    var userHash = await getUserHash();
+    if (!userHash) return getLocalFolders(); // Return local folders for guests
+
+    // Check cache (5 min TTL)
+    if (_foldersCache && Date.now() - _foldersCache.time < 300000) {
+        return _foldersCache.data;
+    }
+
+    try {
+        var url = TAGS_API_URL + '?action=get_folders&user_hash=' + encodeURIComponent(userHash);
+        var response = await fetch(url);
+        var result = await response.json();
+        if (result.status === 'ok') {
+            _foldersCache = { data: result.folders, time: Date.now() };
+            // Also update local cache
+            setLocalFolders(result.folders);
+            return result.folders;
+        }
+    } catch (err) {
+        console.warn('Failed to fetch folders:', err);
+    }
+    return getLocalFolders(); // Fallback to local
+}
+
+/**
+ * Fetch venue-folder mappings for the current user
+ */
+async function fetchVenueFolders() {
+    if (!isTagsApiConfigured()) return {};
+
+    var userHash = await getUserHash();
+    if (!userHash) return getLocalVenueFolders(); // Return local mappings for guests
+
+    // Check cache
+    if (_venueFoldersCache && Date.now() - _venueFoldersCache.time < 300000) {
+        return _venueFoldersCache.data;
+    }
+
+    try {
+        var url = TAGS_API_URL + '?action=get_venue_folders&user_hash=' + encodeURIComponent(userHash);
+        var response = await fetch(url);
+        var result = await response.json();
+        if (result.status === 'ok') {
+            _venueFoldersCache = { data: result.venue_folders, time: Date.now() };
+            // Also update local cache
+            setLocalVenueFolders(result.venue_folders);
+            return result.venue_folders;
+        }
+    } catch (err) {
+        console.warn('Failed to fetch venue folders:', err);
+    }
+    return getLocalVenueFolders(); // Fallback to local
+}
+
+/**
+ * Create or update a folder
+ */
+async function saveFolder(folderId, name, color, order) {
+    // Save to local cache first
+    var localFolders = getLocalFolders();
+    var existingIdx = localFolders.findIndex(function(f) { return f.id === folderId; });
+
+    var folder = {
+        id: folderId || 'folder_' + Date.now(),
+        name: name,
+        color: color || FOLDER_COLORS[0],
+        order: typeof order === 'number' ? order : localFolders.length
+    };
+
+    if (existingIdx >= 0) {
+        localFolders[existingIdx] = folder;
+    } else {
+        localFolders.push(folder);
+    }
+    setLocalFolders(localFolders);
+
+    // If logged in, sync to API
+    if (!isTagsApiConfigured()) return folder;
+
+    var userHash = await getUserHash();
+    if (!userHash) return folder; // Guest - local only
+
+    try {
+        var response = await fetch(TAGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'save_folder',
+                folder_id: folder.id,
+                user_hash: userHash,
+                folder_name: name,
+                color: folder.color,
+                order: folder.order
+            })
+        });
+        var result = await response.json();
+        if (result.status === 'ok') {
+            folder.id = result.folder_id || folder.id;
+            // Invalidate cache
+            _foldersCache = null;
+        }
+    } catch (err) {
+        console.warn('Failed to save folder to API:', err);
+    }
+    return folder;
+}
+
+/**
+ * Delete a folder
+ */
+async function deleteFolder(folderId) {
+    // Remove from local cache
+    var localFolders = getLocalFolders();
+    localFolders = localFolders.filter(function(f) { return f.id !== folderId; });
+    setLocalFolders(localFolders);
+
+    // Remove venue-folder associations
+    var venueFolders = getLocalVenueFolders();
+    Object.keys(venueFolders).forEach(function(venueId) {
+        if (venueFolders[venueId] === folderId) {
+            delete venueFolders[venueId];
+        }
+    });
+    setLocalVenueFolders(venueFolders);
+
+    // If logged in, sync to API
+    if (!isTagsApiConfigured()) return true;
+
+    var userHash = await getUserHash();
+    if (!userHash) return true; // Guest - local only
+
+    try {
+        var response = await fetch(TAGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete_folder',
+                folder_id: folderId,
+                user_hash: userHash
+            })
+        });
+        var result = await response.json();
+        if (result.status === 'ok') {
+            _foldersCache = null;
+            _venueFoldersCache = null;
+        }
+        return result.status === 'ok';
+    } catch (err) {
+        console.warn('Failed to delete folder from API:', err);
+    }
+    return true; // Local delete succeeded
+}
+
+/**
+ * Assign a venue to a folder
+ */
+async function setVenueFolder(venueId, folderId) {
+    // Save to local cache first
+    var venueFolders = getLocalVenueFolders();
+    if (folderId) {
+        venueFolders[venueId] = folderId;
+    } else {
+        delete venueFolders[venueId];
+    }
+    setLocalVenueFolders(venueFolders);
+
+    // If logged in, sync to API
+    if (!isTagsApiConfigured()) return true;
+
+    var userHash = await getUserHash();
+    if (!userHash) return true; // Guest - local only
+
+    try {
+        var action = folderId ? 'set_venue_folder' : 'remove_venue_folder';
+        var body = {
+            action: action,
+            venue_id: venueId,
+            user_hash: userHash
+        };
+        if (folderId) body.folder_id = folderId;
+
+        var response = await fetch(TAGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        var result = await response.json();
+        if (result.status === 'ok') {
+            _venueFoldersCache = null;
+        }
+        return result.status === 'ok';
+    } catch (err) {
+        console.warn('Failed to set venue folder via API:', err);
+    }
+    return true; // Local update succeeded
+}
+
+/**
+ * Get folder for a venue (from cache)
+ */
+function getVenueFolderSync(venueId) {
+    var venueFolders = getLocalVenueFolders();
+    return venueFolders[venueId] || null;
+}
+
+/**
+ * Get folder by ID (from cache)
+ */
+function getFolderById(folderId) {
+    var folders = getLocalFolders();
+    return folders.find(function(f) { return f.id === folderId; }) || null;
+}
+
+/**
+ * Invalidate folder caches (call after login to refresh from API)
+ */
+function invalidateFolderCache() {
+    _foldersCache = null;
+    _venueFoldersCache = null;
+}
+
+// =============================================================================
+// Local Storage Helpers for Folders
+// =============================================================================
+
+var LOCAL_FOLDERS_KEY = 'omochi_user_folders';
+var LOCAL_VENUE_FOLDERS_KEY = 'omochi_venue_folders';
+
+function getLocalFolders() {
+    try {
+        var data = localStorage.getItem(LOCAL_FOLDERS_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setLocalFolders(folders) {
+    try {
+        localStorage.setItem(LOCAL_FOLDERS_KEY, JSON.stringify(folders));
+    } catch (e) {
+        console.warn('Failed to save folders to localStorage:', e);
+    }
+}
+
+function getLocalVenueFolders() {
+    try {
+        var data = localStorage.getItem(LOCAL_VENUE_FOLDERS_KEY);
+        return data ? JSON.parse(data) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function setLocalVenueFolders(venueFolders) {
+    try {
+        localStorage.setItem(LOCAL_VENUE_FOLDERS_KEY, JSON.stringify(venueFolders));
+    } catch (e) {
+        console.warn('Failed to save venue folders to localStorage:', e);
+    }
 }

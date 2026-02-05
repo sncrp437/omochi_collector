@@ -157,7 +157,27 @@ const translations = {
         categoryComingSoon: 'Coming soon!',
 
         // Branched filter
-        combinedPillSeparator: ' x '
+        combinedPillSeparator: ' x ',
+
+        // Folders
+        myFolders: 'My Folders',
+        createFolder: 'Create Folder',
+        editFolder: 'Edit Folder',
+        editFolders: 'Edit Folders',
+        deleteFolder: 'Delete Folder',
+        folderNamePlaceholder: 'Folder name',
+        uncategorized: 'Uncategorized',
+        selectFolder: 'Select Folder',
+        changeFolder: 'Change',
+        newFolder: 'New',
+        cancelBtn: 'Cancel',
+        folderPromptSaved: 'Saved!',
+        folderPromptQuestion: 'Add to a folder?',
+        folderPromptHint: '(You can also find it later with filters & AI search)',
+        folderPromptSkip: 'Skip for now',
+        savedToFolder: 'Saved to {folder}',
+        movedToFolder: 'Moved to {folder}',
+        removedFromFolder: 'Removed from folder'
     },
     ja: {
         // Index page
@@ -311,7 +331,27 @@ const translations = {
         categoryComingSoon: '近日公開！',
 
         // Branched filter
-        combinedPillSeparator: ' x '
+        combinedPillSeparator: ' x ',
+
+        // Folders
+        myFolders: 'マイフォルダ',
+        createFolder: 'フォルダを作成',
+        editFolder: 'フォルダを編集',
+        editFolders: '編集',
+        deleteFolder: 'フォルダを削除',
+        folderNamePlaceholder: 'フォルダ名',
+        uncategorized: '未分類',
+        selectFolder: 'フォルダを選択',
+        changeFolder: '変更',
+        newFolder: '新規',
+        cancelBtn: 'キャンセル',
+        folderPromptSaved: '保存しました！',
+        folderPromptQuestion: 'フォルダに追加する？',
+        folderPromptHint: '（フィルターやAI検索でも後から見つけられます）',
+        folderPromptSkip: 'スキップ',
+        savedToFolder: '{folder}に保存しました',
+        movedToFolder: '{folder}に移動しました',
+        removedFromFolder: 'フォルダから削除しました'
     }
 };
 

@@ -245,15 +245,15 @@ function createOverlay(video) {
         if (typeof saveLocalCollection === 'function') {
             var isNew = saveLocalCollection(video);
             if (isNew) {
-                if (typeof showToast === 'function') {
-                    showToast(t('collectSaved'));
-                }
                 collectBtn.innerHTML = BOOKMARK_FILLED;
                 collectBtn.classList.add('collected');
                 // Meta Pixel: track collect as AddToWishlist
                 if (typeof fbq === 'function') {
                     fbq('track', 'AddToWishlist', { content_name: video.venue_name || video.caption || video.id });
                 }
+                // Show folder prompt modal instead of toast
+                var venueId = video.venue_uuid || video.id;
+                showFolderPrompt(venueId);
             } else {
                 if (typeof showToast === 'function') {
                     showToast(t('alreadyCollected'));
@@ -393,6 +393,210 @@ async function collectVenue(video, buttonEl) {
             buttonEl.disabled = false;
         }
     }
+}
+
+// =============================================================================
+// Folder Prompt Modal (shown after collecting a venue)
+// =============================================================================
+
+var _folderPromptVenueId = null;
+var _folderPromptSelectedColor = null;
+
+/**
+ * Show folder prompt modal after collecting a venue
+ */
+async function showFolderPrompt(venueId) {
+    var modal = document.getElementById('folderPromptModal');
+    if (!modal) {
+        // Fallback to toast if modal not found
+        if (typeof showToast === 'function') {
+            showToast(t('collectSaved'));
+        }
+        return;
+    }
+
+    _folderPromptVenueId = venueId;
+
+    // Load user folders
+    var folders = [];
+    if (typeof fetchFolders === 'function') {
+        folders = await fetchFolders();
+    } else if (typeof getLocalFolders === 'function') {
+        folders = getLocalFolders();
+    }
+
+    // Render folder pills
+    var pillsContainer = document.getElementById('folderPromptPills');
+    if (pillsContainer) {
+        pillsContainer.innerHTML = '';
+
+        folders.forEach(function(folder) {
+            var pill = document.createElement('button');
+            pill.className = 'folder-prompt-pill';
+            pill.innerHTML = '<span class="folder-prompt-pill-dot" style="background:' + folder.color + ';"></span>' +
+                             _escapeHtmlSimple(folder.name);
+            pill.addEventListener('click', function() {
+                _selectFolderInPrompt(folder.id);
+            });
+            pillsContainer.appendChild(pill);
+        });
+
+        // "+ New" pill
+        var newPill = document.createElement('button');
+        newPill.className = 'folder-prompt-pill folder-prompt-pill-new';
+        newPill.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ' +
+                           t('newFolder');
+        newPill.addEventListener('click', function() {
+            _showFolderCreateInPrompt();
+        });
+        pillsContainer.appendChild(newPill);
+    }
+
+    // Setup color buttons
+    _setupFolderPromptColors();
+
+    // Hide create section initially
+    var createSection = document.getElementById('folderPromptCreate');
+    if (createSection) createSection.classList.remove('active');
+
+    // Clear input
+    var nameInput = document.getElementById('folderPromptCreateInput');
+    if (nameInput) nameInput.value = '';
+
+    // Setup event handlers
+    var overlay = document.getElementById('folderPromptOverlay');
+    var skipBtn = document.getElementById('folderPromptSkip');
+    var saveBtn = document.getElementById('folderPromptCreateSave');
+
+    if (overlay) {
+        overlay.onclick = function() {
+            _closeFolderPrompt();
+        };
+    }
+
+    if (skipBtn) {
+        skipBtn.onclick = function() {
+            _closeFolderPrompt();
+            if (typeof showToast === 'function') {
+                showToast(t('collectSaved'));
+            }
+        };
+    }
+
+    if (saveBtn) {
+        saveBtn.onclick = function() {
+            _createFolderFromPrompt();
+        };
+    }
+
+    // Show modal
+    modal.classList.add('active');
+}
+
+/**
+ * Setup color buttons in folder prompt
+ */
+function _setupFolderPromptColors() {
+    var container = document.getElementById('folderPromptCreateColors');
+    if (!container || typeof FOLDER_COLORS === 'undefined') return;
+
+    container.innerHTML = '';
+    _folderPromptSelectedColor = FOLDER_COLORS[0];
+
+    FOLDER_COLORS.forEach(function(color, idx) {
+        var btn = document.createElement('button');
+        btn.className = 'folder-prompt-create-color' + (idx === 0 ? ' active' : '');
+        btn.style.background = color;
+        btn.addEventListener('click', function() {
+            container.querySelectorAll('.folder-prompt-create-color').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            _folderPromptSelectedColor = color;
+        });
+        container.appendChild(btn);
+    });
+}
+
+/**
+ * Show create folder section in prompt
+ */
+function _showFolderCreateInPrompt() {
+    var createSection = document.getElementById('folderPromptCreate');
+    var nameInput = document.getElementById('folderPromptCreateInput');
+    if (createSection) {
+        createSection.classList.add('active');
+    }
+    if (nameInput) {
+        nameInput.focus();
+    }
+}
+
+/**
+ * Create folder from prompt and assign venue to it
+ */
+async function _createFolderFromPrompt() {
+    var nameInput = document.getElementById('folderPromptCreateInput');
+    var name = nameInput ? nameInput.value.trim() : '';
+
+    if (!name) {
+        if (nameInput) nameInput.focus();
+        return;
+    }
+
+    // Save folder
+    if (typeof saveFolder === 'function') {
+        var folder = await saveFolder(null, name, _folderPromptSelectedColor);
+        if (folder && folder.id) {
+            // Assign venue to this folder
+            await _selectFolderInPrompt(folder.id);
+            return;
+        }
+    }
+
+    _closeFolderPrompt();
+}
+
+/**
+ * Select a folder for the venue and close prompt
+ */
+async function _selectFolderInPrompt(folderId) {
+    if (_folderPromptVenueId && folderId) {
+        if (typeof setVenueFolder === 'function') {
+            await setVenueFolder(_folderPromptVenueId, folderId);
+        }
+
+        // Show confirmation
+        if (typeof showToast === 'function') {
+            var folders = typeof getLocalFolders === 'function' ? getLocalFolders() : [];
+            var folder = folders.find(function(f) { return f.id === folderId; });
+            if (folder) {
+                showToast(t('savedToFolder').replace('{folder}', folder.name));
+            } else {
+                showToast(t('collectSaved'));
+            }
+        }
+    }
+
+    _closeFolderPrompt();
+}
+
+/**
+ * Close folder prompt modal
+ */
+function _closeFolderPrompt() {
+    var modal = document.getElementById('folderPromptModal');
+    if (modal) modal.classList.remove('active');
+    _folderPromptVenueId = null;
+}
+
+/**
+ * Simple HTML escape for folder names
+ */
+function _escapeHtmlSimple(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 // Initialize app when DOM is ready
