@@ -57,19 +57,8 @@ var BACK_ARROW_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none
 function initBranchedFilter(videosData) {
     _bfVideosData = videosData;
 
-    // Migrate old localStorage keys
-    var oldCategory = localStorage.getItem('selectedCategory');
-    var oldLocation = localStorage.getItem('selectedLocation');
-    if (oldCategory && !localStorage.getItem('bf_genre')) {
-        localStorage.setItem('bf_genre', oldCategory);
-        localStorage.removeItem('selectedCategory');
-    }
-    if (oldLocation && oldLocation !== 'all') {
-        if (!localStorage.getItem('bf_area')) {
-            localStorage.setItem('bf_area', oldLocation);
-        }
-        localStorage.removeItem('selectedLocation');
-    }
+    // Note: selectedCategory is now used by collections.js for 3-tier filtering
+    // We keep bf_genre separate as UI state
 
     // Restore state
     var storedGenre = localStorage.getItem('bf_genre');
@@ -79,6 +68,11 @@ function initBranchedFilter(videosData) {
         var cat = CATEGORIES.find(function(c) { return c.id === storedGenre && !c.comingSoon; });
         if (cat) {
             _bfSelectedGenre = storedGenre;
+
+            // Restore category filter in collections.js
+            if (typeof setCategoryFilter === 'function') {
+                setCategoryFilter(storedGenre);
+            }
 
             if (storedArea) {
                 // Verify area still exists in data
@@ -164,6 +158,11 @@ function _selectGenre(genreId) {
     localStorage.setItem('bf_genre', genreId);
     localStorage.removeItem('bf_area');
 
+    // Set category filter in collections.js (TIER 1 filtering)
+    if (typeof setCategoryFilter === 'function') {
+        setCategoryFilter(genreId);
+    }
+
     // Reset location filter
     setLocationFilter('all');
 
@@ -171,7 +170,7 @@ function _selectGenre(genreId) {
         logAnalyticsEvent('genre_select', genreId);
     }
 
-    // Check if areas exist
+    // Check if areas exist for this category
     var stations = getUniqueStations(_bfVideosData);
     if (Object.keys(stations).length === 0) {
         // No areas available, skip to collection step
@@ -328,6 +327,10 @@ function _goBackOneStep() {
             // No areas, go back to genre
             _bfSelectedGenre = null;
             localStorage.removeItem('bf_genre');
+            // Reset category filter
+            if (typeof setCategoryFilter === 'function') {
+                setCategoryFilter('all');
+            }
             _bfStep = 'genre';
             _renderGenrePills();
         } else {
@@ -343,6 +346,11 @@ function _goBackOneStep() {
         localStorage.removeItem('bf_genre');
         localStorage.removeItem('bf_area');
         setLocationFilter('all');
+
+        // Reset category filter
+        if (typeof setCategoryFilter === 'function') {
+            setCategoryFilter('all');
+        }
 
         _bfStep = 'genre';
         _renderGenrePills();

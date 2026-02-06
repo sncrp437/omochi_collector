@@ -1,6 +1,6 @@
 /**
  * Collections Module
- * Handles collection filtering, location filtering, and feed re-rendering.
+ * Handles 3-tier filtering (category, location, genre/collection) and feed re-rendering.
  * UI rendering is delegated to the branched filter controller (categories.js).
  */
 
@@ -8,6 +8,12 @@ let allVideos = [];
 let allCollections = [];
 let selectedCollection = 'all';
 let selectedLocation = 'all';
+let selectedCategory = 'all'; // 'food', 'nightlife', 'entertainment', etc.
+
+// Filter indices for fast lookups
+var _categoryIndex = {};  // { 'food': [video1, video2], 'nightlife': [video3] }
+var _genreIndex = {};     // { 'italian': [video1], 'yakiniku': [video2] }
+var _stationIndex = {};   // { 'shibuya': [video1, video3] }
 
 /**
  * Initialize collections system (no UI rendering)
@@ -19,8 +25,12 @@ async function initCollections(videosData, collectionsData) {
     allVideos = videosData;
     allCollections = parseCollections(collectionsData);
 
-    // Restore last selected collection from localStorage
+    // Build filter indices for fast lookups
+    _buildFilterIndices(videosData);
+
+    // Restore last selected filters from localStorage
     selectedCollection = localStorage.getItem('selectedCollection') || 'all';
+    selectedCategory = localStorage.getItem('selectedCategory') || 'all';
 
     // Return filtered videos
     return filterVideosByCollection(selectedCollection);
@@ -34,6 +44,69 @@ function parseCollections(data) {
     return data
         .filter(c => c.active !== false && c.active !== 'FALSE')
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+}
+
+/**
+ * Build filter indices for O(1) lookups
+ */
+function _buildFilterIndices(videos) {
+    _categoryIndex = {};
+    _genreIndex = {};
+    _stationIndex = {};
+
+    videos.forEach(function(video) {
+        // Index by category
+        if (video.category) {
+            var cat = video.category.toLowerCase();
+            if (!_categoryIndex[cat]) _categoryIndex[cat] = [];
+            _categoryIndex[cat].push(video);
+        }
+
+        // Index by genre (comma-separated)
+        if (video.genre) {
+            video.genre.split(',').forEach(function(g) {
+                var key = g.trim().toLowerCase();
+                if (key) {
+                    if (!_genreIndex[key]) _genreIndex[key] = [];
+                    _genreIndex[key].push(video);
+                }
+            });
+        }
+
+        // Index by collection (comma-separated)
+        if (video.collection) {
+            video.collection.split(',').forEach(function(c) {
+                var key = c.trim().toLowerCase();
+                if (key) {
+                    if (!_genreIndex[key]) _genreIndex[key] = [];
+                    _genreIndex[key].push(video);
+                }
+            });
+        }
+
+        // Index by station
+        if (video.nearest_station) {
+            var station = video.nearest_station;
+            if (!_stationIndex[station]) _stationIndex[station] = [];
+            _stationIndex[station].push(video);
+        }
+    });
+}
+
+/**
+ * Set category filter (called by branched filter Step 1)
+ * @param {string} category - 'food', 'nightlife', 'entertainment', or 'all'
+ */
+function setCategoryFilter(category) {
+    selectedCategory = category;
+    localStorage.setItem('selectedCategory', category);
+}
+
+/**
+ * Get current category filter
+ */
+function getCategoryFilter() {
+    return selectedCategory;
 }
 
 /**
@@ -98,22 +171,48 @@ function updateActiveCollection() {
 }
 
 /**
- * Filter videos by collection ID and selected location
+ * Filter videos by category, location, and collection/genre
+ * Implements full 3-tier filtering
  */
 function filterVideosByCollection(collectionId) {
     var result = allVideos;
 
-    if (collectionId !== 'all') {
-        result = result.filter(function(video) {
-            if (!video.collection) return false;
-            var collections = video.collection.split(',').map(function(c) { return c.trim(); });
-            return collections.includes(collectionId);
-        });
+    // TIER 1: Filter by category (Food, Nightlife, Entertainment)
+    if (selectedCategory !== 'all') {
+        var catVideos = _categoryIndex[selectedCategory.toLowerCase()];
+        if (catVideos) {
+            result = catVideos;
+        } else {
+            result = []; // No videos in this category
+        }
     }
 
+    // TIER 2: Filter by location (nearest_station)
     if (selectedLocation !== 'all') {
         result = result.filter(function(video) {
             return video.nearest_station === selectedLocation;
+        });
+    }
+
+    // TIER 3: Filter by collection/genre (Italian, Yakiniku, etc.)
+    if (collectionId !== 'all') {
+        var searchId = collectionId.toLowerCase();
+        result = result.filter(function(video) {
+            // Check genre field
+            if (video.genre) {
+                var genres = video.genre.split(',').map(function(g) {
+                    return g.trim().toLowerCase();
+                });
+                if (genres.includes(searchId)) return true;
+            }
+            // Check collection field
+            if (video.collection) {
+                var collections = video.collection.split(',').map(function(c) {
+                    return c.trim().toLowerCase();
+                });
+                if (collections.includes(searchId)) return true;
+            }
+            return false;
         });
     }
 
@@ -205,14 +304,23 @@ function updateCollectionNames() {
 }
 
 /**
- * Get unique stations from video data
+ * Get unique stations from video data (respects category filter)
  * @param {Array} videosData - Array of video objects
- * @returns {Object} { stationName: count } sorted by name
+ * @returns {Object} { stationName: count }
  */
 function getUniqueStations(videosData) {
     var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
     var stations = {};
-    videosData.forEach(function(video) {
+
+    // Filter by category first if set
+    var filteredVideos = videosData;
+    if (selectedCategory !== 'all') {
+        filteredVideos = videosData.filter(function(v) {
+            return v.category && v.category.toLowerCase() === selectedCategory.toLowerCase();
+        });
+    }
+
+    filteredVideos.forEach(function(video) {
         var station = (currentLang === 'en' && video.nearest_station_en)
             ? video.nearest_station_en
             : (video.nearest_station || '');

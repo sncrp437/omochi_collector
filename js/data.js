@@ -8,11 +8,23 @@
 // TODO: Replace this with your actual Google Apps Script URL
 const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwHP_Eim3bYCEFBoz6q642m9wNu3q8efx3bqio_5KqnfQr4t1xOqQS_Rll9wdom-ICfdQ/exec';
 
+// Cache configuration
+var VIDEO_CACHE_KEY = 'omochi_video_cache';
+var CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Fetches video data from Google Sheets via Apps Script
+ * Uses localStorage cache for faster subsequent loads
  * @returns {Promise<Object>} Object with videos and collections arrays
  */
 async function fetchVideoData() {
+    // Check cache first
+    var cached = _getCachedVideoData();
+    if (cached) {
+        console.log('[data.js] Using cached video data');
+        return cached;
+    }
+
     try {
         const response = await fetch(GOOGLE_SHEETS_API_URL);
 
@@ -22,14 +34,62 @@ async function fetchVideoData() {
 
         const data = await response.json();
 
-        // Handle new response format: { videos: [...], collections: [...] }
-        // Or fallback to old format (array of videos)
+        // Cache the response
+        _cacheVideoData(data);
+
         return data;
     } catch (error) {
         console.error('Error fetching video data:', error);
         // Return sample data for testing
         return getSampleData();
     }
+}
+
+/**
+ * Get cached video data if valid
+ */
+function _getCachedVideoData() {
+    try {
+        var cached = localStorage.getItem(VIDEO_CACHE_KEY);
+        if (!cached) return null;
+
+        var parsed = JSON.parse(cached);
+        var age = Date.now() - parsed.timestamp;
+
+        if (age > CACHE_TTL_MS) {
+            localStorage.removeItem(VIDEO_CACHE_KEY);
+            console.log('[data.js] Cache expired, will fetch fresh');
+            return null;
+        }
+
+        return parsed.data;
+    } catch (e) {
+        console.warn('[data.js] Cache read error:', e);
+        return null;
+    }
+}
+
+/**
+ * Cache video data with timestamp
+ */
+function _cacheVideoData(data) {
+    try {
+        localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: data
+        }));
+        console.log('[data.js] Cached video data');
+    } catch (e) {
+        console.warn('[data.js] Failed to cache:', e);
+    }
+}
+
+/**
+ * Force refresh cache (call when data might be stale)
+ */
+function clearVideoCache() {
+    localStorage.removeItem(VIDEO_CACHE_KEY);
+    console.log('[data.js] Cache cleared');
 }
 
 /**
@@ -43,8 +103,10 @@ async function fetchVideoData() {
  *   caption_en: "English caption text",
  *   caption_ja: "Japanese caption text",
  *   venue_name: "Restaurant Name" (required),
- *   genre: "Cuisine type" (optional),
+ *   category: "food" (required - top-level: food/nightlife/entertainment/shopping/beauty/travel),
+ *   genre: "Cuisine type" (optional - sub-category like italian, yakiniku, club),
  *   address: "Physical location" (optional),
+ *   nearest_station: "Station name" (optional),
  *   priority: 5 (optional),
  *   active: true (optional),
  *   tags: "tag1,tag2" (optional)
