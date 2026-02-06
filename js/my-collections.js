@@ -1850,6 +1850,23 @@ function _getTaxiWebFallback(serviceId) {
 }
 
 /**
+ * Open URL via anchor click (triggers Universal Link handling on mobile)
+ * This is needed because window.open() doesn't trigger app handoffs on iOS/Android
+ */
+function _openUrlViaAnchor(url, openInNewTab) {
+    var a = document.createElement('a');
+    a.href = url;
+    if (openInNewTab) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+    }
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+/**
  * Copy text to clipboard
  */
 async function _copyToClipboard(text) {
@@ -2007,8 +2024,8 @@ async function _selectTaxiService(serviceId) {
                 clearTimeout(fallbackTimer);
             }, 3000);
         } else {
-            // Web URL - open directly in new tab
-            window.open(url, '_blank');
+            // Web URL - open via anchor click (triggers Universal Link on mobile)
+            _openUrlViaAnchor(url, true);
         }
     }
 
