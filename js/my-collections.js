@@ -1805,23 +1805,12 @@ async function _geocodeAddress(address) {
 /**
  * Build URL for a taxi service (deep links for app, web fallback handled separately)
  */
-function _buildTaxiUrl(serviceId, address, coords) {
-    var lat = coords ? coords.lat : null;
-    var lng = coords ? coords.lng : null;
-    var encodedAddr = encodeURIComponent(address || '');
-
+function _buildTaxiUrl(serviceId) {
     switch (serviceId) {
         case 'uber':
-            // Use Universal Link (works on all platforms, prompts app on mobile)
-            var uberUrl = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location';
-            if (lat && lng) {
-                uberUrl += '&dropoff[latitude]=' + lat +
-                           '&dropoff[longitude]=' + lng;
-            }
-            if (encodedAddr) {
-                uberUrl += '&dropoff[formatted_address]=' + encodedAddr;
-            }
-            return uberUrl;
+            // Simple Universal Link - just opens Uber app
+            // Address is copied to clipboard so user can paste destination
+            return 'https://m.uber.com/ul/';
 
         case 'go-taxi':
             // Deep link to open GO app
@@ -1986,14 +1975,8 @@ async function _selectTaxiService(serviceId) {
             '</div>';
     }
 
-    // Geocode address for Uber to include coordinates
-    var coords = null;
-    if (serviceId === 'uber' && address) {
-        coords = await _geocodeAddress(address);
-    }
-
-    // For GO Taxi, copy address to clipboard (no URL pre-fill supported)
-    if (serviceId === 'go-taxi' && address) {
+    // Copy address to clipboard so user can paste in the app
+    if (address) {
         var copied = await _copyToClipboard(address);
         if (copied && typeof showToast === 'function') {
             showToast(t('addressCopied'));
@@ -2001,7 +1984,7 @@ async function _selectTaxiService(serviceId) {
     }
 
     // Build URL and open
-    var url = _buildTaxiUrl(serviceId, address, coords);
+    var url = _buildTaxiUrl(serviceId);
 
     if (url) {
         // Try deep link first for mobile (non-http URLs)
