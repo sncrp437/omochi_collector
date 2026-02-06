@@ -427,6 +427,38 @@ body.has-tab-bar .video-wrapper {
     position: relative;
 }
 
+/* Tighten paragraph spacing inside captions */
+.reel-caption p {
+    margin: 0 0 0.4em 0;
+}
+
+.reel-caption p:last-child {
+    margin-bottom: 0;
+}
+
+/* Lists inside captions */
+.reel-caption ul,
+.reel-caption ol {
+    margin: 0.3em 0;
+    padding-left: 1.2em;
+}
+
+.reel-caption li {
+    margin-bottom: 0.2em;
+}
+
+/* Headings inside captions */
+.reel-caption h1,
+.reel-caption h2,
+.reel-caption h3,
+.reel-caption h4,
+.reel-caption h5,
+.reel-caption h6 {
+    margin: 0.3em 0 0.2em 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
 /* "more" indicator for truncated captions */
 .reel-caption.truncated::after {
     content: '... more';
