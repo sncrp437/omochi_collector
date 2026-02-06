@@ -20,12 +20,24 @@ function shouldShowWelcomeModal() {
 /**
  * Show the welcome modal
  * @param {string} collectionName - Name of current collection
+ * @returns {boolean} True if modal was shown
  */
 function showWelcomeModal(collectionName) {
-    if (!shouldShowWelcomeModal()) return;
+    if (!shouldShowWelcomeModal()) {
+        // If modal not shown, trigger swipe hint directly
+        if (typeof showSwipeHint === 'function') {
+            showSwipeHint();
+        }
+        return false;
+    }
 
     const modal = document.getElementById('welcomeModal');
-    if (!modal) return;
+    if (!modal) {
+        if (typeof showSwipeHint === 'function') {
+            showSwipeHint();
+        }
+        return false;
+    }
 
     const collectionNameEl = document.getElementById('welcomeCollectionName');
 
@@ -35,6 +47,7 @@ function showWelcomeModal(collectionName) {
 
     modal.classList.add('show');
     localStorage.setItem('welcomeModalLastShown', new Date().toISOString());
+    return true;
 }
 
 /**
@@ -44,6 +57,11 @@ function closeWelcomeModal() {
     const modal = document.getElementById('welcomeModal');
     if (modal) {
         modal.classList.remove('show');
+    }
+
+    // Show swipe hint after welcome modal closes
+    if (typeof showSwipeHint === 'function') {
+        showSwipeHint();
     }
 }
 

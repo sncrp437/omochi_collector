@@ -523,6 +523,66 @@ body.has-tab-bar .video-wrapper {
     to { transform: rotate(360deg); }
 }
 
+/* =============================================================================
+   Swipe Hint (mobile onboarding)
+   ============================================================================= */
+
+.swipe-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 500;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+body.has-tab-bar .swipe-hint {
+    bottom: 120px;
+}
+
+.swipe-hint.visible {
+    opacity: 1;
+}
+
+.swipe-hint.hidden {
+    opacity: 0;
+}
+
+.swipe-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.9);
+    animation: bounceUp 1.2s ease-in-out infinite;
+}
+
+.swipe-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes bounceUp {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 /* Collection page styles */
 .collection-page {
     width: 100%;

@@ -615,6 +615,61 @@ function _escapeHtmlSimple(str) {
     return div.innerHTML;
 }
 
+// =============================================================================
+// Swipe Hint (mobile onboarding - shown once per session)
+// =============================================================================
+
+var _swipeHintTimeout = null;
+
+/**
+ * Show the swipe hint if not already shown this session
+ */
+function showSwipeHint() {
+    // Only show once per browser session
+    if (sessionStorage.getItem('swipeHintShown')) {
+        return;
+    }
+
+    var hint = document.getElementById('swipeHint');
+    if (!hint) return;
+
+    // Mark as shown
+    sessionStorage.setItem('swipeHintShown', 'true');
+
+    // Show the hint with a slight delay (let videos render first)
+    setTimeout(function() {
+        hint.classList.add('visible');
+    }, 800);
+
+    // Auto-hide after 5 seconds
+    _swipeHintTimeout = setTimeout(function() {
+        hideSwipeHint();
+    }, 5000);
+
+    // Hide on scroll
+    var container = document.getElementById('reelsContainer');
+    if (container) {
+        container.addEventListener('scroll', hideSwipeHint, { once: true });
+    }
+}
+
+/**
+ * Hide the swipe hint
+ */
+function hideSwipeHint() {
+    var hint = document.getElementById('swipeHint');
+    if (hint) {
+        hint.classList.remove('visible');
+        hint.classList.add('hidden');
+    }
+
+    // Clear timeout if still pending
+    if (_swipeHintTimeout) {
+        clearTimeout(_swipeHintTimeout);
+        _swipeHintTimeout = null;
+    }
+}
+
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

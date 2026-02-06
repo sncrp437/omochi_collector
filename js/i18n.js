@@ -159,6 +159,9 @@ const translations = {
         // Branched filter
         combinedPillSeparator: ' x ',
 
+        // Swipe hint
+        swipeHint: 'Swipe up',
+
         // Folders
         myFolders: 'My Folders',
         createFolder: 'Create Folder',
@@ -332,6 +335,9 @@ const translations = {
 
         // Branched filter
         combinedPillSeparator: ' x ',
+
+        // Swipe hint
+        swipeHint: '上にスワイプ',
 
         // Folders
         myFolders: 'マイフォルダ',
