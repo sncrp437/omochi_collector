@@ -1803,7 +1803,7 @@ async function _geocodeAddress(address) {
 }
 
 /**
- * Build deep link URL for a taxi service
+ * Build URL for a taxi service (web URLs for reliability)
  */
 function _buildTaxiUrl(serviceId, address, coords) {
     var lat = coords ? coords.lat : null;
@@ -1812,18 +1812,20 @@ function _buildTaxiUrl(serviceId, address, coords) {
 
     switch (serviceId) {
         case 'uber':
+            // Always use web URL for reliability (deep links are unreliable)
             if (lat && lng) {
-                return 'uber://riderequest?dropoff[latitude]=' + lat +
+                return 'https://m.uber.com/ul?action=setPickup&pickup=my_location' +
+                       '&dropoff[latitude]=' + lat +
                        '&dropoff[longitude]=' + lng +
                        '&dropoff[formatted_address]=' + encodedAddr;
             }
-            // Web fallback with address only
+            // Fallback with address only
             return 'https://m.uber.com/ul?action=setPickup&pickup=my_location' +
                    '&dropoff[formatted_address]=' + encodedAddr;
 
         case 'go-taxi':
-            // GO Taxi deep link (no destination params documented)
-            return 'mot-go://';
+            // GO Taxi web URL (deep link mot-go:// is unreliable)
+            return 'https://go.mo-t.com/';
 
         default:
             return null;
@@ -1973,14 +1975,13 @@ async function _selectTaxiService(serviceId) {
             '</div>';
     }
 
-    // Try to geocode address for Uber (only Uber supports pre-fill)
+    // Geocode address for Uber to include coordinates
     var coords = null;
     if (serviceId === 'uber' && address) {
         coords = await _geocodeAddress(address);
     }
 
-    // For Japanese taxi apps (no pre-fill), copy address to clipboard first
-    // For GO Taxi (no pre-fill API), copy address to clipboard first
+    // For GO Taxi, copy address to clipboard (no URL pre-fill supported)
     if (serviceId === 'go-taxi' && address) {
         var copied = await _copyToClipboard(address);
         if (copied && typeof showToast === 'function') {
@@ -1988,33 +1989,11 @@ async function _selectTaxiService(serviceId) {
         }
     }
 
-    // Build URL and open
+    // Build URL and open directly in new tab
     var url = _buildTaxiUrl(serviceId, address, coords);
 
     if (url) {
-        // Try deep link first for mobile
-        if (service.hasDeepLink && url.indexOf('http') !== 0) {
-            // For deep links, try to open and fallback to web
-            var fallbackUrl = _getTaxiWebFallback(serviceId, coords);
-
-            // Set a timeout to open web fallback if deep link fails
-            var fallbackTimer = setTimeout(function() {
-                if (fallbackUrl) {
-                    window.open(fallbackUrl, '_blank');
-                }
-            }, 2500);
-
-            // Try deep link
-            window.location.href = url;
-
-            // Clear timer if page is still active after a short delay
-            setTimeout(function() {
-                clearTimeout(fallbackTimer);
-            }, 3000);
-        } else {
-            // Web URL - open directly
-            window.open(url, '_blank');
-        }
+        window.open(url, '_blank');
     }
 
     _closeTaxiPicker();

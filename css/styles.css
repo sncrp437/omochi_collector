@@ -2860,7 +2860,7 @@ body.collections-body {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 1200;
+    z-index: 10000; /* Must be higher than venue-sheet (9001) */
 }
 
 .folder-picker-modal.active {
@@ -3019,7 +3019,7 @@ body.collections-body {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 9100; /* Must be higher than venue-sheet (9001) */
+    z-index: 10000; /* Must be higher than venue-sheet (9001) */
 }
 
 .taxi-picker-modal.active {
