@@ -33,8 +33,8 @@ function sanitizeCaption(text) {
     safe = safe.replace(/\n/g, '<br>');
 
     // Re-enable allowed tags (after escaping, they're now &lt;b&gt; etc.)
-    // Allow: <b>, </b>, <strong>, </strong>, <i>, </i>, <em>, </em>, <u>, </u>, <br>, <br/>
-    safe = safe.replace(/&lt;(\/?(b|strong|i|em|u|br)\s*\/?)&gt;/gi, '<$1>');
+    // Allow: b, strong, i, em, u, br, p, h1-h6, ul, ol, li, span (no attributes)
+    safe = safe.replace(/&lt;(\/?(b|strong|i|em|u|br|p|h[1-6]|ul|ol|li|span)\s*\/?)&gt;/gi, '<$1>');
 
     return safe;
 }
