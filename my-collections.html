@@ -195,6 +195,22 @@
                 </a>
             </div>
 
+            <!-- Taxi / Rides Button Row -->
+            <div class="venue-sheet-taxi-row" id="venueSheetTaxiRow" style="display:none;">
+                <button class="venue-taxi-btn" id="venueActionTaxi">
+                    <span class="venue-taxi-icon">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"/>
+                            <circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/>
+                        </svg>
+                    </span>
+                    <span class="venue-taxi-label" data-i18n="taxiBtn">Get a Ride</span>
+                    <span class="venue-taxi-arrow">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                </button>
+            </div>
+
             <!-- Map Section -->
             <div class="venue-sheet-section venue-sheet-map-section" id="venueSheetMapSection" style="display:none;">
                 <h3 data-i18n="mapLabel">Location</h3>
@@ -273,6 +289,18 @@
                 <!-- Folder options rendered dynamically -->
             </div>
             <button class="folder-picker-cancel" id="folderPickerCancel" data-i18n="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Taxi Picker Modal -->
+    <div class="taxi-picker-modal" id="taxiPickerModal">
+        <div class="taxi-picker-overlay" id="taxiPickerOverlay"></div>
+        <div class="taxi-picker-content">
+            <h3 data-i18n="selectRideService">Choose a Service</h3>
+            <div class="taxi-picker-list" id="taxiPickerList">
+                <!-- Service options rendered dynamically -->
+            </div>
+            <button class="taxi-picker-cancel" id="taxiPickerCancel" data-i18n="cancelBtn">Cancel</button>
         </div>
     </div>
 

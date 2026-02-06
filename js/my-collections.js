@@ -13,6 +13,53 @@ var _userFolders = [];
 var _venueFolders = {};
 var _editingFolderId = null; // For folder edit modal
 
+// =============================================================================
+// Taxi / Rides Feature
+// =============================================================================
+
+// Taxi service definitions
+var TAXI_SERVICES = [
+    {
+        id: 'uber',
+        name: 'Uber',
+        icon: 'U',
+        descKey: 'uberDesc',
+        hasDeepLink: true,
+        hasWebFallback: true
+    },
+    {
+        id: 'go-taxi',
+        name: 'GO',
+        icon: 'GO',
+        descKey: 'goTaxiDesc',
+        hasDeepLink: true,
+        hasWebFallback: true
+    },
+    {
+        id: 'didi',
+        name: 'DiDi',
+        icon: 'Di',
+        descKey: 'didiDesc',
+        hasDeepLink: true,
+        hasWebFallback: true
+    },
+    {
+        id: 'sride',
+        name: 'S.RIDE',
+        icon: 'S',
+        descKey: 'srideDesc',
+        hasDeepLink: true,
+        hasWebFallback: true
+    }
+];
+
+// Geocoding cache (session-level)
+var _geocodeCache = {};
+
+// Current taxi modal state
+var _taxiModalAddress = '';
+var _taxiModalVenueId = '';
+
 /**
  * Initialize the collections page
  */
@@ -1371,6 +1418,8 @@ function _renderActionButtons(item, info, venueId) {
     var callBtn = document.getElementById('venueActionCall');
     var reserveBtn = document.getElementById('venueActionReserve');
     var appBtn = document.getElementById('venueActionApp');
+    var taxiRow = document.getElementById('venueSheetTaxiRow');
+    var taxiBtn = document.getElementById('venueActionTaxi');
     var hasActions = false;
 
     var reservationUrl = _getReservationUrl(item);
@@ -1412,6 +1461,19 @@ function _renderActionButtons(item, info, venueId) {
             hasActions = true;
         } else {
             appBtn.style.display = 'none';
+        }
+    }
+
+    // Taxi button (show if venue has address)
+    if (taxiRow && taxiBtn) {
+        if (info.address) {
+            taxiRow.style.display = 'block';
+            taxiBtn.onclick = function(e) {
+                e.preventDefault();
+                _openTaxiPicker(info.address, venueId);
+            };
+        } else {
+            taxiRow.style.display = 'none';
         }
     }
 
@@ -1717,6 +1779,275 @@ function _setupLoginButton() {
             showAuthModal('login');
         });
     }
+}
+
+// =============================================================================
+// Taxi Picker Functions
+// =============================================================================
+
+/**
+ * Geocode an address using free geocode.maps.co API
+ * Returns { lat, lng } or null on failure
+ */
+async function _geocodeAddress(address) {
+    if (!address || !address.trim()) return null;
+
+    // Check cache first
+    var cacheKey = address.trim().toLowerCase();
+    if (_geocodeCache[cacheKey]) {
+        return _geocodeCache[cacheKey];
+    }
+
+    try {
+        var url = 'https://geocode.maps.co/search?q=' + encodeURIComponent(address);
+        var response = await fetch(url);
+        if (!response.ok) return null;
+
+        var data = await response.json();
+        if (data && data.length > 0) {
+            var result = {
+                lat: parseFloat(data[0].lat),
+                lng: parseFloat(data[0].lon)
+            };
+            _geocodeCache[cacheKey] = result;
+            return result;
+        }
+    } catch (err) {
+        console.warn('Geocoding failed:', err);
+    }
+    return null;
+}
+
+/**
+ * Build deep link URL for a taxi service
+ */
+function _buildTaxiUrl(serviceId, address, coords) {
+    var lat = coords ? coords.lat : null;
+    var lng = coords ? coords.lng : null;
+    var encodedAddr = encodeURIComponent(address || '');
+
+    switch (serviceId) {
+        case 'uber':
+            if (lat && lng) {
+                return 'uber://riderequest?dropoff[latitude]=' + lat +
+                       '&dropoff[longitude]=' + lng +
+                       '&dropoff[formatted_address]=' + encodedAddr;
+            }
+            // Web fallback with address only
+            return 'https://m.uber.com/ul?action=setPickup&pickup=my_location' +
+                   '&dropoff[formatted_address]=' + encodedAddr;
+
+        case 'go-taxi':
+            // GO Taxi deep link (no destination params documented)
+            return 'mot-go://';
+
+        case 'didi':
+            // DiDi deep link (no destination params documented)
+            return 'didi://';
+
+        case 'sride':
+            // S.RIDE deep link (no destination params documented)
+            return 'sride://';
+
+        default:
+            return null;
+    }
+}
+
+/**
+ * Get web fallback URL for a service
+ */
+function _getTaxiWebFallback(serviceId, address, coords) {
+    var encodedAddr = encodeURIComponent(address || '');
+    var lat = coords ? coords.lat : null;
+    var lng = coords ? coords.lng : null;
+
+    switch (serviceId) {
+        case 'uber':
+            if (lat && lng) {
+                return 'https://m.uber.com/ul?drop[0][latitude]=' + lat +
+                       '&drop[0][longitude]=' + lng;
+            }
+            return 'https://m.uber.com/';
+
+        case 'go-taxi':
+            return 'https://go.mo-t.com/';
+
+        case 'didi':
+            return 'https://www.didiglobal.com/';
+
+        case 'sride':
+            return 'https://www.sride.jp/';
+
+        default:
+            return null;
+    }
+}
+
+/**
+ * Copy text to clipboard
+ */
+async function _copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch (err) {
+        // Fallback for older browsers
+        try {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+}
+
+/**
+ * Open the taxi picker modal
+ */
+function _openTaxiPicker(address, venueId) {
+    var modal = document.getElementById('taxiPickerModal');
+    var list = document.getElementById('taxiPickerList');
+    var overlay = document.getElementById('taxiPickerOverlay');
+    var cancelBtn = document.getElementById('taxiPickerCancel');
+
+    if (!modal || !list) return;
+
+    _taxiModalAddress = address;
+    _taxiModalVenueId = venueId;
+
+    // Render service options
+    list.innerHTML = '';
+
+    TAXI_SERVICES.forEach(function(service) {
+        var item = document.createElement('div');
+        item.className = 'taxi-picker-item';
+        item.dataset.serviceId = service.id;
+
+        var iconDiv = document.createElement('div');
+        iconDiv.className = 'taxi-picker-item-icon ' + service.id;
+        iconDiv.textContent = service.icon;
+
+        var textDiv = document.createElement('div');
+        textDiv.className = 'taxi-picker-item-text';
+
+        var nameSpan = document.createElement('div');
+        nameSpan.className = 'taxi-picker-item-name';
+        nameSpan.textContent = service.name;
+
+        var descSpan = document.createElement('div');
+        descSpan.className = 'taxi-picker-item-desc';
+        descSpan.textContent = t(service.descKey);
+
+        textDiv.appendChild(nameSpan);
+        textDiv.appendChild(descSpan);
+        item.appendChild(iconDiv);
+        item.appendChild(textDiv);
+
+        item.addEventListener('click', function() {
+            _selectTaxiService(service.id);
+        });
+
+        list.appendChild(item);
+    });
+
+    // Setup close handlers
+    if (overlay) {
+        overlay.onclick = _closeTaxiPicker;
+    }
+    if (cancelBtn) {
+        cancelBtn.onclick = _closeTaxiPicker;
+    }
+
+    modal.classList.add('active');
+}
+
+/**
+ * Close the taxi picker modal
+ */
+function _closeTaxiPicker() {
+    var modal = document.getElementById('taxiPickerModal');
+    if (modal) modal.classList.remove('active');
+    _taxiModalAddress = '';
+    _taxiModalVenueId = '';
+}
+
+/**
+ * Handle taxi service selection
+ */
+async function _selectTaxiService(serviceId) {
+    var address = _taxiModalAddress;
+    var venueId = _taxiModalVenueId;
+    var service = TAXI_SERVICES.find(function(s) { return s.id === serviceId; });
+
+    if (!service) {
+        _closeTaxiPicker();
+        return;
+    }
+
+    // Log analytics
+    _logVenueAction('taxi_' + serviceId, venueId);
+
+    // Show loading state
+    var list = document.getElementById('taxiPickerList');
+    if (list) {
+        list.innerHTML = '<div class="taxi-picker-loading">' +
+            '<div class="spinner"></div>' +
+            '<div>' + t('taxiOpening') + '</div>' +
+            '</div>';
+    }
+
+    // Try to geocode address for Uber (only Uber supports pre-fill)
+    var coords = null;
+    if (serviceId === 'uber' && address) {
+        coords = await _geocodeAddress(address);
+    }
+
+    // For Japanese taxi apps (no pre-fill), copy address to clipboard first
+    if ((serviceId === 'go-taxi' || serviceId === 'didi' || serviceId === 'sride') && address) {
+        var copied = await _copyToClipboard(address);
+        if (copied && typeof showToast === 'function') {
+            showToast(t('addressCopied'));
+        }
+    }
+
+    // Build URL and open
+    var url = _buildTaxiUrl(serviceId, address, coords);
+
+    if (url) {
+        // Try deep link first for mobile
+        if (service.hasDeepLink && url.indexOf('http') !== 0) {
+            // For deep links, try to open and fallback to web
+            var fallbackUrl = _getTaxiWebFallback(serviceId, address, coords);
+
+            // Set a timeout to open web fallback if deep link fails
+            var fallbackTimer = setTimeout(function() {
+                if (fallbackUrl) {
+                    window.open(fallbackUrl, '_blank');
+                }
+            }, 2500);
+
+            // Try deep link
+            window.location.href = url;
+
+            // Clear timer if page is still active after a short delay
+            setTimeout(function() {
+                clearTimeout(fallbackTimer);
+            }, 3000);
+        } else {
+            // Web URL - open directly
+            window.open(url, '_blank');
+        }
+    }
+
+    _closeTaxiPicker();
 }
 
 // Override the post-auth callback to sync and reload after login

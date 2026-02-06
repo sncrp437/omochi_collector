@@ -180,7 +180,17 @@ const translations = {
         folderPromptSkip: 'Skip for now',
         savedToFolder: 'Saved to {folder}',
         movedToFolder: 'Moved to {folder}',
-        removedFromFolder: 'Removed from folder'
+        removedFromFolder: 'Removed from folder',
+
+        // Taxi / Rides
+        taxiBtn: 'Get a Ride',
+        selectRideService: 'Choose a Service',
+        uberDesc: 'Open with destination set',
+        goTaxiDesc: 'Japan\'s largest taxi app',
+        didiDesc: 'Available in 15 prefectures',
+        srideDesc: 'Tokyo area taxis',
+        taxiOpening: 'Opening app...',
+        addressCopied: 'Address copied to clipboard'
     },
     ja: {
         // Index page
@@ -357,7 +367,17 @@ const translations = {
         folderPromptSkip: 'スキップ',
         savedToFolder: '{folder}に保存しました',
         movedToFolder: '{folder}に移動しました',
-        removedFromFolder: 'フォルダから削除しました'
+        removedFromFolder: 'フォルダから削除しました',
+
+        // Taxi / Rides
+        taxiBtn: '配車する',
+        selectRideService: 'サービスを選択',
+        uberDesc: '目的地を設定して開く',
+        goTaxiDesc: '日本最大のタクシーアプリ',
+        didiDesc: '15都道府県で利用可能',
+        srideDesc: '東京エリアのタクシー',
+        taxiOpening: 'アプリを開いています...',
+        addressCopied: '住所をコピーしました'
     }
 };
 
