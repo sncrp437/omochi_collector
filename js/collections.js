@@ -110,19 +110,39 @@ function getCategoryFilter() {
 }
 
 /**
- * Render collection pills into a provided container element
+ * Render sub-genre pills into a provided container element
+ * Uses unique genres/collections from filtered videos
  * @param {HTMLElement} containerEl - Target container
  */
 function renderCollectionPillsInContainer(containerEl) {
     if (!containerEl) return;
     containerEl.innerHTML = '';
 
-    allCollections.forEach(function(collection) {
-        var pill = createCollectionPill(collection);
+    var subGenres = getUniqueSubGenres();
+
+    // Add "All" pill first
+    var allPill = document.createElement('button');
+    allPill.className = 'collection-pill' + (selectedCollection === 'all' ? ' active' : '');
+    allPill.dataset.collectionId = 'all';
+    var allLabel = typeof t === 'function' ? t('allVideos') : 'All';
+    allPill.innerHTML = '<span class="collection-pill-name">' + allLabel + '</span>';
+    allPill.addEventListener('click', function() { selectCollection('all'); });
+    containerEl.appendChild(allPill);
+
+    // Add sub-genre pills
+    subGenres.forEach(function(subGenre) {
+        var pill = document.createElement('button');
+        pill.className = 'collection-pill' + (selectedCollection === subGenre.id ? ' active' : '');
+        if (subGenre.isCollection) pill.classList.add('special-collection');
+        pill.dataset.collectionId = subGenre.id;
+
+        pill.innerHTML =
+            '<span class="collection-pill-name">' + subGenre.name + '</span>' +
+            '<span class="collection-pill-count">(' + subGenre.count + ')</span>';
+
+        pill.addEventListener('click', function() { selectCollection(subGenre.id); });
         containerEl.appendChild(pill);
     });
-
-    updateActiveCollection();
 }
 
 /**
@@ -329,6 +349,67 @@ function getUniqueStations(videosData) {
         }
     });
     return stations;
+}
+
+/**
+ * Get unique sub-genres from videos (respects category + location filters)
+ * Combines genre and collection fields
+ * @returns {Array} [{id: 'yakiniku', name: '焼肉', count: 2, isCollection: false}, ...]
+ */
+function getUniqueSubGenres() {
+    var subGenres = {};
+
+    // Get videos filtered by category + location (but not by genre/collection)
+    var filteredVideos = allVideos;
+
+    // Apply TIER 1: category filter
+    if (selectedCategory !== 'all') {
+        var catVideos = _categoryIndex[selectedCategory.toLowerCase()];
+        filteredVideos = catVideos || [];
+    }
+
+    // Apply TIER 2: location filter
+    if (selectedLocation !== 'all') {
+        filteredVideos = filteredVideos.filter(function(v) {
+            return v.nearest_station === selectedLocation;
+        });
+    }
+
+    // Extract from genre field (Column F)
+    filteredVideos.forEach(function(video) {
+        if (video.genre) {
+            video.genre.split(',').forEach(function(g) {
+                var key = g.trim().toLowerCase();
+                var displayName = g.trim();
+                if (key) {
+                    if (!subGenres[key]) {
+                        subGenres[key] = { id: key, name: displayName, count: 0, isCollection: false };
+                    }
+                    subGenres[key].count++;
+                }
+            });
+        }
+
+        // Extract from collection field (Column K)
+        if (video.collection) {
+            video.collection.split(',').forEach(function(c) {
+                var key = c.trim().toLowerCase();
+                var displayName = c.trim();
+                if (key) {
+                    if (!subGenres[key]) {
+                        subGenres[key] = { id: key, name: displayName, count: 0, isCollection: true };
+                    }
+                    subGenres[key].count++;
+                }
+            });
+        }
+    });
+
+    // Sort: collections first, then by count descending
+    return Object.values(subGenres).sort(function(a, b) {
+        if (a.isCollection !== b.isCollection) return a.isCollection ? -1 : 1;
+        return b.count - a.count;
+    });
 }
 
 /**

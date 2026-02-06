@@ -2866,3 +2866,22 @@ body.collections-body {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
 }
+
+/* =============================================================================
+   Special Collection Pills (curated lists like "Top 10", "Trending")
+   ============================================================================= */
+
+.collection-pill.special-collection {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    color: #fff;
+}
+
+.collection-pill.special-collection:hover {
+    background: linear-gradient(135deg, #7a8ff0 0%, #8a5cb8 100%);
+}
+
+.collection-pill.special-collection.active {
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a3c92 100%);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.5);
+}

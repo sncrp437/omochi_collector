@@ -38,7 +38,7 @@ async function init() {
 
         // Initialize collections (if available)
         let filteredVideos = videos;
-        if (rawData.collections && typeof initCollections === 'function') {
+        if (typeof initCollections === 'function') {
             filteredVideos = await initCollections(videos, rawData.collections);
         }
 
