@@ -415,9 +415,9 @@ body.has-tab-bar .video-wrapper {
 /* Caption text */
 .reel-caption {
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.2;
     margin-bottom: 15px;
-    max-width: 65%;
+    max-width: 90%;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -429,7 +429,7 @@ body.has-tab-bar .video-wrapper {
 
 /* Tighten paragraph spacing inside captions */
 .reel-caption p {
-    margin: 0 0 0.4em 0;
+    margin: 0 0 0.15em 0;
 }
 
 .reel-caption p:last-child {
@@ -439,12 +439,12 @@ body.has-tab-bar .video-wrapper {
 /* Lists inside captions */
 .reel-caption ul,
 .reel-caption ol {
-    margin: 0.3em 0;
+    margin: 0.1em 0;
     padding-left: 1.2em;
 }
 
 .reel-caption li {
-    margin-bottom: 0.2em;
+    margin-bottom: 0.05em;
 }
 
 /* Headings inside captions */
@@ -454,7 +454,7 @@ body.has-tab-bar .video-wrapper {
 .reel-caption h4,
 .reel-caption h5,
 .reel-caption h6 {
-    margin: 0.3em 0 0.2em 0;
+    margin: 0.1em 0 0.05em 0;
     font-size: 1em;
     font-weight: 600;
 }
@@ -477,7 +477,7 @@ body.has-tab-bar .video-wrapper {
     -webkit-line-clamp: unset;
     max-height: 70vh;
     overflow-y: auto;
-    max-width: 75%;
+    max-width: 90%;
     padding-right: 4px;
     -webkit-overflow-scrolling: touch;
 }
@@ -896,7 +896,7 @@ body.has-tab-bar .swipe-hint {
 
     .reel-caption {
         font-size: 13px;
-        max-width: 70%;
+        max-width: 90%;
     }
 
     .collect-btn {
