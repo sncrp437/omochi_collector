@@ -71,6 +71,22 @@ async function init() {
 }
 
 /**
+ * Re-initialize filter system without fetching data
+ * Called when page is restored from BFCache or tab becomes visible
+ */
+function reinitFilters() {
+    // Guard: Skip if videos not loaded yet
+    if (!videos || videos.length === 0) {
+        return;
+    }
+
+    // Re-initialize branched filter with existing video data
+    if (typeof initBranchedFilter === 'function') {
+        initBranchedFilter(videos);
+    }
+}
+
+/**
  * Renders the video feed with videos
  * @param {Array} videosToRender - Array of videos to render (defaults to all videos)
  */
@@ -605,3 +621,25 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
+
+// Handle page restore from BFCache (back/forward navigation)
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Page was restored from BFCache
+        reinitFilters();
+    }
+});
+
+// Handle tab visibility changes
+var _lastVisibleTime = Date.now();
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // Only reinit if hidden for more than 1 second (avoid rapid tab switches)
+        var hiddenDuration = Date.now() - _lastVisibleTime;
+        if (hiddenDuration > 1000) {
+            reinitFilters();
+        }
+    } else {
+        _lastVisibleTime = Date.now();
+    }
+});
