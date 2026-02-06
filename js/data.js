@@ -6,7 +6,7 @@
  */
 
 // TODO: Replace this with your actual Google Apps Script URL
-const GOOGLE_SHEETS_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwHP_Eim3bYCEFBoz6q642m9wNu3q8efx3bqio_5KqnfQr4t1xOqQS_Rll9wdom-ICfdQ/exec';
 
 /**
  * Fetches video data from Google Sheets via Apps Script

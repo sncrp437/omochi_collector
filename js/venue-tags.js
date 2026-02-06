@@ -3,7 +3,7 @@
 // =============================================================================
 
 // TODO: Replace with your deployed Apps Script URL
-var TAGS_API_URL = '';
+var TAGS_API_URL = 'https://script.google.com/macros/s/AKfycbxeb4dJ5LQ5rTFokdfquRDua5G67PxCHtYsLX9_e4_nQQ1Dh0CmAXf2pX6SaIwimjg3/exec';
 
 // Predefined tag definitions
 // SVG icon helper for venue tags (14x14 minimalist stroke icons)
