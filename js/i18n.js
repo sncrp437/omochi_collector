@@ -440,14 +440,21 @@ function updateTranslations() {
 
 /**
  * Update video captions based on current language
+ * Uses sanitizeCaption from app.js for safe HTML rendering with formatting
  */
 function updateVideoCaptions() {
     const captions = document.querySelectorAll('.reel-caption');
     captions.forEach(caption => {
+        let rawCaption;
         if (currentLanguage === 'ja' && caption.dataset.captionJa) {
-            caption.textContent = caption.dataset.captionJa;
+            rawCaption = caption.dataset.captionJa;
         } else if (caption.dataset.captionEn) {
-            caption.textContent = caption.dataset.captionEn;
+            rawCaption = caption.dataset.captionEn;
+        }
+        if (rawCaption && typeof sanitizeCaption === 'function') {
+            caption.innerHTML = sanitizeCaption(rawCaption);
+        } else if (rawCaption) {
+            caption.textContent = rawCaption;
         }
     });
 }

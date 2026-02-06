@@ -12,6 +12,34 @@ let currentVideoIndex = 0;
 let players = [];
 
 /**
+ * Sanitize caption text for safe HTML rendering
+ * - Converts newlines to <br> tags
+ * - Allows only safe HTML tags: <br>, <b>, <strong>, <i>, <em>, <u>
+ * - Escapes all other HTML to prevent XSS
+ * @param {string} text - Raw caption text
+ * @returns {string} Sanitized HTML string
+ */
+function sanitizeCaption(text) {
+    if (!text) return '';
+
+    // First, escape HTML entities to prevent XSS
+    let safe = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    // Convert newlines to <br>
+    safe = safe.replace(/\n/g, '<br>');
+
+    // Re-enable allowed tags (after escaping, they're now &lt;b&gt; etc.)
+    // Allow: <b>, </b>, <strong>, </strong>, <i>, </i>, <em>, </em>, <u>, </u>, <br>, <br/>
+    safe = safe.replace(/&lt;(\/?(b|strong|i|em|u|br)\s*\/?)&gt;/gi, '<$1>');
+
+    return safe;
+}
+
+/**
  * Initialize the application
  */
 async function init() {
@@ -211,9 +239,10 @@ function createOverlay(video) {
     caption.dataset.captionEn = video.caption_en || '';
     caption.dataset.captionJa = video.caption_ja || video.caption_en || '';
 
-    // Set initial caption based on current language
+    // Set initial caption based on current language (with formatting support)
     const currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
-    caption.textContent = currentLang === 'ja' ? caption.dataset.captionJa : caption.dataset.captionEn;
+    const rawCaption = currentLang === 'ja' ? caption.dataset.captionJa : caption.dataset.captionEn;
+    caption.innerHTML = sanitizeCaption(rawCaption);
 
     // Check if caption is truncated after render, add expand/collapse behavior
     requestAnimationFrame(() => {
