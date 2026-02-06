@@ -11,8 +11,14 @@ ARCHITECTURE_NOTES.md
 DEV_API_TESTING_REPORT.md
 TAGS_SHEET_SETUP.md
 ANALYTICS_TRACKING_GUIDE.md
+GOOGLE_SHEETS_COMPLETE_SETUP.md
 CLAUDE.md
 cors-test.html
+
+# Apps Script files (copy to Google, not for public repo)
+APPS_SCRIPT.js
+ANALYTICS_APPS_SCRIPT.js
+TAGS_APPS_SCRIPT.js
 
 # Temp/junk files
 UsersMiningBaseomochi_source_codetemp_bundle.js
