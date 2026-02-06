@@ -3019,7 +3019,7 @@ body.collections-body {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 1200;
+    z-index: 9100; /* Must be higher than venue-sheet (9001) */
 }
 
 .taxi-picker-modal.active {
@@ -3090,22 +3090,16 @@ body.collections-body {
     font-size: 22px;
 }
 
-/* Service-specific icon backgrounds */
+/* Service-specific icon backgrounds - brand colors */
 .taxi-picker-item-icon.uber {
-    background: linear-gradient(135deg, #000, #1a1a1a);
+    background: #000;
+    color: #fff;
     border: 1px solid #333;
 }
 
 .taxi-picker-item-icon.go-taxi {
-    background: linear-gradient(135deg, #ff6b00, #ff8c33);
-}
-
-.taxi-picker-item-icon.didi {
-    background: linear-gradient(135deg, #ff6000, #ff8533);
-}
-
-.taxi-picker-item-icon.sride {
-    background: linear-gradient(135deg, #00a0e9, #33b5ef);
+    background: #00B900; /* GO Taxi brand green */
+    color: #fff;
 }
 
 .taxi-picker-item-text {

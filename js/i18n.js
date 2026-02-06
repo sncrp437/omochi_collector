@@ -186,9 +186,7 @@ const translations = {
         taxiBtn: 'Get a Ride',
         selectRideService: 'Choose a Service',
         uberDesc: 'Open with destination set',
-        goTaxiDesc: 'Japan\'s largest taxi app',
-        didiDesc: 'Available in 15 prefectures',
-        srideDesc: 'Tokyo area taxis',
+        goTaxiDesc: 'Address copied - paste to destination',
         taxiOpening: 'Opening app...',
         addressCopied: 'Address copied to clipboard'
     },
@@ -373,9 +371,7 @@ const translations = {
         taxiBtn: '配車する',
         selectRideService: 'サービスを選択',
         uberDesc: '目的地を設定して開く',
-        goTaxiDesc: '日本最大のタクシーアプリ',
-        didiDesc: '15都道府県で利用可能',
-        srideDesc: '東京エリアのタクシー',
+        goTaxiDesc: '住所をコピー済み - 目的地に貼り付け',
         taxiOpening: 'アプリを開いています...',
         addressCopied: '住所をコピーしました'
     }

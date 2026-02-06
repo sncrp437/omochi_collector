@@ -17,7 +17,7 @@ var _editingFolderId = null; // For folder edit modal
 // Taxi / Rides Feature
 // =============================================================================
 
-// Taxi service definitions
+// Taxi service definitions (only services with working deep links)
 var TAXI_SERVICES = [
     {
         id: 'uber',
@@ -32,22 +32,6 @@ var TAXI_SERVICES = [
         name: 'GO',
         icon: 'GO',
         descKey: 'goTaxiDesc',
-        hasDeepLink: true,
-        hasWebFallback: true
-    },
-    {
-        id: 'didi',
-        name: 'DiDi',
-        icon: 'Di',
-        descKey: 'didiDesc',
-        hasDeepLink: true,
-        hasWebFallback: true
-    },
-    {
-        id: 'sride',
-        name: 'S.RIDE',
-        icon: 'S',
-        descKey: 'srideDesc',
         hasDeepLink: true,
         hasWebFallback: true
     }
@@ -1841,14 +1825,6 @@ function _buildTaxiUrl(serviceId, address, coords) {
             // GO Taxi deep link (no destination params documented)
             return 'mot-go://';
 
-        case 'didi':
-            // DiDi deep link (no destination params documented)
-            return 'didi://';
-
-        case 'sride':
-            // S.RIDE deep link (no destination params documented)
-            return 'sride://';
-
         default:
             return null;
     }
@@ -1857,8 +1833,7 @@ function _buildTaxiUrl(serviceId, address, coords) {
 /**
  * Get web fallback URL for a service
  */
-function _getTaxiWebFallback(serviceId, address, coords) {
-    var encodedAddr = encodeURIComponent(address || '');
+function _getTaxiWebFallback(serviceId, coords) {
     var lat = coords ? coords.lat : null;
     var lng = coords ? coords.lng : null;
 
@@ -1872,12 +1847,6 @@ function _getTaxiWebFallback(serviceId, address, coords) {
 
         case 'go-taxi':
             return 'https://go.mo-t.com/';
-
-        case 'didi':
-            return 'https://www.didiglobal.com/';
-
-        case 'sride':
-            return 'https://www.sride.jp/';
 
         default:
             return null;
@@ -2011,7 +1980,8 @@ async function _selectTaxiService(serviceId) {
     }
 
     // For Japanese taxi apps (no pre-fill), copy address to clipboard first
-    if ((serviceId === 'go-taxi' || serviceId === 'didi' || serviceId === 'sride') && address) {
+    // For GO Taxi (no pre-fill API), copy address to clipboard first
+    if (serviceId === 'go-taxi' && address) {
         var copied = await _copyToClipboard(address);
         if (copied && typeof showToast === 'function') {
             showToast(t('addressCopied'));
@@ -2025,7 +1995,7 @@ async function _selectTaxiService(serviceId) {
         // Try deep link first for mobile
         if (service.hasDeepLink && url.indexOf('http') !== 0) {
             // For deep links, try to open and fallback to web
-            var fallbackUrl = _getTaxiWebFallback(serviceId, address, coords);
+            var fallbackUrl = _getTaxiWebFallback(serviceId, coords);
 
             // Set a timeout to open web fallback if deep link fails
             var fallbackTimer = setTimeout(function() {
