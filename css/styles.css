@@ -417,7 +417,7 @@ body.has-tab-bar .video-wrapper {
     font-size: 14px;
     line-height: 1.4;
     margin-bottom: 15px;
-    max-width: 80%;
+    max-width: 65%;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -477,7 +477,7 @@ body.has-tab-bar .video-wrapper {
     -webkit-line-clamp: unset;
     max-height: 70vh;
     overflow-y: auto;
-    max-width: 90%;
+    max-width: 75%;
     padding-right: 4px;
     -webkit-overflow-scrolling: touch;
 }
@@ -896,7 +896,7 @@ body.has-tab-bar .swipe-hint {
 
     .reel-caption {
         font-size: 13px;
-        max-width: 85%;
+        max-width: 70%;
     }
 
     .collect-btn {
