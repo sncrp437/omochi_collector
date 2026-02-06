@@ -24,8 +24,8 @@ var TAXI_SERVICES = [
         name: 'Uber',
         icon: 'U',
         descKey: 'uberDesc',
-        hasDeepLink: true,
-        hasWebFallback: true
+        hasDeepLink: false,  // Uses Universal Link (web URL that prompts app)
+        hasWebFallback: false
     },
     {
         id: 'go-taxi',
@@ -1812,15 +1812,16 @@ function _buildTaxiUrl(serviceId, address, coords) {
 
     switch (serviceId) {
         case 'uber':
-            // Deep link with destination (opens app directly)
+            // Use Universal Link (works on all platforms, prompts app on mobile)
+            var uberUrl = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location';
             if (lat && lng) {
-                return 'uber://riderequest?dropoff[latitude]=' + lat +
-                       '&dropoff[longitude]=' + lng +
-                       '&dropoff[formatted_address]=' + encodedAddr;
+                uberUrl += '&dropoff[latitude]=' + lat +
+                           '&dropoff[longitude]=' + lng;
             }
-            // Web fallback with address only (no coords available)
-            return 'https://m.uber.com/ul/?action=setPickup&pickup=my_location' +
-                   '&dropoff[formatted_address]=' + encodedAddr;
+            if (encodedAddr) {
+                uberUrl += '&dropoff[formatted_address]=' + encodedAddr;
+            }
+            return uberUrl;
 
         case 'go-taxi':
             // Deep link to open GO app
@@ -1832,19 +1833,13 @@ function _buildTaxiUrl(serviceId, address, coords) {
 }
 
 /**
- * Get web fallback URL for a service
+ * Get web fallback URL for a service (used when deep link fails)
  */
-function _getTaxiWebFallback(serviceId, coords) {
-    var lat = coords ? coords.lat : null;
-    var lng = coords ? coords.lng : null;
-
+function _getTaxiWebFallback(serviceId) {
     switch (serviceId) {
         case 'uber':
-            if (lat && lng) {
-                return 'https://m.uber.com/ul?drop[0][latitude]=' + lat +
-                       '&drop[0][longitude]=' + lng;
-            }
-            return 'https://m.uber.com/';
+            // Primary URL is already web, no separate fallback needed
+            return null;
 
         case 'go-taxi':
             return 'https://go.mo-t.com/';
@@ -1995,7 +1990,7 @@ async function _selectTaxiService(serviceId) {
         // Try deep link first for mobile (non-http URLs)
         if (service.hasDeepLink && url.indexOf('http') !== 0) {
             // For deep links, try to open and fallback to web if app not installed
-            var fallbackUrl = _getTaxiWebFallback(serviceId, coords);
+            var fallbackUrl = _getTaxiWebFallback(serviceId);
 
             // Set a timeout to open web fallback if deep link fails
             var fallbackTimer = setTimeout(function() {
