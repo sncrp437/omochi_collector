@@ -1803,7 +1803,7 @@ async function _geocodeAddress(address) {
 }
 
 /**
- * Build URL for a taxi service (web URLs for reliability)
+ * Build URL for a taxi service (deep links for app, web fallback handled separately)
  */
 function _buildTaxiUrl(serviceId, address, coords) {
     var lat = coords ? coords.lat : null;
@@ -1812,20 +1812,19 @@ function _buildTaxiUrl(serviceId, address, coords) {
 
     switch (serviceId) {
         case 'uber':
-            // Always use web URL for reliability (deep links are unreliable)
+            // Deep link with destination (opens app directly)
             if (lat && lng) {
-                return 'https://m.uber.com/ul?action=setPickup&pickup=my_location' +
-                       '&dropoff[latitude]=' + lat +
+                return 'uber://riderequest?dropoff[latitude]=' + lat +
                        '&dropoff[longitude]=' + lng +
                        '&dropoff[formatted_address]=' + encodedAddr;
             }
-            // Fallback with address only
-            return 'https://m.uber.com/ul?action=setPickup&pickup=my_location' +
+            // Web fallback with address only (no coords available)
+            return 'https://m.uber.com/ul/?action=setPickup&pickup=my_location' +
                    '&dropoff[formatted_address]=' + encodedAddr;
 
         case 'go-taxi':
-            // GO Taxi web URL (deep link mot-go:// is unreliable)
-            return 'https://go.mo-t.com/';
+            // Deep link to open GO app
+            return 'mot-go://';
 
         default:
             return null;
@@ -1989,11 +1988,33 @@ async function _selectTaxiService(serviceId) {
         }
     }
 
-    // Build URL and open directly in new tab
+    // Build URL and open
     var url = _buildTaxiUrl(serviceId, address, coords);
 
     if (url) {
-        window.open(url, '_blank');
+        // Try deep link first for mobile (non-http URLs)
+        if (service.hasDeepLink && url.indexOf('http') !== 0) {
+            // For deep links, try to open and fallback to web if app not installed
+            var fallbackUrl = _getTaxiWebFallback(serviceId, coords);
+
+            // Set a timeout to open web fallback if deep link fails
+            var fallbackTimer = setTimeout(function() {
+                if (fallbackUrl) {
+                    window.open(fallbackUrl, '_blank');
+                }
+            }, 2500);
+
+            // Try deep link via location.href
+            window.location.href = url;
+
+            // Clear timer if page is still active after a short delay
+            setTimeout(function() {
+                clearTimeout(fallbackTimer);
+            }, 3000);
+        } else {
+            // Web URL - open directly in new tab
+            window.open(url, '_blank');
+        }
     }
 
     _closeTaxiPicker();
