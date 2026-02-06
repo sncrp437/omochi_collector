@@ -240,11 +240,16 @@ function filterVideosByCollection(collectionId) {
 }
 
 /**
- * Filter and re-render the video feed
+ * Filter and re-render the video feed with progressive rendering
  */
 function filterAndRerenderFeed(collectionId) {
     var container = document.getElementById('reelsContainer');
     if (!container) return;
+
+    // Cancel any pending progressive render
+    if (typeof _cancelPendingRender === 'function') {
+        _cancelPendingRender();
+    }
 
     container.style.opacity = '0';
     container.style.transition = 'opacity 0.3s ease';
@@ -258,15 +263,21 @@ function filterAndRerenderFeed(collectionId) {
         if (filteredVideos.length === 0) {
             showEmptyState(container);
         } else {
-            filteredVideos.forEach(function(video, index) {
-                if (typeof createReelItem === 'function') {
-                    var reelItem = createReelItem(video, index);
-                    container.appendChild(reelItem);
-                }
-            });
+            // Use progressive renderVideoFeed from app.js
+            if (typeof renderVideoFeed === 'function') {
+                renderVideoFeed(filteredVideos);
+            } else {
+                // Fallback for compatibility
+                filteredVideos.forEach(function(video, index) {
+                    if (typeof createReelItem === 'function') {
+                        var reelItem = createReelItem(video, index);
+                        container.appendChild(reelItem);
+                    }
+                });
 
-            if (typeof setupIntersectionObserver === 'function') {
-                setupIntersectionObserver();
+                if (typeof setupIntersectionObserver === 'function') {
+                    setupIntersectionObserver();
+                }
             }
         }
 

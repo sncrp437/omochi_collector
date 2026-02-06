@@ -6,10 +6,20 @@
 const BOOKMARK_OUTLINE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
 const BOOKMARK_FILLED = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
 
+// Progressive rendering configuration
+const INITIAL_BATCH_SIZE = 10;      // Show first 10 immediately
+const SUBSEQUENT_BATCH_SIZE = 20;   // Render 20 at a time in background
+const BATCH_DELAY_MS = 50;          // Delay between batches
+
 // Global state
 let videos = [];
 let currentVideoIndex = 0;
 let players = [];
+
+// Progressive render state
+let _renderQueue = [];
+let _renderIndex = 0;
+let _pendingRenderFrame = null;
 
 /**
  * Sanitize caption text for safe HTML rendering
@@ -115,7 +125,8 @@ function reinitFilters() {
 }
 
 /**
- * Renders the video feed with videos
+ * Renders the video feed with videos using progressive batching
+ * First batch renders immediately, remaining videos render in background
  * @param {Array} videosToRender - Array of videos to render (defaults to all videos)
  */
 function renderVideoFeed(videosToRender) {
@@ -129,15 +140,90 @@ function renderVideoFeed(videosToRender) {
         return;
     }
 
-    videosArray.forEach((video, index) => {
+    // Cancel any pending background rendering
+    _cancelPendingRender();
+
+    // Store queue for progressive rendering
+    _renderQueue = videosArray;
+    _renderIndex = 0;
+
+    // Render initial batch synchronously (fast first paint)
+    const initialBatch = videosArray.slice(0, INITIAL_BATCH_SIZE);
+    initialBatch.forEach((video, index) => {
         const reelItem = createReelItem(video, index);
         container.appendChild(reelItem);
     });
+    _renderIndex = INITIAL_BATCH_SIZE;
+
+    // Hide loading indicator after first batch
+    if (loading) loading.classList.add('hidden');
+
+    // Set up IntersectionObserver for initial batch
+    setupIntersectionObserver();
+
+    // Render remaining videos in background batches
+    if (videosArray.length > INITIAL_BATCH_SIZE) {
+        _renderRemainingBatches(container);
+    }
 
     // Keep loading indicator in DOM but hidden
     if (loading && loading.parentNode !== container) {
         container.appendChild(loading);
     }
+}
+
+/**
+ * Renders remaining videos in background batches using requestIdleCallback
+ * @param {HTMLElement} container - The reels container element
+ */
+function _renderRemainingBatches(container) {
+    if (_renderIndex >= _renderQueue.length) {
+        _pendingRenderFrame = null;
+        return;
+    }
+
+    // Use requestIdleCallback if available, otherwise setTimeout
+    const scheduleRender = window.requestIdleCallback ||
+        ((cb) => setTimeout(cb, BATCH_DELAY_MS));
+
+    _pendingRenderFrame = scheduleRender(() => {
+        // Guard: check if render was cancelled
+        if (_pendingRenderFrame === null) return;
+
+        const endIndex = Math.min(_renderIndex + SUBSEQUENT_BATCH_SIZE, _renderQueue.length);
+        const fragment = document.createDocumentFragment();
+
+        for (let i = _renderIndex; i < endIndex; i++) {
+            const reelItem = createReelItem(_renderQueue[i], i);
+            fragment.appendChild(reelItem);
+        }
+
+        container.appendChild(fragment);
+        _renderIndex = endIndex;
+
+        // Re-setup observer to include new items
+        setupIntersectionObserver();
+
+        // Continue with next batch
+        _renderRemainingBatches(container);
+    });
+}
+
+/**
+ * Cancels any pending background rendering
+ * Called before filter changes or page navigation
+ */
+function _cancelPendingRender() {
+    if (_pendingRenderFrame !== null) {
+        if (window.cancelIdleCallback) {
+            window.cancelIdleCallback(_pendingRenderFrame);
+        } else {
+            clearTimeout(_pendingRenderFrame);
+        }
+        _pendingRenderFrame = null;
+    }
+    _renderQueue = [];
+    _renderIndex = 0;
 }
 
 /**
