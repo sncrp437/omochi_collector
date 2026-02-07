@@ -4,6 +4,7 @@
 
 // All merged collection items for filtering/sorting
 var _allMergedItems = [];
+var _filteredItems = []; // Current filtered items for event delegation lookup
 var _activeGenreFilter = null;
 var _activeLocationFilter = null;
 var _activeFolderFilter = null; // null = All, 'uncategorized' = no folder, folder_id = specific folder
@@ -12,6 +13,29 @@ var _aiFilterQuery = '';
 var _userFolders = [];
 var _venueFolders = {};
 var _editingFolderId = null; // For folder edit modal
+
+/**
+ * Setup event delegation for venue card clicks (called once during init)
+ */
+function _setupCardClickDelegation() {
+    var cardsListEl = document.getElementById('venueCardsList');
+    if (!cardsListEl || cardsListEl._delegationSetup) return;
+
+    cardsListEl.addEventListener('click', function(e) {
+        // Ignore remove button clicks (handled separately with stopPropagation)
+        if (e.target.closest('.venue-card-remove')) return;
+
+        var card = e.target.closest('.venue-card');
+        if (!card) return;
+
+        var idx = parseInt(card.dataset.venueIndex, 10);
+        if (!isNaN(idx) && _filteredItems && _filteredItems[idx]) {
+            _openVenueSheet(_filteredItems[idx]);
+        }
+    });
+
+    cardsListEl._delegationSetup = true;
+}
 
 // =============================================================================
 // Taxi / Rides Feature
@@ -52,6 +76,9 @@ async function initCollectionsPage() {
     var authRequiredEl = document.getElementById('collectionsAuthRequired');
     var emptyEl = document.getElementById('collectionsEmpty');
     var cardsListEl = document.getElementById('venueCardsList');
+
+    // Setup event delegation for venue card clicks (once, before any rendering)
+    _setupCardClickDelegation();
 
     // 1. Always load local collections
     var localItems = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
@@ -212,6 +239,7 @@ function _renderAllCards() {
     cardsListEl.innerHTML = '';
 
     var filtered = _getFilteredItems();
+    _filteredItems = filtered; // Store for event delegation lookup
 
     if (filtered.length === 0) {
         cardsListEl.style.display = 'none';
@@ -222,8 +250,8 @@ function _renderAllCards() {
     if (emptyEl) emptyEl.style.display = 'none';
     cardsListEl.style.display = 'flex';
 
-    filtered.forEach(function(item) {
-        var card = _createUnifiedCard(item);
+    filtered.forEach(function(item, index) {
+        var card = _createUnifiedCard(item, index);
         cardsListEl.appendChild(card);
     });
 }
@@ -275,12 +303,17 @@ function _getItemVenueId(item) {
 
 /**
  * Create a unified venue card (works for both API and local items)
+ * @param {Object} item - The venue item
+ * @param {number} index - Index in _filteredItems for event delegation lookup
  */
-function _createUnifiedCard(item) {
+function _createUnifiedCard(item, index) {
     var info = _getVenueInfo(item);
 
     var card = document.createElement('div');
     card.className = 'venue-card';
+
+    // Store index for event delegation lookup
+    card.dataset.venueIndex = index;
 
     // Store source info for removal
     if (item.source === 'api') {
@@ -416,11 +449,8 @@ function _createUnifiedCard(item) {
     card.appendChild(infoDiv);
     card.appendChild(removeBtn);
 
-    // Click to open venue detail bottom sheet
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', function() {
-        _openVenueSheet(item);
-    });
+    // Note: Click handling is done via event delegation in _setupCardClickDelegation()
+    // to avoid stale listener issues when cards are re-rendered
 
     return card;
 }

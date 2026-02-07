@@ -1356,7 +1356,17 @@ body.collections-body {
     background: #1a1a1a;
     border-radius: 12px;
     position: relative;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.venue-card:active {
+    opacity: 0.8;
+    background: #222;
+    transform: scale(0.98);
 }
 
 .venue-card-logo {
