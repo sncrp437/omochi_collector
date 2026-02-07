@@ -45,6 +45,38 @@
             <span class="ad-placeholder-label">AD</span>
         </div>
 
+        <!-- AI Search Bar (below ad, above filters) -->
+        <div class="ai-search-bar" id="aiSearchBar">
+            <!-- Inactive state (default) -->
+            <div class="ai-search-inactive" id="aiSearchInactive">
+                <span class="ai-search-icon">✨</span>
+                <span class="ai-search-placeholder" data-i18n="aiSearchPlaceholder">AI Search your collections...</span>
+            </div>
+            <!-- Active input state (taller, multi-line) -->
+            <div class="ai-search-active" id="aiSearchActive" style="display:none;">
+                <div class="ai-search-active-header">
+                    <button class="ai-search-cancel" id="aiSearchCancel">✕</button>
+                </div>
+                <textarea class="ai-search-input" id="aiSearchInput" rows="3" data-i18n="aiSearchInputPlaceholder" placeholder="What are you looking for?"></textarea>
+                <div class="ai-search-active-footer">
+                    <button class="ai-search-submit" id="aiSearchSubmit" data-i18n="aiSearchGo">Search</button>
+                </div>
+            </div>
+            <!-- Loading state -->
+            <div class="ai-search-loading" id="aiSearchLoading" style="display:none;">
+                <span class="ai-search-icon">✨</span>
+                <span data-i18n="aiSorting">Searching with AI...</span>
+                <span class="ai-search-spinner"></span>
+            </div>
+            <!-- Results state -->
+            <div class="ai-search-results" id="aiSearchResults" style="display:none;">
+                <span class="ai-search-icon">✨</span>
+                <span class="ai-search-query" id="aiSearchQuery"></span>
+                <span class="ai-search-count" id="aiSearchCount"></span>
+                <button class="ai-search-clear" id="aiSearchClear" data-i18n="aiSearchClear">Clear</button>
+            </div>
+        </div>
+
         <!-- Genre Filter Pills -->
         <div class="filter-section" id="genreFilterSection" style="display:none;">
             <div class="filter-label" data-i18n="cuisineLabel">Cuisine</div>

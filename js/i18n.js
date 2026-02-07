@@ -92,11 +92,15 @@ const translations = {
         cuisineLabel: 'Cuisine',
         areaLabel: 'Area',
 
-        // AI Smart Search
-        aiSearchPlaceholder: 'What are you in the mood for?',
-        aiSearchGo: 'Go',
+        // AI Smart Search (Dedicated Search Bar)
+        aiSearchPlaceholder: 'AI Search your collections...',
+        aiSearchInputPlaceholder: 'What are you looking for?',
+        aiSearchGo: 'Search',
         aiSearchCancel: 'Cancel',
-        aiSorting: 'Finding best matches...',
+        aiSearchClear: 'Clear',
+        aiSorting: 'Searching with AI...',
+        aiResultsCount: 'results',
+        aiPickedBadge: 'AI ✓',
         aiUnavailable: 'AI search is loading, please try again shortly.',
         aiNoMatches: 'No matching venues found',
         aiFilterLabel: 'AI',
@@ -277,11 +281,15 @@ const translations = {
         cuisineLabel: '料理',
         areaLabel: 'エリア',
 
-        // AI Smart Search
-        aiSearchPlaceholder: 'どんな気分？',
+        // AI Smart Search (Dedicated Search Bar)
+        aiSearchPlaceholder: 'AIでコレクションを検索...',
+        aiSearchInputPlaceholder: '何をお探しですか？',
         aiSearchGo: '検索',
         aiSearchCancel: '戻る',
-        aiSorting: 'おすすめを検索中...',
+        aiSearchClear: 'クリア',
+        aiSorting: 'AIで検索中...',
+        aiResultsCount: '件',
+        aiPickedBadge: 'AI ✓',
         aiUnavailable: 'AI検索を読み込み中です。しばらくしてからお試しください。',
         aiNoMatches: '一致する店舗が見つかりません',
         aiFilterLabel: 'AI',

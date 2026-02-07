@@ -10,6 +10,7 @@ var _activeLocationFilter = null;
 var _activeFolderFilter = null; // null = All, 'uncategorized' = no folder, folder_id = specific folder
 var _aiFilteredIndices = null;
 var _aiFilterQuery = '';
+var _aiSearchState = 'inactive'; // 'inactive' | 'active' | 'loading' | 'results'
 var _userFolders = [];
 var _venueFolders = {};
 var _editingFolderId = null; // For folder edit modal
@@ -80,6 +81,9 @@ async function initCollectionsPage() {
     // Setup event delegation for venue card clicks (once, before any rendering)
     _setupCardClickDelegation();
 
+    // Setup AI search bar event listeners
+    _setupAiSearchBar();
+
     // 1. Always load local collections
     var localItems = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
 
@@ -114,6 +118,10 @@ async function initCollectionsPage() {
 
     // If no items at all and not logged in, show auth-required or empty
     if (_allMergedItems.length === 0) {
+        // Hide AI search bar when empty
+        var aiSearchBar = document.getElementById('aiSearchBar');
+        if (aiSearchBar) aiSearchBar.style.display = 'none';
+
         if (!loggedIn && localItems.length === 0) {
             // No local items, not logged in - show empty state with discover link
             if (emptyEl) emptyEl.style.display = 'block';
@@ -123,14 +131,20 @@ async function initCollectionsPage() {
         return;
     }
 
-    // 5. Render cards
+    // 5. Show AI search bar if we have enough items
+    var aiSearchBar = document.getElementById('aiSearchBar');
+    if (aiSearchBar) {
+        aiSearchBar.style.display = _allMergedItems.length >= 2 ? 'block' : 'none';
+    }
+
+    // 6. Render cards
     _renderAllCards();
 
-    // 6. Build filter pills
+    // 7. Build filter pills
     _renderGenreFilters();
     _renderLocationFilters();
 
-    // 7. Show registration prompt if not logged in and has items
+    // 8. Show registration prompt if not logged in and has items
     if (!loggedIn && localItems.length > 0) {
         var banner = document.getElementById('registerPromptBanner');
         if (banner) {
@@ -144,13 +158,13 @@ async function initCollectionsPage() {
         }
     }
 
-    // 8. Show logout button if logged in
+    // 9. Show logout button if logged in
     if (loggedIn) {
         var logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.style.display = 'block';
     }
 
-    // 9. Load folders and setup drawer
+    // 10. Load folders and setup drawer
     await _loadFolders();
     _setupFolderDrawer();
 }
@@ -312,6 +326,11 @@ function _createUnifiedCard(item, index) {
     var card = document.createElement('div');
     card.className = 'venue-card';
 
+    // Add AI-picked class if this card is from AI search results
+    if (_aiFilteredIndices !== null && _aiSearchState === 'results') {
+        card.className += ' ai-picked';
+    }
+
     // Store index for event delegation lookup
     card.dataset.venueIndex = index;
 
@@ -343,6 +362,12 @@ function _createUnifiedCard(item, index) {
         placeholder.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2l1.578 4.657A2 2 0 0 0 6.487 8H17.513a2 2 0 0 0 1.909-1.343L21 2"/><path d="M12 12v6"/><path d="M8 22h8"/><path d="M12 18c-4.418 0-8-2.239-8-5V8h16v5c0 2.761-3.582 5-8 5z"/></svg>';
         logoDiv.appendChild(placeholder);
     }
+
+    // AI badge (shown only when AI search is active)
+    var aiBadge = document.createElement('span');
+    aiBadge.className = 'ai-badge';
+    aiBadge.textContent = t('aiPickedBadge');
+    card.appendChild(aiBadge);
 
     // Info section
     var infoDiv = document.createElement('div');
@@ -510,11 +535,17 @@ function _checkEmptyState() {
 
 /**
  * Build genre filter pills from current collection data
+ * Note: AI pill removed - AI search now has dedicated search bar above filters
  */
 function _renderGenreFilters() {
     var container = document.getElementById('genreFilterPills');
     var section = document.getElementById('genreFilterSection');
     if (!container || !section) return;
+
+    // Don't show genre filters when AI is active (they're hidden)
+    if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
+        return;
+    }
 
     var genres = {};
     _allMergedItems.forEach(function(item) {
@@ -525,11 +556,9 @@ function _renderGenreFilters() {
     });
 
     var genreKeys = Object.keys(genres);
-    var hasAi = _allMergedItems.length > 1 && typeof isAiSortAvailable === 'function';
-    var aiActive = _aiFilteredIndices !== null;
 
-    // Show section if 2+ genres or AI is available
-    if (genreKeys.length < 2 && !hasAi) {
+    // Show section if 2+ genres
+    if (genreKeys.length < 2) {
         section.style.display = 'none';
         _activeGenreFilter = null;
         return;
@@ -540,10 +569,9 @@ function _renderGenreFilters() {
 
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeGenreFilter && !aiActive ? ' active' : '');
+    allPill.className = 'filter-pill' + (!_activeGenreFilter ? ' active' : '');
     allPill.textContent = t('allGenres');
     allPill.addEventListener('click', function() {
-        _clearAiFilter();
         _activeGenreFilter = null;
         localStorage.setItem('collectionsGenreFilter', '');
         _renderGenreFilters();
@@ -554,10 +582,9 @@ function _renderGenreFilters() {
     // Genre pills
     genreKeys.sort().forEach(function(genre) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (!aiActive && _activeGenreFilter === genre ? ' active' : '');
+        pill.className = 'filter-pill' + (_activeGenreFilter === genre ? ' active' : '');
         pill.textContent = genre;
         pill.addEventListener('click', function() {
-            _clearAiFilter();
             _activeGenreFilter = genre;
             localStorage.setItem('collectionsGenreFilter', genre);
             _renderGenreFilters();
@@ -565,42 +592,21 @@ function _renderGenreFilters() {
         });
         container.appendChild(pill);
     });
-
-    // AI pill (at the end)
-    if (hasAi) {
-        if (aiActive) {
-            // Show "AI: [query]" pill as active
-            var aiPill = document.createElement('button');
-            aiPill.className = 'filter-pill filter-pill-ai active';
-            var label = t('aiFilterLabel') + ': ' + _aiFilterQuery;
-            if (label.length > 25) label = label.substring(0, 22) + '...';
-            aiPill.textContent = label;
-            aiPill.addEventListener('click', function() {
-                _clearAiFilter();
-                _renderGenreFilters();
-                _renderAllCards();
-            });
-            container.appendChild(aiPill);
-        } else {
-            // Show "AI" pill (inactive, tappable to open input)
-            var aiPill = document.createElement('button');
-            aiPill.className = 'filter-pill filter-pill-ai';
-            aiPill.textContent = t('aiFilterLabel');
-            aiPill.addEventListener('click', function() {
-                _showAiInputInline();
-            });
-            container.appendChild(aiPill);
-        }
-    }
 }
 
 /**
  * Build location filter pills from current collection data
+ * Note: Hidden when AI search is active
  */
 function _renderLocationFilters() {
     var container = document.getElementById('locationFilterPills');
     var section = document.getElementById('locationFilterSection');
     if (!container || !section) return;
+
+    // Don't show location filters when AI is active (they're hidden)
+    if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
+        return;
+    }
 
     var locations = {};
     _allMergedItems.forEach(function(item) {
@@ -620,17 +626,13 @@ function _renderLocationFilters() {
     section.style.display = 'block';
     container.innerHTML = '';
 
-    var aiActive = _aiFilteredIndices !== null;
-
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeLocationFilter || aiActive ? ' active' : '');
+    allPill.className = 'filter-pill' + (!_activeLocationFilter ? ' active' : '');
     allPill.textContent = t('allLocations');
     allPill.addEventListener('click', function() {
-        _clearAiFilter();
         _activeLocationFilter = null;
         localStorage.setItem('collectionsLocationFilter', '');
-        _renderGenreFilters();
         _renderLocationFilters();
         _renderAllCards();
     });
@@ -638,13 +640,11 @@ function _renderLocationFilters() {
 
     locationKeys.sort().forEach(function(location) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (!aiActive && _activeLocationFilter === location ? ' active' : '');
+        pill.className = 'filter-pill' + (_activeLocationFilter === location ? ' active' : '');
         pill.textContent = location;
         pill.addEventListener('click', function() {
-            _clearAiFilter();
             _activeLocationFilter = location;
             localStorage.setItem('collectionsLocationFilter', location);
-            _renderGenreFilters();
             _renderLocationFilters();
             _renderAllCards();
         });
@@ -653,58 +653,183 @@ function _renderLocationFilters() {
 }
 
 // =============================================================================
-// AI Smart Search (Inline in Genre Filter Row)
+// AI Smart Search (Dedicated Search Bar)
 // =============================================================================
 
 /**
- * Clear AI filter state
+ * Clear AI filter state and reset UI to inactive
  */
 function _clearAiFilter() {
     _aiFilteredIndices = null;
     _aiFilterQuery = '';
+    _aiSearchState = 'inactive';
+    _updateAiSearchBarUI();
+    _updateFilterSectionsVisibility();
 }
 
 /**
- * Show inline AI search input in the genre filter pill row
+ * Setup AI search bar event listeners (called once during init)
  */
-function _showAiInputInline() {
-    var container = document.getElementById('genreFilterPills');
-    if (!container) return;
+function _setupAiSearchBar() {
+    var aiSearchBar = document.getElementById('aiSearchBar');
+    var inactiveEl = document.getElementById('aiSearchInactive');
+    var cancelBtn = document.getElementById('aiSearchCancel');
+    var submitBtn = document.getElementById('aiSearchSubmit');
+    var inputEl = document.getElementById('aiSearchInput');
+    var clearBtn = document.getElementById('aiSearchClear');
+    var resultsEl = document.getElementById('aiSearchResults');
 
-    container.innerHTML = '';
-
-    // Cancel button
-    var cancelBtn = document.createElement('button');
-    cancelBtn.className = 'ai-inline-cancel';
-    cancelBtn.textContent = t('aiSearchCancel');
-    cancelBtn.addEventListener('click', function() {
-        _renderGenreFilters();
-    });
-
-    // Text input
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'ai-inline-input';
-    input.placeholder = t('aiSearchPlaceholder');
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            _executeAiFilter(input.value);
+    // Hide AI search bar if AI is not available or not enough items
+    if (aiSearchBar) {
+        var hasAi = typeof isAiSortAvailable === 'function';
+        if (!hasAi) {
+            aiSearchBar.style.display = 'none';
+            return;
         }
-    });
+    }
 
-    // Submit button
-    var submitBtn = document.createElement('button');
-    submitBtn.className = 'ai-inline-submit';
-    submitBtn.textContent = t('aiSearchGo');
-    submitBtn.addEventListener('click', function() {
-        _executeAiFilter(input.value);
-    });
+    if (inactiveEl) {
+        inactiveEl.addEventListener('click', function() {
+            _activateAiSearch();
+        });
+    }
 
-    container.appendChild(cancelBtn);
-    container.appendChild(input);
-    container.appendChild(submitBtn);
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            _cancelAiSearch();
+        });
+    }
 
-    input.focus();
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function() {
+            var query = inputEl ? inputEl.value : '';
+            _executeAiFilter(query);
+        });
+    }
+
+    if (inputEl) {
+        inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                _executeAiFilter(inputEl.value);
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            _clearAiSearch();
+        });
+    }
+
+    if (resultsEl) {
+        // Clicking results bar (not clear button) opens input for new search
+        resultsEl.addEventListener('click', function(e) {
+            if (e.target.id !== 'aiSearchClear') {
+                _activateAiSearch();
+            }
+        });
+    }
+}
+
+/**
+ * Switch to active input state
+ */
+function _activateAiSearch() {
+    _aiSearchState = 'active';
+    _updateAiSearchBarUI();
+    _updateFilterSectionsVisibility();
+
+    var inputEl = document.getElementById('aiSearchInput');
+    if (inputEl) {
+        inputEl.value = _aiFilterQuery || '';
+        setTimeout(function() { inputEl.focus(); }, 50);
+    }
+}
+
+/**
+ * Cancel AI search and return to inactive (or results if we had results)
+ */
+function _cancelAiSearch() {
+    if (_aiFilteredIndices !== null) {
+        _aiSearchState = 'results';
+    } else {
+        _aiSearchState = 'inactive';
+    }
+    _updateAiSearchBarUI();
+    _updateFilterSectionsVisibility();
+}
+
+/**
+ * Clear AI search completely and return to inactive
+ */
+function _clearAiSearch() {
+    _aiFilteredIndices = null;
+    _aiFilterQuery = '';
+    _aiSearchState = 'inactive';
+    _updateAiSearchBarUI();
+    _updateFilterSectionsVisibility();
+    _renderGenreFilters();
+    _renderLocationFilters();
+    _renderAllCards();
+}
+
+/**
+ * Update the AI search bar UI based on current state
+ */
+function _updateAiSearchBarUI() {
+    var inactiveEl = document.getElementById('aiSearchInactive');
+    var activeEl = document.getElementById('aiSearchActive');
+    var loadingEl = document.getElementById('aiSearchLoading');
+    var resultsEl = document.getElementById('aiSearchResults');
+    var queryEl = document.getElementById('aiSearchQuery');
+    var countEl = document.getElementById('aiSearchCount');
+
+    if (!inactiveEl || !activeEl || !loadingEl || !resultsEl) return;
+
+    // Hide all states first
+    inactiveEl.style.display = 'none';
+    activeEl.style.display = 'none';
+    loadingEl.style.display = 'none';
+    resultsEl.style.display = 'none';
+
+    switch (_aiSearchState) {
+        case 'inactive':
+            inactiveEl.style.display = 'flex';
+            break;
+        case 'active':
+            activeEl.style.display = 'flex';
+            break;
+        case 'loading':
+            loadingEl.style.display = 'flex';
+            break;
+        case 'results':
+            resultsEl.style.display = 'flex';
+            if (queryEl) queryEl.textContent = _aiFilterQuery;
+            if (countEl) {
+                var count = _aiFilteredIndices ? _aiFilteredIndices.length : 0;
+                countEl.textContent = '(' + count + ' ' + t('aiResultsCount') + ')';
+            }
+            break;
+    }
+}
+
+/**
+ * Show/hide filter sections based on AI state
+ */
+function _updateFilterSectionsVisibility() {
+    var genreSection = document.getElementById('genreFilterSection');
+    var locationSection = document.getElementById('locationFilterSection');
+
+    var hideFilters = _aiSearchState === 'loading' || _aiSearchState === 'results';
+
+    if (genreSection) {
+        genreSection.style.display = hideFilters ? 'none' : '';
+    }
+    if (locationSection) {
+        locationSection.style.display = hideFilters ? 'none' : '';
+    }
 }
 
 /**
@@ -769,7 +894,7 @@ async function _executeAiFilter(query) {
     // Show Puter disclaimer on first use
     var accepted = await _showPuterDisclaimer();
     if (!accepted) {
-        _renderGenreFilters();
+        _cancelAiSearch();
         return;
     }
 
@@ -778,19 +903,14 @@ async function _executeAiFilter(query) {
         if (typeof showToast === 'function') {
             showToast(t('aiUnavailable'));
         }
-        _renderGenreFilters();
+        _cancelAiSearch();
         return;
     }
 
-    // Show loading state in pill area
-    var container = document.getElementById('genreFilterPills');
-    if (container) {
-        container.innerHTML = '';
-        var loadingPill = document.createElement('span');
-        loadingPill.className = 'ai-loading-pill';
-        loadingPill.textContent = t('aiSorting');
-        container.appendChild(loadingPill);
-    }
+    // Show loading state in dedicated AI search bar
+    _aiSearchState = 'loading';
+    _updateAiSearchBarUI();
+    _updateFilterSectionsVisibility();
 
     // Build venue metadata for ALL items
     var venues = _allMergedItems.map(function(item) {
@@ -803,30 +923,39 @@ async function _executeAiFilter(query) {
         if (matchedIndices && matchedIndices.length > 0) {
             _aiFilteredIndices = matchedIndices;
             _aiFilterQuery = query;
+            _aiSearchState = 'results';
             _activeGenreFilter = null;
             _activeLocationFilter = null;
             localStorage.setItem('collectionsGenreFilter', '');
             localStorage.setItem('collectionsLocationFilter', '');
-            _renderGenreFilters();
-            _renderLocationFilters();
+            _updateAiSearchBarUI();
+            _updateFilterSectionsVisibility();
             _renderAllCards();
         } else {
             _aiFilteredIndices = null;
             _aiFilterQuery = '';
+            _aiSearchState = 'inactive';
+            _updateAiSearchBarUI();
+            _updateFilterSectionsVisibility();
             if (typeof showToast === 'function') {
                 showToast(t('aiNoMatches'));
             }
             _renderGenreFilters();
+            _renderLocationFilters();
             _renderAllCards();
         }
     } catch (err) {
         console.error('AI filter failed:', err);
         _aiFilteredIndices = null;
         _aiFilterQuery = '';
+        _aiSearchState = 'inactive';
+        _updateAiSearchBarUI();
+        _updateFilterSectionsVisibility();
         if (typeof showToast === 'function') {
             showToast(t('aiUnavailable'));
         }
         _renderGenreFilters();
+        _renderLocationFilters();
         _renderAllCards();
     }
 }
