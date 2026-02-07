@@ -185,7 +185,7 @@ const translations = {
         // Taxi / Rides
         taxiBtn: 'Get a Ride',
         selectRideService: 'Choose a Service',
-        uberDesc: 'Open with destination set',
+        uberDesc: 'Address copied - paste to destination',
         goTaxiDesc: 'Address copied - paste to destination',
         taxiOpening: 'Opening app...',
         addressCopied: 'Address copied to clipboard'
@@ -370,7 +370,7 @@ const translations = {
         // Taxi / Rides
         taxiBtn: '配車する',
         selectRideService: 'サービスを選択',
-        uberDesc: '目的地を設定して開く',
+        uberDesc: '住所をコピー済み - 目的地に貼り付け',
         goTaxiDesc: '住所をコピー済み - 目的地に貼り付け',
         taxiOpening: 'アプリを開いています...',
         addressCopied: '住所をコピーしました'

@@ -3108,8 +3108,9 @@ body.collections-body {
 }
 
 .taxi-picker-item-icon.go-taxi {
-    background: #00B900; /* GO Taxi brand green */
+    background: #000;
     color: #fff;
+    border: 1px solid #333;
 }
 
 .taxi-picker-item-text {
