@@ -3,6 +3,7 @@ omochi-be-master@1170e0e6cac/
 omochi-fe-master@86f1b3461ee/
 
 # Internal docs with API URLs and dev details
+MASTER_PLAN.md
 SECURITY_ARCHITECTURE.md
 STANDALONE_FRONTEND_API_NOTES.md
 ARCHITECTURE.md
