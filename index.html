@@ -25,6 +25,13 @@
     <!-- End Meta Pixel Code -->
 </head>
 <body class="has-tab-bar">
+    <!-- Expiration Warning Banner (Guest Users) -->
+    <div id="expirationBanner" class="expiration-banner" style="display: none;">
+        <span id="expirationMessage"></span>
+        <button id="expirationRegisterBtn" class="expiration-register-btn" data-i18n="expirationRegister">Register Free</button>
+        <button id="expirationDismissBtn" class="expiration-dismiss-btn">&times;</button>
+    </div>
+
     <!-- Auth Status Indicator -->
     <div class="auth-status" id="authStatus"></div>
 

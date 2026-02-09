@@ -1498,6 +1498,110 @@ body.collections-body {
 }
 
 /* =============================================================================
+   Expiration Warning Banner (Guest Collections)
+   ============================================================================= */
+
+.expiration-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #ff6b35, #f72585);
+    color: white;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1.3;
+}
+
+.expiration-banner #expirationMessage {
+    flex: 1;
+    min-width: 0;
+}
+
+.expiration-banner.urgent {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    animation: expiration-pulse 1s ease-in-out infinite;
+}
+
+.expiration-banner.critical {
+    background: linear-gradient(135deg, #7f1d1d, #450a0a);
+    animation: expiration-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes expiration-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
+.expiration-register-btn {
+    background: white;
+    color: #dc2626;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.expiration-register-btn:active {
+    background: #f0f0f0;
+}
+
+.expiration-dismiss-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0.7;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.expiration-dismiss-btn:active {
+    opacity: 1;
+}
+
+/* Adjust body when banner is visible */
+body.has-expiration-banner {
+    padding-top: 52px;
+}
+
+body.has-expiration-banner .language-selector {
+    top: 62px;
+}
+
+body.has-expiration-banner .auth-status {
+    top: 62px;
+}
+
+body.has-expiration-banner .branched-filter {
+    top: 100px;
+}
+
+/* Collections page adjustments */
+body.collections-body.has-expiration-banner {
+    padding-top: 52px;
+}
+
+body.collections-body.has-expiration-banner .language-selector {
+    top: 62px;
+}
+
+body.collections-body.has-expiration-banner .my-collections-page {
+    padding-top: 10px;
+}
+
+/* =============================================================================
    Register Prompt Banner
    ============================================================================= */
 

@@ -86,6 +86,9 @@ const translations = {
         alreadyCollected: 'Already in your collection',
         registerToKeepCollections: 'Register (free) to keep your collections permanently and access them from any device.',
 
+        // Expiration warning banner (guest users)
+        expirationRegister: 'Register Free',
+
         // Collection filters
         allGenres: 'All',
         allLocations: 'All',
@@ -274,6 +277,9 @@ const translations = {
         collectSaved: 'コレクションに保存しました！',
         alreadyCollected: 'すでにコレクションに追加済みです',
         registerToKeepCollections: '無料登録でコレクションを永久保存。どのデバイスからでもアクセスできます。',
+
+        // Expiration warning banner (guest users)
+        expirationRegister: '無料登録',
 
         // Collection filters
         allGenres: 'すべて',

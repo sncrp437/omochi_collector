@@ -102,6 +102,11 @@ async function init() {
             showWelcomeModal(collectionName);
         }
 
+        // Initialize expiration warning banner for guest users
+        if (typeof initExpirationBanner === 'function') {
+            initExpirationBanner();
+        }
+
     } catch (error) {
         console.error('Initialization error:', error);
         document.getElementById('loading').innerHTML = `<p>${t('errorLoading')}</p>`;

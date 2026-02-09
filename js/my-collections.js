@@ -167,6 +167,11 @@ async function initCollectionsPage() {
     // 10. Load folders and setup drawer
     await _loadFolders();
     _setupFolderDrawer();
+
+    // 11. Initialize expiration warning banner for guest users
+    if (typeof initExpirationBanner === 'function') {
+        initExpirationBanner();
+    }
 }
 
 /**

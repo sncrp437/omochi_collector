@@ -3,6 +3,7 @@
 // =============================================================================
 
 const LOCAL_COLLECTIONS_KEY = 'omochi_local_collections';
+const COLLECTION_EXPIRY_DAYS = 7;
 
 /**
  * Get all locally saved collections
@@ -45,6 +46,7 @@ function saveLocalCollection(video) {
         video_type: video.video_type || 'youtube',
         reservation_url: video.reservation_url || '',
         date_added: new Date().toISOString(),
+        expires_at: new Date(Date.now() + COLLECTION_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString(),
         synced: false
     });
 
@@ -141,4 +143,164 @@ function showToast(message, duration) {
         toast.classList.remove('show');
         _toastTimeout = null;
     }, duration);
+}
+
+// =============================================================================
+// Collection Expiration (Guest Users)
+// =============================================================================
+
+/**
+ * Remove expired collections from localStorage
+ * @returns {number} Number of items deleted
+ */
+function cleanupExpiredCollections() {
+    var collections = getLocalCollections();
+    var now = new Date();
+    var valid = collections.filter(function(c) {
+        // Legacy items without expires_at are kept (backward compatible)
+        if (!c.expires_at) return true;
+        return new Date(c.expires_at) > now;
+    });
+
+    var deletedCount = collections.length - valid.length;
+    if (deletedCount > 0) {
+        localStorage.setItem(LOCAL_COLLECTIONS_KEY, JSON.stringify(valid));
+    }
+    return deletedCount;
+}
+
+/**
+ * Get expiration info for banner display
+ * @returns {Object|null} { count, daysLeft, soonestExpiry } or null if no collections
+ */
+function getExpirationInfo() {
+    var collections = getLocalCollections();
+    if (collections.length === 0) return null;
+
+    // Find soonest expiring item
+    var now = new Date();
+    var soonest = null;
+    for (var i = 0; i < collections.length; i++) {
+        var c = collections[i];
+        if (c.expires_at) {
+            var exp = new Date(c.expires_at);
+            if (!soonest || exp < soonest) {
+                soonest = exp;
+            }
+        }
+    }
+
+    if (!soonest) return null;
+
+    var msLeft = soonest - now;
+    var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+
+    return {
+        count: collections.length,
+        daysLeft: Math.max(0, daysLeft),
+        soonestExpiry: soonest.toISOString()
+    };
+}
+
+// =============================================================================
+// Expiration Warning Banner
+// =============================================================================
+
+/**
+ * Update the expiration warning banner based on current state
+ */
+function updateExpirationBanner() {
+    // Don't show for logged-in users
+    if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+        hideExpirationBanner();
+        return;
+    }
+
+    // Check if user dismissed banner this session
+    if (sessionStorage.getItem('expirationBannerDismissed') === 'true') {
+        hideExpirationBanner();
+        return;
+    }
+
+    // Cleanup expired items first
+    cleanupExpiredCollections();
+
+    var info = getExpirationInfo();
+    if (!info || info.count === 0) {
+        hideExpirationBanner();
+        return;
+    }
+
+    var banner = document.getElementById('expirationBanner');
+    var message = document.getElementById('expirationMessage');
+    if (!banner || !message) return;
+
+    // Get translations or use defaults
+    var lang = (typeof getCurrentLanguage === 'function') ? getCurrentLanguage() : 'en';
+    var text, urgencyClass = '';
+
+    if (info.daysLeft > 1) {
+        if (lang === 'ja') {
+            text = '保存した' + info.count + '件の店舗は' + info.daysLeft + '日後に削除されます。登録して永久保存。';
+        } else {
+            var plural = info.count === 1 ? 'venue' : 'venues';
+            text = 'Your ' + info.count + ' saved ' + plural + ' will expire in ' + info.daysLeft + ' days. Register to keep forever.';
+        }
+    } else if (info.daysLeft === 1) {
+        if (lang === 'ja') {
+            text = '⚠️ 明日削除されます！今すぐ登録を。';
+        } else {
+            text = '⚠️ Your venues expire TOMORROW! Register now to keep them.';
+        }
+        urgencyClass = 'urgent';
+    } else {
+        if (lang === 'ja') {
+            text = '🚨 本日削除！最後のチャンス。';
+        } else {
+            text = '🚨 Last chance! Your venues expire TODAY.';
+        }
+        urgencyClass = 'critical';
+    }
+
+    message.textContent = text;
+    banner.className = 'expiration-banner' + (urgencyClass ? ' ' + urgencyClass : '');
+    banner.style.display = 'flex';
+    document.body.classList.add('has-expiration-banner');
+}
+
+/**
+ * Hide the expiration warning banner
+ */
+function hideExpirationBanner() {
+    var banner = document.getElementById('expirationBanner');
+    if (banner) {
+        banner.style.display = 'none';
+    }
+    document.body.classList.remove('has-expiration-banner');
+}
+
+/**
+ * Initialize expiration banner and event listeners
+ */
+function initExpirationBanner() {
+    updateExpirationBanner();
+
+    // Register button opens auth modal
+    var regBtn = document.getElementById('expirationRegisterBtn');
+    if (regBtn) {
+        regBtn.addEventListener('click', function() {
+            if (typeof showAuthModal === 'function') {
+                showAuthModal('register');
+            }
+        });
+    }
+
+    // Dismiss button hides for this session only
+    var dismissBtn = document.getElementById('expirationDismissBtn');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+            sessionStorage.setItem('expirationBannerDismissed', 'true');
+            hideExpirationBanner();
+        });
+    }
 }

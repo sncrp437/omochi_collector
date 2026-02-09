@@ -232,18 +232,23 @@ i18n.js
 ---
 
 ### js/local-collections.js
-**Purpose:** Browser-level venue collection storage (no auth required) with toast notifications.
+**Purpose:** Browser-level venue collection storage (no auth required) with toast notifications and 7-day expiration for guest users.
 
 | Function | Description |
 |----------|-------------|
 | `getLocalCollections()` | Parse localStorage array |
-| `saveLocalCollection(video)` | Add venue, return true if new |
+| `saveLocalCollection(video)` | Add venue with 7-day expiry, return true if new |
 | `removeLocalCollection(localId)` | Delete by local ID |
 | `isLocallyCollected(videoId)` | Check if already saved |
 | `syncLocalCollectionsToApi()` | POST unsynced items to `/api/stocked-venues/` |
 | `markLocalCollectionSynced(videoId)` | Set `synced: true` |
 | `getUnsyncedCollections()` | Get items with venue_uuid not yet synced |
 | `showToast(message, duration)` | Display toast notification |
+| `cleanupExpiredCollections()` | Remove expired items from localStorage |
+| `getExpirationInfo()` | Get count and days until soonest expiry |
+| `initExpirationBanner()` | Initialize warning banner + event listeners |
+| `updateExpirationBanner()` | Update banner text/urgency based on expiry |
+| `hideExpirationBanner()` | Hide the warning banner |
 
 **localStorage:** `omochi_local_collections` (JSON array)
 
@@ -254,11 +259,11 @@ i18n.js
   video_id, venue_uuid, venue_name, genre, genre_en,
   address, nearest_station, nearest_station_en,
   caption_en, caption_ja, video_url, reservation_url,
-  date_added, synced: false
+  date_added, expires_at, synced: false
 }
 ```
 
-**DOM:** `#toast`, `#toastMessage`, `#toastContainer`
+**DOM:** `#toast`, `#toastMessage`, `#toastContainer`, `#expirationBanner`, `#expirationMessage`, `#expirationRegisterBtn`, `#expirationDismissBtn`
 **API:** `POST /api/stocked-venues/` (during sync)
 
 ---
@@ -463,9 +468,32 @@ Base: `https://5w1pl59sr9.execute-api.ap-northeast-1.amazonaws.com/dev`
 | `selectedLocation` | collections.js | string | Current station filter on index |
 | `selectedCategory` | categories.js | string | Top-level category (default: `'food'`) |
 | `welcomeModalLastShown` | welcome.js | ISO string | Timestamp of last welcome modal |
-| `omochi_local_collections` | local-collections.js | JSON array | Saved venues (browser-level) |
+| `omochi_local_collections` | local-collections.js | JSON array | Saved venues (browser-level, with `expires_at`) |
 | `collectionsGenreFilter` | my-collections.js | string | Cuisine filter on collections page |
 | `collectionsLocationFilter` | my-collections.js | string | Area filter on collections page |
+
+**sessionStorage Keys:**
+| Key | Module | Description |
+|-----|--------|-------------|
+| `expirationBannerDismissed` | local-collections.js | Banner dismissed for this session |
+
+---
+
+## Guest Collection Expiration
+
+Guest users' collections are stored in localStorage with a 7-day expiration to encourage registration:
+
+- **On save**: Each collection item gets `expires_at` = current time + 7 days
+- **On page load**: `cleanupExpiredCollections()` removes expired items
+- **Warning banner**: Shows dynamic countdown on both pages (index + my-collections)
+- **On register**: Collections sync to API → stored permanently (no expiration)
+
+**Banner messaging progression:**
+| Days Left | Message | Style |
+|-----------|---------|-------|
+| 7-2 | "Your X venues will expire in Y days..." | Orange gradient |
+| 1 | "⚠️ Expire TOMORROW!" | Red + pulse animation |
+| 0 | "🚨 Last chance! Expire TODAY" | Dark red + fast pulse |
 
 ---
 
@@ -508,4 +536,4 @@ my-collections.html
 
 ---
 
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-09*
