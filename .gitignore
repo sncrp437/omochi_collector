@@ -4,6 +4,7 @@ omochi-fe-master@86f1b3461ee/
 
 # Internal docs with API URLs and dev details
 MASTER_PLAN.md
+LEDGER_IMPLEMENTATION_EXPLORATION.md
 SECURITY_ARCHITECTURE.md
 STANDALONE_FRONTEND_API_NOTES.md
 ARCHITECTURE.md
@@ -22,6 +23,12 @@ cors-test.html
 APPS_SCRIPT.js
 ANALYTICS_APPS_SCRIPT.js
 TAGS_APPS_SCRIPT.js
+
+# Reservation system setup (internal docs)
+RESERVATION_SYSTEM_SETUP.md
+
+# Excel files (real reservation data - never commit)
+*.xlsx
 
 # Temp/junk files
 UsersMiningBaseomochi_source_codetemp_bundle.js
