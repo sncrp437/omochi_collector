@@ -80,6 +80,58 @@ body {
     background-color: #f0f0f0;
 }
 
+/* Content Type Selector (YouTube/X/All toggle) */
+.content-type-selector {
+    display: flex;
+    gap: 2px;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 4px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.content-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 28px;
+}
+
+.content-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+}
+
+.content-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.content-btn.active {
+    background-color: #fff;
+    color: #000;
+    font-weight: 600;
+}
+
+.content-btn.active svg {
+    stroke: #000;
+}
+
+.content-btn.active:hover {
+    background-color: #f0f0f0;
+}
+
 /* Branched Filter Container */
 .branched-filter {
     position: fixed;
@@ -915,6 +967,22 @@ body.has-tab-bar .swipe-hint {
     .lang-btn {
         padding: 5px 10px;
         font-size: 11px;
+    }
+
+    .content-type-selector {
+        padding: 3px;
+        gap: 2px;
+    }
+
+    .content-btn {
+        padding: 5px 6px;
+        font-size: 10px;
+        min-width: 24px;
+    }
+
+    .content-btn svg {
+        width: 12px;
+        height: 12px;
     }
 
     .branched-filter {
