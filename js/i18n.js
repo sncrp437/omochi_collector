@@ -195,7 +195,14 @@ const translations = {
         uberDesc: 'Address copied - paste to destination',
         goTaxiDesc: 'Address copied - paste to destination',
         taxiOpening: 'Opening app...',
-        addressCopied: 'Address copied to clipboard'
+        addressCopied: 'Address copied to clipboard',
+
+        // NFC/QR Auto-collect
+        venueNotFound: 'Venue not found',
+        alreadyInCollection: 'Already in your collection',
+        tapCardHint: 'Tap card to see details & reserve',
+        discoverMoreVenues: 'Discover more venues like this',
+        exploreFeed: 'Explore the Feed'
     },
     ja: {
         // Index page
@@ -387,7 +394,14 @@ const translations = {
         uberDesc: '住所をコピー済み - 目的地に貼り付け',
         goTaxiDesc: '住所をコピー済み - 目的地に貼り付け',
         taxiOpening: 'アプリを開いています...',
-        addressCopied: '住所をコピーしました'
+        addressCopied: '住所をコピーしました',
+
+        // NFC/QR Auto-collect
+        venueNotFound: '店舗が見つかりません',
+        alreadyInCollection: 'すでに保存済みです',
+        tapCardHint: 'カードをタップして詳細・予約',
+        discoverMoreVenues: 'このような店舗をもっと発見',
+        exploreFeed: 'フィードを探索'
     }
 };
 

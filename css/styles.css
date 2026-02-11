@@ -1341,6 +1341,39 @@ body.collections-body {
     margin-bottom: 20px;
 }
 
+/* Discovery CTA (NFC/QR flow) */
+.discovery-cta {
+    text-align: center;
+    padding: 24px 16px;
+    margin: 16px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.discovery-cta p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 12px 0;
+    font-size: 14px;
+}
+
+.discovery-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.discovery-btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
 /* Venue Cards */
 .venue-cards-list {
     display: flex;
@@ -1367,6 +1400,24 @@ body.collections-body {
     opacity: 0.8;
     background: #222;
     transform: scale(0.98);
+}
+
+/* NFC/QR Auto-collect highlight effect */
+.venue-card.newly-collected {
+    animation: newCollectPulse 2s ease-out;
+    box-shadow: 0 0 0 3px rgba(0, 198, 251, 0.5);
+}
+
+@keyframes newCollectPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 198, 251, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(0, 198, 251, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 0 3px rgba(0, 198, 251, 0.5);
+    }
 }
 
 .venue-card-logo {

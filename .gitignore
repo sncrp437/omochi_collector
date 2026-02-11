@@ -26,6 +26,7 @@ TAGS_APPS_SCRIPT.js
 
 # Reservation system setup (internal docs)
 RESERVATION_SYSTEM_SETUP.md
+RESERVATION_INTEGRATION_EXPLAINER_JP.md
 
 # Excel files (real reservation data - never commit)
 *.xlsx
@@ -36,3 +37,6 @@ nul
 
 # Claude internal
 .claude/
+
+# Implementation plans (internal)
+plans/

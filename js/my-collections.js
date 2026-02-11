@@ -14,6 +14,180 @@ var _aiSearchState = 'inactive'; // 'inactive' | 'active' | 'loading' | 'results
 var _userFolders = [];
 var _venueFolders = {};
 var _editingFolderId = null; // For folder edit modal
+var _autoCollectedVenue = null; // Venue that was auto-collected via URL param
+
+// =============================================================================
+// NFC/QR Auto-Collect via URL Parameters
+// =============================================================================
+
+/**
+ * Get auto-collect params from URL
+ * Supports: ?collect=VENUE_KEY&src=nfc|qr|link
+ */
+function getAutoCollectParams() {
+    var params = new URLSearchParams(window.location.search);
+    return {
+        venueKey: params.get('collect') || params.get('v') || null,
+        source: params.get('src') || 'direct'
+    };
+}
+
+/**
+ * Handle auto-collect on page load (NFC/QR integration)
+ * Fetches video data, finds venue by venue_key, saves to collection
+ * @returns {Promise<Object|null>} The auto-collected venue item or null
+ */
+async function handleAutoCollect() {
+    var params = getAutoCollectParams();
+    if (!params.venueKey) return null;
+
+    console.log('[my-collections] Auto-collect triggered for venue_key:', params.venueKey);
+
+    // Log arrival event
+    if (typeof logAnalyticsEvent === 'function') {
+        logAnalyticsEvent('nfc_arrival', params.venueKey);
+    }
+
+    // Fetch video data to find venue
+    var rawData = null;
+    try {
+        rawData = await fetchVideoData();
+    } catch (err) {
+        console.error('[my-collections] Failed to fetch video data for auto-collect:', err);
+    }
+
+    if (!rawData) {
+        if (typeof showToast === 'function') {
+            showToast(t('venueNotFound'));
+        }
+        _cleanAutoCollectUrl();
+        return null;
+    }
+
+    var venues = typeof parseVideoData === 'function' ? parseVideoData(rawData) : [];
+
+    // Find venue by venue_key (primary) or id (fallback)
+    var venue = venues.find(function(v) { return v.venue_key === params.venueKey; }) ||
+                venues.find(function(v) { return v.id === params.venueKey; });
+
+    if (!venue) {
+        console.warn('[my-collections] Venue not found for key:', params.venueKey);
+        if (typeof showToast === 'function') {
+            showToast(t('venueNotFound'));
+        }
+        if (typeof logAnalyticsEvent === 'function') {
+            logAnalyticsEvent('auto_collect_not_found', params.venueKey);
+        }
+        _cleanAutoCollectUrl();
+        return null;
+    }
+
+    // Check if already collected
+    if (typeof isLocallyCollected === 'function' && isLocallyCollected(venue.id)) {
+        console.log('[my-collections] Venue already collected:', venue.venue_name);
+        if (typeof showToast === 'function') {
+            showToast(t('alreadyInCollection'));
+        }
+        if (typeof logAnalyticsEvent === 'function') {
+            logAnalyticsEvent('auto_collect_duplicate', params.venueKey);
+        }
+        _cleanAutoCollectUrl();
+        // Still return venue to open the bottom sheet
+        return venue;
+    }
+
+    // Auto-save to collection
+    var isNew = false;
+    if (typeof saveLocalCollection === 'function') {
+        isNew = saveLocalCollection(venue);
+    }
+
+    if (isNew) {
+        // Show success toast with hint
+        var toastMsg = '\u2713 ' + (venue.venue_name || 'Venue') + ' ' + t('collected');
+        if (typeof showToast === 'function') {
+            showToast(toastMsg, 3500);
+        }
+        if (typeof logAnalyticsEvent === 'function') {
+            logAnalyticsEvent('auto_collect_success', params.venueKey);
+        }
+
+        // Sync to API if logged in and has venue_uuid
+        if (venue.venue_uuid && typeof isLoggedIn === 'function' && isLoggedIn()) {
+            try {
+                await apiPost('/api/stocked-venues/', { venue: venue.venue_uuid });
+                if (typeof markLocalCollectionSynced === 'function') {
+                    markLocalCollectionSynced(venue.id);
+                }
+            } catch (err) {
+                console.warn('[my-collections] API sync failed for auto-collected venue:', err);
+            }
+        }
+    }
+
+    // Clean URL (remove params without reload)
+    _cleanAutoCollectUrl();
+
+    return venue;
+}
+
+/**
+ * Remove auto-collect params from URL without page reload
+ */
+function _cleanAutoCollectUrl() {
+    var cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+}
+
+/**
+ * Highlight newly collected venue card with animation
+ * @param {string} videoId - The video_id to highlight
+ */
+function highlightVenueCard(videoId) {
+    var card = document.querySelector('.venue-card[data-video-id="' + videoId + '"]');
+    // Also try finding by local_id pattern in case card uses that
+    if (!card) {
+        var cards = document.querySelectorAll('.venue-card');
+        for (var i = 0; i < cards.length; i++) {
+            var localId = cards[i].dataset.localId;
+            if (localId && _filteredItems && _filteredItems[i]) {
+                var itemVideoId = _filteredItems[i].data.video_id || _filteredItems[i].data.id;
+                if (itemVideoId === videoId) {
+                    card = cards[i];
+                    break;
+                }
+            }
+        }
+    }
+
+    if (card) {
+        card.classList.add('newly-collected');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+/**
+ * Find the merged item that matches an auto-collected venue
+ * @param {Object} venue - The venue object from video data
+ * @returns {Object|null} The merged item or null
+ */
+function _findMergedItemForVenue(venue) {
+    if (!venue || !_allMergedItems) return null;
+
+    for (var i = 0; i < _allMergedItems.length; i++) {
+        var item = _allMergedItems[i];
+        if (item.source === 'local') {
+            if (item.data.video_id === venue.id || item.data.venue_key === venue.venue_key) {
+                return item;
+            }
+        } else if (item.source === 'api') {
+            if (item.data.venue === venue.venue_uuid) {
+                return item;
+            }
+        }
+    }
+    return null;
+}
 
 /**
  * Setup event delegation for venue card clicks (called once during init)
@@ -84,7 +258,10 @@ async function initCollectionsPage() {
     // Setup AI search bar event listeners
     _setupAiSearchBar();
 
-    // 1. Always load local collections
+    // 0. Handle NFC/QR auto-collect FIRST (before loading collections)
+    _autoCollectedVenue = await handleAutoCollect();
+
+    // 1. Always load local collections (includes auto-collected venue if new)
     var localItems = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
 
     // 2. Check login status
@@ -171,6 +348,20 @@ async function initCollectionsPage() {
     // 11. Initialize expiration warning banner for guest users
     if (typeof initExpirationBanner === 'function') {
         initExpirationBanner();
+    }
+
+    // 12. Handle auto-collected venue (NFC/QR) - highlight and open sheet
+    if (_autoCollectedVenue) {
+        // Find the merged item for this venue
+        var mergedItem = _findMergedItemForVenue(_autoCollectedVenue);
+        if (mergedItem) {
+            // Highlight the card with animation
+            highlightVenueCard(_autoCollectedVenue.id);
+            // Auto-open the venue detail bottom sheet after a brief delay
+            setTimeout(function() {
+                _openVenueSheet(mergedItem);
+            }, 600);
+        }
     }
 }
 

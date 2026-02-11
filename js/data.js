@@ -109,7 +109,8 @@ function clearVideoCache() {
  *   nearest_station: "Station name" (optional),
  *   priority: 5 (optional),
  *   active: true (optional),
- *   tags: "tag1,tag2" (optional)
+ *   tags: "tag1,tag2" (optional),
+ *   venue_key: "venuename_area" (optional - used for NFC/QR auto-collect)
  * }
  *
  * Supported URL formats:
