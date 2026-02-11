@@ -40,3 +40,6 @@ nul
 
 # Implementation plans (internal)
 plans/
+
+# Test checklists
+test/
