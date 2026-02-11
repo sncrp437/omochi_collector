@@ -29,15 +29,14 @@ const translations = {
         noVideosInCollection: 'No videos in this collection',
 
         // Welcome Modal
-        welcomeTitle: 'Welcome to Food Discovery',
-        welcomeAboutTitle: 'About',
-        welcomeAboutText: 'Discover amazing restaurants and food venues through vertical video stories.',
-        welcomeHowToTitle: 'How to Use',
-        welcomeSwipe: 'Swipe up/down to browse videos',
-        welcomeCollect: 'Tap "Want to Go!" to save favorites',
-        welcomeCollections: 'Select collections at the top to filter',
-        welcomeLanguage: 'Switch languages in the top right',
-        welcomeNowShowing: 'Now showing:',
+        welcomeTitle: 'Welcome to Omochi',
+        welcomeSubtitle: 'Collect places you want to go from videos and posts!',
+        welcomeHowToTitle: 'How it Works',
+        welcomeSwipe: 'Swipe to browse videos',
+        welcomeCollect: 'Push the save button to collect',
+        welcomeCollections: 'Find your saved spots instantly',
+        welcomeReserve: 'Reserve directly and get perks',
+        welcomeTip: 'Register to keep saves forever!',
         welcomeGetStarted: 'Get Started',
 
         // Language selector
@@ -244,15 +243,14 @@ const translations = {
         noVideosInCollection: 'このコレクションには動画がありません',
 
         // Welcome Modal
-        welcomeTitle: 'フードディスカバリーへようこそ',
-        welcomeAboutTitle: 'について',
-        welcomeAboutText: '縦型動画で素晴らしいレストランや飲食店を発見しましょう。',
+        welcomeTitle: 'Omochiへようこそ',
+        welcomeSubtitle: '動画や投稿から、自分の「行きたい」を集めよう！',
         welcomeHowToTitle: '使い方',
-        welcomeSwipe: '上下にスワイプして動画を閲覧',
-        welcomeCollect: '「行きたい！」をタップしてお気に入りを保存',
-        welcomeCollections: '上部でコレクションを選択してフィルタリング',
-        welcomeLanguage: '右上で言語を切り替え',
-        welcomeNowShowing: '現在表示中:',
+        welcomeSwipe: 'スワイプして動画を閲覧',
+        welcomeCollect: '保存ボタンを押してコレクションに保存',
+        welcomeCollections: '保存した場所をすぐ見つかる',
+        welcomeReserve: 'コレクションから直接予約＆特典も',
+        welcomeTip: '登録すると保存が永久に！',
         welcomeGetStarted: '始める',
 
         // Language selector

@@ -19,10 +19,9 @@ function shouldShowWelcomeModal() {
 
 /**
  * Show the welcome modal
- * @param {string} collectionName - Name of current collection
  * @returns {boolean} True if modal was shown
  */
-function showWelcomeModal(collectionName) {
+function showWelcomeModal() {
     if (!shouldShowWelcomeModal()) {
         // If modal not shown, trigger swipe hint directly
         if (typeof showSwipeHint === 'function') {
@@ -37,12 +36,6 @@ function showWelcomeModal(collectionName) {
             showSwipeHint();
         }
         return false;
-    }
-
-    const collectionNameEl = document.getElementById('welcomeCollectionName');
-
-    if (collectionNameEl) {
-        collectionNameEl.textContent = collectionName || (typeof t === 'function' ? t('allVideos') : 'All Videos');
     }
 
     modal.classList.add('show');
@@ -66,20 +59,11 @@ function closeWelcomeModal() {
 }
 
 /**
- * Reopen the welcome modal (manual trigger)
+ * Reopen the welcome modal (manual trigger from "How to Use" tab)
  */
 function reopenWelcomeModal() {
     const modal = document.getElementById('welcomeModal');
     if (!modal) return;
-
-    const collectionName = typeof getCurrentCollectionName === 'function'
-        ? getCurrentCollectionName()
-        : (typeof t === 'function' ? t('allVideos') : 'All Videos');
-
-    const collectionNameEl = document.getElementById('welcomeCollectionName');
-    if (collectionNameEl) {
-        collectionNameEl.textContent = collectionName;
-    }
 
     modal.classList.add('show');
 }

@@ -826,8 +826,39 @@ body.has-tab-bar .swipe-hint {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: -0.3px;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
     text-align: center;
+}
+
+.welcome-subtitle {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+.welcome-tip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.welcome-tip-icon {
+    display: flex;
+    align-items: center;
+}
+
+.welcome-tip-icon svg {
+    stroke: rgba(255, 255, 255, 0.5);
 }
 
 .welcome-section {
