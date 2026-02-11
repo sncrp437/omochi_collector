@@ -3607,3 +3607,325 @@ body.collections-body.has-expiration-banner .my-collections-page {
     background: linear-gradient(135deg, #5a6fd6 0%, #6a3c92 100%);
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.5);
 }
+
+/* =============================================================================
+   Top Right Controls (Language Selector + Settings Gear)
+   ============================================================================= */
+
+.top-right-controls {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-right-controls .language-selector {
+    position: static;
+    transform: none;
+}
+
+/* Settings Gear Button */
+.settings-gear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.settings-gear-btn:hover {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.settings-gear-btn:active {
+    transform: scale(0.95);
+}
+
+.settings-gear-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* =============================================================================
+   Settings Drawer
+   ============================================================================= */
+
+.settings-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.settings-drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    background: #1a1a1a;
+    z-index: 2000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.settings-drawer.active {
+    transform: translateX(0);
+}
+
+.settings-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 16px;
+    border-bottom: 1px solid #333;
+}
+
+.settings-drawer-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.settings-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.settings-drawer-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+/* Language Buttons in Drawer */
+.settings-lang-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.settings-lang-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-lang-btn:hover {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+}
+
+.settings-lang-btn.active {
+    background: #fff;
+    border-color: #fff;
+    color: #000;
+    font-weight: 600;
+}
+
+/* Settings Links */
+.settings-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 12px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    margin-bottom: 4px;
+}
+
+.settings-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-link-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.settings-link span:not(.settings-link-icon) {
+    font-size: 15px;
+}
+
+/* Logout Section */
+.settings-logout-section {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+}
+
+.settings-logout-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid #ff4444;
+    border-radius: 8px;
+    color: #ff4444;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-logout-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+}
+
+/* Mobile adjustments for settings */
+@media (max-width: 350px) {
+    .settings-drawer {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* =============================================================================
+   Policy Pages
+   ============================================================================= */
+
+.policy-body {
+    overflow-y: auto;
+    position: static;
+    min-height: 100vh;
+}
+
+.policy-lang-selector {
+    position: absolute;
+    top: 20px;
+}
+
+.policy-page {
+    padding-top: 60px;
+}
+
+.policy-page .collection-header {
+    padding-top: 0;
+}
+
+.policy-page .collection-header h1 {
+    font-size: 20px;
+}
+
+.policy-content {
+    text-align: left;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.policy-content h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 24px 0 12px;
+    color: #fff;
+}
+
+.policy-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: #ddd;
+}
+
+.policy-content p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #aaa;
+    margin-bottom: 16px;
+}
+
+.policy-content ul,
+.policy-content ol {
+    margin: 12px 0 16px 20px;
+    color: #aaa;
+}
+
+.policy-content li {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.policy-content a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.policy-content a:hover {
+    text-decoration: underline;
+}
+
+.policy-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.policy-placeholder p {
+    color: #666;
+}

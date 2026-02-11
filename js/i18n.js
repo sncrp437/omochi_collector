@@ -74,9 +74,32 @@ const translations = {
         networkError: 'Network error. Please check your connection.',
 
         // Bottom tab bar
-        infoTab: 'Info',
+        howToUseTab: 'How to Use',
         homeTab: 'Home',
         collectionsTab: 'Collections',
+
+        // Settings drawer
+        settingsTitle: 'Settings',
+        languageLabel: 'Language',
+        termsLink: 'Terms of Service',
+        privacyLink: 'Privacy Policy',
+        legalLink: 'Legal Notice',
+        contactLink: 'Contact',
+        couponLink: 'Coupon Terms',
+
+        // Policy page titles
+        termsPageTitle: 'Terms of Service',
+        privacyPageTitle: 'Privacy Policy',
+        legalPageTitle: 'Legal Notice',
+        contactPageTitle: 'Contact',
+        couponPageTitle: 'Coupon Terms',
+
+        // Policy page placeholder content (will be replaced with actual content)
+        termsContent: 'Terms of Service content will be added here.',
+        privacyContent: 'Privacy Policy content will be added here.',
+        legalContent: 'Legal Notice content will be added here.',
+        contactContent: 'Contact information will be added here.',
+        couponContent: 'Coupon Terms content will be added here.',
 
         // Auth status
         loggedIn: 'Logged in!',
@@ -273,9 +296,32 @@ const translations = {
         networkError: 'ネットワークエラー。接続を確認してください。',
 
         // Bottom tab bar
-        infoTab: '情報',
+        howToUseTab: '使い方',
         homeTab: 'ホーム',
         collectionsTab: 'コレクション',
+
+        // Settings drawer
+        settingsTitle: '設定',
+        languageLabel: '言語',
+        termsLink: '利用規約',
+        privacyLink: 'プライバシーポリシー',
+        legalLink: '特定商取引法に基づく表記',
+        contactLink: 'お問い合わせ',
+        couponLink: 'クーポン利用規約',
+
+        // Policy page titles
+        termsPageTitle: '利用規約',
+        privacyPageTitle: 'プライバシーポリシー',
+        legalPageTitle: '特定商取引法に基づく表記',
+        contactPageTitle: 'お問い合わせ',
+        couponPageTitle: 'クーポン利用規約',
+
+        // Policy page placeholder content (will be replaced with actual content)
+        termsContent: '利用規約の内容がここに追加されます。',
+        privacyContent: 'プライバシーポリシーの内容がここに追加されます。',
+        legalContent: '特定商取引法に基づく表記の内容がここに追加されます。',
+        contactContent: 'お問い合わせ情報がここに追加されます。',
+        couponContent: 'クーポン利用規約の内容がここに追加されます。',
 
         // Auth status
         loggedIn: 'ログインしました！',

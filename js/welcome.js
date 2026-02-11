@@ -91,12 +91,12 @@ function initWelcomeModal() {
     const closeBtn = document.getElementById('welcomeModalClose');
     const overlay = document.getElementById('welcomeModalOverlay');
     const getStartedBtn = document.getElementById('welcomeGetStarted');
-    const tabInfoBtn = document.getElementById('tabInfoBtn');
+    const tabHowToUseBtn = document.getElementById('tabHowToUseBtn');
 
     if (closeBtn) closeBtn.addEventListener('click', closeWelcomeModal);
     if (overlay) overlay.addEventListener('click', closeWelcomeModal);
     if (getStartedBtn) getStartedBtn.addEventListener('click', closeWelcomeModal);
-    if (tabInfoBtn) tabInfoBtn.addEventListener('click', reopenWelcomeModal);
+    if (tabHowToUseBtn) tabHowToUseBtn.addEventListener('click', reopenWelcomeModal);
 }
 
 // Initialize when DOM is ready

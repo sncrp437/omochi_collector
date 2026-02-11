@@ -2392,9 +2392,133 @@ function _handlePendingCollect() {
     if (savedLocation) _activeLocationFilter = savedLocation;
 })();
 
+// =============================================================================
+// Settings Drawer (shared with index page)
+// =============================================================================
+
+/**
+ * Initialize settings drawer functionality
+ */
+function initSettingsDrawer() {
+    var gearBtn = document.getElementById('settingsGearBtn');
+    var drawer = document.getElementById('settingsDrawer');
+    var overlay = document.getElementById('settingsDrawerOverlay');
+    var closeBtn = document.getElementById('settingsDrawerClose');
+    var logoutSection = document.getElementById('settingsLogoutSection');
+    var logoutBtn = document.getElementById('settingsLogoutBtn');
+
+    if (!gearBtn || !drawer || !overlay) return;
+
+    // Open drawer on gear click
+    gearBtn.addEventListener('click', function() {
+        openSettingsDrawer();
+    });
+
+    // Close drawer on overlay click
+    overlay.addEventListener('click', function() {
+        closeSettingsDrawer();
+    });
+
+    // Close drawer on close button click
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            closeSettingsDrawer();
+        });
+    }
+
+    // Setup language buttons in drawer
+    var langBtns = drawer.querySelectorAll('.settings-lang-btn');
+    langBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var lang = btn.dataset.lang;
+            if (typeof setLanguage === 'function') {
+                setLanguage(lang);
+            }
+            updateSettingsLangButtons();
+        });
+    });
+
+    // Update language button states initially
+    updateSettingsLangButtons();
+
+    // Show/hide logout section based on auth state
+    if (logoutSection && typeof isLoggedIn === 'function') {
+        logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
+    }
+
+    // Setup logout button
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            if (typeof logout === 'function') {
+                logout();
+            }
+            closeSettingsDrawer();
+            // Update logout section visibility
+            if (logoutSection) {
+                logoutSection.style.display = 'none';
+            }
+            // Reload page to reflect logged out state
+            window.location.reload();
+        });
+    }
+}
+
+/**
+ * Open settings drawer
+ */
+function openSettingsDrawer() {
+    var drawer = document.getElementById('settingsDrawer');
+    var overlay = document.getElementById('settingsDrawerOverlay');
+    var logoutSection = document.getElementById('settingsLogoutSection');
+
+    if (drawer) drawer.classList.add('active');
+    if (overlay) overlay.classList.add('active');
+
+    // Update logout visibility when opening
+    if (logoutSection && typeof isLoggedIn === 'function') {
+        logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
+    }
+
+    updateSettingsLangButtons();
+}
+
+/**
+ * Close settings drawer
+ */
+function closeSettingsDrawer() {
+    var drawer = document.getElementById('settingsDrawer');
+    var overlay = document.getElementById('settingsDrawerOverlay');
+
+    if (drawer) drawer.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+}
+
+/**
+ * Update language button states in settings drawer
+ */
+function updateSettingsLangButtons() {
+    var drawer = document.getElementById('settingsDrawer');
+    if (!drawer) return;
+
+    var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+    var langBtns = drawer.querySelectorAll('.settings-lang-btn');
+
+    langBtns.forEach(function(btn) {
+        if (btn.dataset.lang === currentLang) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCollectionsPage);
+    document.addEventListener('DOMContentLoaded', function() {
+        initCollectionsPage();
+        initSettingsDrawer();
+    });
 } else {
     initCollectionsPage();
+    initSettingsDrawer();
 }

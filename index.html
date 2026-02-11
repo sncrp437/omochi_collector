@@ -35,10 +35,18 @@
     <!-- Auth Status Indicator -->
     <div class="auth-status" id="authStatus"></div>
 
-    <!-- Language Selector -->
-    <div class="language-selector">
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="ja">JA</button>
+    <!-- Language Selector + Settings Gear -->
+    <div class="top-right-controls">
+        <div class="language-selector">
+            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="ja">JA</button>
+        </div>
+        <button class="settings-gear-btn" id="settingsGearBtn" aria-label="Settings">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+        </button>
     </div>
 
     <!-- Branched Filter (Genre -> Area -> Video Genre) -->
@@ -175,11 +183,59 @@
         </div>
     </div>
 
+    <!-- Settings Drawer -->
+    <div class="settings-drawer-overlay" id="settingsDrawerOverlay"></div>
+    <div class="settings-drawer" id="settingsDrawer">
+        <div class="settings-drawer-header">
+            <h2 data-i18n="settingsTitle">Settings</h2>
+            <button class="settings-drawer-close" id="settingsDrawerClose">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="settings-drawer-content">
+            <!-- Language Section -->
+            <div class="settings-section">
+                <h3 data-i18n="languageLabel">Language</h3>
+                <div class="settings-lang-buttons">
+                    <button class="settings-lang-btn" data-lang="en">English</button>
+                    <button class="settings-lang-btn" data-lang="ja">日本語</button>
+                </div>
+            </div>
+            <!-- Legal Links Section -->
+            <div class="settings-section">
+                <a href="policy/terms.html" class="settings-link">
+                    <span class="settings-link-icon">📄</span>
+                    <span data-i18n="termsLink">Terms of Service</span>
+                </a>
+                <a href="policy/privacy.html" class="settings-link">
+                    <span class="settings-link-icon">🔒</span>
+                    <span data-i18n="privacyLink">Privacy Policy</span>
+                </a>
+                <a href="policy/legal.html" class="settings-link">
+                    <span class="settings-link-icon">📋</span>
+                    <span data-i18n="legalLink">Legal Notice</span>
+                </a>
+                <a href="policy/contact.html" class="settings-link">
+                    <span class="settings-link-icon">📧</span>
+                    <span data-i18n="contactLink">Contact</span>
+                </a>
+                <a href="policy/coupon.html" class="settings-link">
+                    <span class="settings-link-icon">🎟️</span>
+                    <span data-i18n="couponLink">Coupon Terms</span>
+                </a>
+            </div>
+            <!-- Logout Section (only visible when logged in) -->
+            <div class="settings-section settings-logout-section" id="settingsLogoutSection" style="display: none;">
+                <button class="settings-logout-btn" id="settingsLogoutBtn" data-i18n="logoutBtn">Log Out</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Tab Bar -->
     <nav class="bottom-tab-bar">
-        <button class="tab-item active" id="tabInfoBtn">
-            <span class="tab-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
-            <span class="tab-label" data-i18n="infoTab">Info</span>
+        <button class="tab-item active" id="tabHowToUseBtn">
+            <span class="tab-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+            <span class="tab-label" data-i18n="howToUseTab">How to Use</span>
         </button>
         <a href="my-collections.html" class="tab-item">
             <span class="tab-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
