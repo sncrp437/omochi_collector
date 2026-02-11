@@ -732,17 +732,15 @@ function _checkEmptyState() {
 // =============================================================================
 
 /**
- * Build cuisine/genre filter pills from current collection data
- * Flat layout: always visible with counts, horizontal scroll
+ * Build genre filter pills from current collection data
  */
 function _renderGenreFilters() {
-    var container = document.getElementById('cuisineFilterPills');
-    var row = document.getElementById('cuisineFilterRow');
-    if (!container || !row) return;
+    var container = document.getElementById('genreFilterPills');
+    var section = document.getElementById('genreFilterSection');
+    if (!container || !section) return;
 
-    // Hide when AI search is active
+    // Don't show genre filters when AI is active
     if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
-        row.style.display = 'none';
         return;
     }
 
@@ -756,19 +754,19 @@ function _renderGenreFilters() {
 
     var genreKeys = Object.keys(genres);
 
-    // Hide row if fewer than 2 genres (nothing to filter)
+    // Show section if 2+ genres
     if (genreKeys.length < 2) {
-        row.style.display = 'none';
+        section.style.display = 'none';
         _activeGenreFilter = null;
         return;
     }
 
-    row.style.display = '';
+    section.style.display = 'block';
     container.innerHTML = '';
 
-    // "All" pill (no count - shows total by default)
+    // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'cuisine-pill' + (!_activeGenreFilter ? ' active' : '');
+    allPill.className = 'genre-pill' + (!_activeGenreFilter ? ' active' : '');
     allPill.textContent = t('allGenres');
     allPill.addEventListener('click', function() {
         _activeGenreFilter = null;
@@ -778,11 +776,11 @@ function _renderGenreFilters() {
     });
     container.appendChild(allPill);
 
-    // Cuisine/genre pills with counts
+    // Genre pills
     genreKeys.sort().forEach(function(genre) {
         var pill = document.createElement('button');
-        pill.className = 'cuisine-pill' + (_activeGenreFilter === genre ? ' active' : '');
-        pill.innerHTML = genre + '<span class="cuisine-pill-count">(' + genres[genre] + ')</span>';
+        pill.className = 'genre-pill' + (_activeGenreFilter === genre ? ' active' : '');
+        pill.textContent = genre;
         pill.addEventListener('click', function() {
             _activeGenreFilter = genre;
             localStorage.setItem('collectionsGenreFilter', genre);
@@ -795,16 +793,14 @@ function _renderGenreFilters() {
 
 /**
  * Build location filter pills from current collection data
- * Flat layout: always visible with counts, horizontal scroll
  */
 function _renderLocationFilters() {
     var container = document.getElementById('locationFilterPills');
-    var row = document.getElementById('locationFilterRow');
-    if (!container || !row) return;
+    var section = document.getElementById('locationFilterSection');
+    if (!container || !section) return;
 
-    // Hide when AI search is active
+    // Don't show location filters when AI is active
     if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
-        row.style.display = 'none';
         return;
     }
 
@@ -817,20 +813,18 @@ function _renderLocationFilters() {
     });
 
     var locationKeys = Object.keys(locations);
-
-    // Hide row if fewer than 2 locations (nothing to filter)
     if (locationKeys.length < 2) {
-        row.style.display = 'none';
+        section.style.display = 'none';
         _activeLocationFilter = null;
         return;
     }
 
-    row.style.display = '';
+    section.style.display = 'block';
     container.innerHTML = '';
 
-    // "All Areas" pill
+    // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'location-pill' + (!_activeLocationFilter ? ' active' : '');
+    allPill.className = 'genre-pill' + (!_activeLocationFilter ? ' active' : '');
     allPill.textContent = t('allLocations');
     allPill.addEventListener('click', function() {
         _activeLocationFilter = null;
@@ -840,11 +834,10 @@ function _renderLocationFilters() {
     });
     container.appendChild(allPill);
 
-    // Location pills with counts
     locationKeys.sort().forEach(function(location) {
         var pill = document.createElement('button');
-        pill.className = 'location-pill' + (_activeLocationFilter === location ? ' active' : '');
-        pill.innerHTML = location + '<span class="location-pill-count">(' + locations[location] + ')</span>';
+        pill.className = 'genre-pill' + (_activeLocationFilter === location ? ' active' : '');
+        pill.textContent = location;
         pill.addEventListener('click', function() {
             _activeLocationFilter = location;
             localStorage.setItem('collectionsLocationFilter', location);
@@ -1022,16 +1015,16 @@ function _updateAiSearchBarUI() {
  * Show/hide filter sections based on AI state
  */
 function _updateFilterSectionsVisibility() {
-    var cuisineRow = document.getElementById('cuisineFilterRow');
-    var locationRow = document.getElementById('locationFilterRow');
+    var genreSection = document.getElementById('genreFilterSection');
+    var locationSection = document.getElementById('locationFilterSection');
 
     var hideFilters = _aiSearchState === 'loading' || _aiSearchState === 'results';
 
-    if (cuisineRow) {
-        cuisineRow.style.display = hideFilters ? 'none' : '';
+    if (genreSection) {
+        genreSection.style.display = hideFilters ? 'none' : '';
     }
-    if (locationRow) {
-        locationRow.style.display = hideFilters ? 'none' : '';
+    if (locationSection) {
+        locationSection.style.display = hideFilters ? 'none' : '';
     }
 }
 
