@@ -3860,11 +3860,6 @@ body.collections-body.has-expiration-banner .my-collections-page {
     min-height: 100vh;
 }
 
-.policy-lang-selector {
-    position: absolute;
-    top: 20px;
-}
-
 .policy-page {
     padding-top: 60px;
 }
