@@ -3929,3 +3929,66 @@ body.collections-body.has-expiration-banner .my-collections-page {
 .policy-placeholder p {
     color: #666;
 }
+
+/* Policy page language toggle */
+.policy-text {
+    display: none;
+}
+
+.policy-text.lang-en {
+    display: block;
+}
+
+html[lang="ja"] .policy-text.lang-en {
+    display: none;
+}
+
+html[lang="ja"] .policy-text.lang-ja {
+    display: block;
+}
+
+/* Policy content additional styles */
+.policy-content h2:first-child {
+    margin-top: 0;
+}
+
+.policy-content .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.policy-content .info-table th,
+.policy-content .info-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #333;
+    font-size: 14px;
+    color: #aaa;
+}
+
+.policy-content .info-table th {
+    color: #ddd;
+    font-weight: 500;
+    width: 35%;
+    white-space: nowrap;
+}
+
+.policy-content .article-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin: 24px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.policy-content .article-intro {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}

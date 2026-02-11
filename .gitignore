@@ -43,3 +43,6 @@ plans/
 
 # Test checklists
 test/
+
+# Fix folder (internal work)
+Fix/

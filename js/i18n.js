@@ -94,13 +94,6 @@ const translations = {
         contactPageTitle: 'Contact',
         couponPageTitle: 'Coupon Terms',
 
-        // Policy page placeholder content (will be replaced with actual content)
-        termsContent: 'Terms of Service content will be added here.',
-        privacyContent: 'Privacy Policy content will be added here.',
-        legalContent: 'Legal Notice content will be added here.',
-        contactContent: 'Contact information will be added here.',
-        couponContent: 'Coupon Terms content will be added here.',
-
         // Auth status
         loggedIn: 'Logged in!',
 
@@ -315,13 +308,6 @@ const translations = {
         legalPageTitle: '特定商取引法に基づく表記',
         contactPageTitle: 'お問い合わせ',
         couponPageTitle: 'クーポン利用規約',
-
-        // Policy page placeholder content (will be replaced with actual content)
-        termsContent: '利用規約の内容がここに追加されます。',
-        privacyContent: 'プライバシーポリシーの内容がここに追加されます。',
-        legalContent: '特定商取引法に基づく表記の内容がここに追加されます。',
-        contactContent: 'お問い合わせ情報がここに追加されます。',
-        couponContent: 'クーポン利用規約の内容がここに追加されます。',
 
         // Auth status
         loggedIn: 'ログインしました！',
