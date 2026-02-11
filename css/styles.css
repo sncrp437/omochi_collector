@@ -3778,9 +3778,17 @@ body.collections-body.has-expiration-banner .my-collections-page {
 }
 
 .settings-link-icon {
-    font-size: 18px;
-    width: 24px;
-    text-align: center;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-link-icon svg {
+    width: 18px;
+    height: 18px;
 }
 
 .settings-link span:not(.settings-link-icon) {
