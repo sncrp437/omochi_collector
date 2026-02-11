@@ -32,8 +32,23 @@
         <button id="expirationDismissBtn" class="expiration-dismiss-btn">&times;</button>
     </div>
 
-    <!-- Language Selector + Settings Gear -->
+    <!-- Content Type + Language Selector + Settings Gear -->
     <div class="top-right-controls">
+        <div class="content-type-selector">
+            <button class="content-btn" data-content="youtube" title="YouTube only">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="4"/>
+                    <polygon points="10,8 16,12 10,16"/>
+                </svg>
+            </button>
+            <button class="content-btn" data-content="x" title="X only">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="4" x2="20" y2="20"/>
+                    <line x1="20" y1="4" x2="4" y2="20"/>
+                </svg>
+            </button>
+            <button class="content-btn active" data-content="all" title="All content">All</button>
+        </div>
         <div class="language-selector">
             <button class="lang-btn" data-lang="en">EN</button>
             <button class="lang-btn" data-lang="ja">JA</button>

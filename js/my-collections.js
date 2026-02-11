@@ -8,6 +8,7 @@ var _filteredItems = []; // Current filtered items for event delegation lookup
 var _activeGenreFilter = null;
 var _activeLocationFilter = null;
 var _activeFolderFilter = null; // null = All, 'uncategorized' = no folder, folder_id = specific folder
+var _activeContentTypeFilter = 'all'; // 'all', 'youtube', 'x'
 var _aiFilteredIndices = null;
 var _aiFilterQuery = '';
 var _aiSearchState = 'inactive'; // 'inactive' | 'active' | 'loading' | 'results'
@@ -413,7 +414,8 @@ function _getVenueInfo(item) {
             enable_eat_in: !!v.enable_eat_in,
             enable_take_out: !!v.enable_take_out,
             announcement: (lang === 'en' && v.announcement_en) ? v.announcement_en : (v.announcement || ''),
-            venue_uuid: item.data.venue || null
+            venue_uuid: item.data.venue || null,
+            video_type: v.video_type || 'youtube'
         };
     }
     // Local item
@@ -434,7 +436,8 @@ function _getVenueInfo(item) {
         enable_take_out: false,
         announcement: '',
         venue_uuid: d.venue_uuid || null,
-        reservation_url: d.reservation_url || ''
+        reservation_url: d.reservation_url || '',
+        video_type: d.video_type || 'youtube'
     };
 }
 
@@ -467,7 +470,7 @@ function _renderAllCards() {
 }
 
 /**
- * Get filtered items based on active folder, genre, and location filters
+ * Get filtered items based on active folder, content type, genre, and location filters
  */
 function _getFilteredItems() {
     // If AI filter is active, return only AI-matched items
@@ -480,6 +483,13 @@ function _getFilteredItems() {
     return _allMergedItems.filter(function(item) {
         var info = _getVenueInfo(item);
         var venueId = _getItemVenueId(item);
+
+        // Content type filter (YouTube/X/All)
+        if (_activeContentTypeFilter !== 'all') {
+            if (info.video_type !== _activeContentTypeFilter) {
+                return false;
+            }
+        }
 
         // Folder filter
         if (_activeFolderFilter !== null) {
@@ -2476,13 +2486,52 @@ function closeSettingsDrawer() {
     if (overlay) overlay.classList.remove('active');
 }
 
+/**
+ * Initialize content type toggle (YouTube/X/All) for collections page
+ */
+function initContentTypeToggle() {
+    var buttons = document.querySelectorAll('.content-btn');
+    if (!buttons.length) return;
+
+    // Restore saved selection from localStorage
+    var saved = localStorage.getItem('selectedContentType') || 'all';
+    _activeContentTypeFilter = saved;
+
+    // Update button states
+    buttons.forEach(function(btn) {
+        if (btn.dataset.content === saved) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+
+        // Add click handler
+        btn.addEventListener('click', function() {
+            var contentType = btn.dataset.content;
+
+            // Update active states
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+
+            // Update filter
+            _activeContentTypeFilter = contentType;
+            localStorage.setItem('selectedContentType', contentType);
+
+            // Re-render cards
+            _renderAllCards();
+        });
+    });
+}
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initCollectionsPage();
         initSettingsDrawer();
+        initContentTypeToggle();
     });
 } else {
     initCollectionsPage();
     initSettingsDrawer();
+    initContentTypeToggle();
 }

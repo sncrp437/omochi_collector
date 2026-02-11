@@ -9,6 +9,7 @@ let allCollections = [];
 let selectedCollection = 'all';
 let selectedLocation = 'all';
 let selectedCategory = 'all'; // 'food', 'nightlife', 'entertainment', etc.
+let selectedContentType = 'all'; // 'all', 'youtube', 'x'
 
 // Filter indices for fast lookups
 var _categoryIndex = {};  // { 'food': [video1, video2], 'nightlife': [video3] }
@@ -31,6 +32,7 @@ async function initCollections(videosData, collectionsData) {
     // Restore last selected filters from localStorage
     selectedCollection = localStorage.getItem('selectedCollection') || 'all';
     selectedCategory = localStorage.getItem('selectedCategory') || 'all';
+    selectedContentType = localStorage.getItem('selectedContentType') || 'all';
 
     // Return filtered videos
     return filterVideosByCollection(selectedCollection);
@@ -107,6 +109,22 @@ function setCategoryFilter(category) {
  */
 function getCategoryFilter() {
     return selectedCategory;
+}
+
+/**
+ * Set content type filter (YouTube, X, or All)
+ * @param {string} contentType - 'all', 'youtube', or 'x'
+ */
+function setContentTypeFilter(contentType) {
+    selectedContentType = contentType;
+    localStorage.setItem('selectedContentType', contentType);
+}
+
+/**
+ * Get current content type filter
+ */
+function getContentTypeFilter() {
+    return selectedContentType;
 }
 
 /**
@@ -191,17 +209,28 @@ function updateActiveCollection() {
 }
 
 /**
- * Filter videos by category, location, and collection/genre
- * Implements full 3-tier filtering
+ * Filter videos by content type, category, location, and collection/genre
+ * Implements full 4-tier filtering
  */
 function filterVideosByCollection(collectionId) {
     var result = allVideos;
+
+    // TIER 0: Filter by content type (YouTube, X, or All)
+    if (selectedContentType !== 'all') {
+        result = result.filter(function(video) {
+            return video.video_type === selectedContentType;
+        });
+    }
 
     // TIER 1: Filter by category (Food, Nightlife, Entertainment)
     if (selectedCategory !== 'all') {
         var catVideos = _categoryIndex[selectedCategory.toLowerCase()];
         if (catVideos) {
-            result = catVideos;
+            // Apply category filter to current result (respecting content type)
+            var catSet = new Set(catVideos);
+            result = result.filter(function(video) {
+                return catSet.has(video);
+            });
         } else {
             result = []; // No videos in this category
         }

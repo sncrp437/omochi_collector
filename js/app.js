@@ -867,15 +867,64 @@ function closeSettingsDrawer() {
     if (overlay) overlay.classList.remove('active');
 }
 
+/**
+ * Initialize content type toggle (YouTube/X/All)
+ */
+function initContentTypeToggle() {
+    var buttons = document.querySelectorAll('.content-btn');
+    if (!buttons.length) return;
+
+    // Restore saved selection from localStorage
+    var saved = localStorage.getItem('selectedContentType') || 'all';
+
+    // Update button states
+    buttons.forEach(function(btn) {
+        if (btn.dataset.content === saved) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+
+        // Add click handler
+        btn.addEventListener('click', function() {
+            var contentType = btn.dataset.content;
+
+            // Update active states
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+
+            // Update filter and re-render feed
+            if (typeof setContentTypeFilter === 'function') {
+                setContentTypeFilter(contentType);
+            }
+
+            // Re-filter and render the feed
+            if (typeof filterAndRerenderFeed === 'function') {
+                var currentCollection = typeof selectedCollection !== 'undefined'
+                    ? selectedCollection
+                    : (localStorage.getItem('selectedCollection') || 'all');
+                filterAndRerenderFeed(currentCollection);
+            }
+        });
+    });
+
+    // Sync initial filter state
+    if (typeof setContentTypeFilter === 'function' && saved !== 'all') {
+        setContentTypeFilter(saved);
+    }
+}
+
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         init();
         initSettingsDrawer();
+        initContentTypeToggle();
     });
 } else {
     init();
     initSettingsDrawer();
+    initContentTypeToggle();
 }
 
 // Handle page restore from BFCache (back/forward navigation)
