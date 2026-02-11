@@ -8,7 +8,6 @@ var _filteredItems = []; // Current filtered items for event delegation lookup
 var _activeGenreFilter = null;
 var _activeLocationFilter = null;
 var _activeFolderFilter = null; // null = All, 'uncategorized' = no folder, folder_id = specific folder
-var _activeContentTypeFilter = 'all'; // 'all', 'youtube', 'x'
 var _aiFilteredIndices = null;
 var _aiFilterQuery = '';
 var _aiSearchState = 'inactive'; // 'inactive' | 'active' | 'loading' | 'results'
@@ -484,13 +483,6 @@ function _getFilteredItems() {
         var info = _getVenueInfo(item);
         var venueId = _getItemVenueId(item);
 
-        // Content type filter (YouTube/X/All)
-        if (_activeContentTypeFilter !== 'all') {
-            if (info.video_type !== _activeContentTypeFilter) {
-                return false;
-            }
-        }
-
         // Folder filter
         if (_activeFolderFilter !== null) {
             var itemFolder = venueId ? _venueFolders[venueId] : null;
@@ -740,16 +732,17 @@ function _checkEmptyState() {
 // =============================================================================
 
 /**
- * Build genre filter pills from current collection data
- * Note: AI pill removed - AI search now has dedicated search bar above filters
+ * Build cuisine/genre filter pills from current collection data
+ * Flat layout: always visible with counts, horizontal scroll
  */
 function _renderGenreFilters() {
-    var container = document.getElementById('genreFilterPills');
-    var section = document.getElementById('genreFilterSection');
-    if (!container || !section) return;
+    var container = document.getElementById('cuisineFilterPills');
+    var row = document.getElementById('cuisineFilterRow');
+    if (!container || !row) return;
 
-    // Don't show genre filters when AI is active (they're hidden)
+    // Hide when AI search is active
     if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
+        row.style.display = 'none';
         return;
     }
 
@@ -763,19 +756,19 @@ function _renderGenreFilters() {
 
     var genreKeys = Object.keys(genres);
 
-    // Show section if 2+ genres
+    // Hide row if fewer than 2 genres (nothing to filter)
     if (genreKeys.length < 2) {
-        section.style.display = 'none';
+        row.style.display = 'none';
         _activeGenreFilter = null;
         return;
     }
 
-    section.style.display = 'block';
+    row.style.display = '';
     container.innerHTML = '';
 
-    // "All" pill
+    // "All" pill (no count - shows total by default)
     var allPill = document.createElement('button');
-    allPill.className = 'genre-pill' + (!_activeGenreFilter ? ' active' : '');
+    allPill.className = 'cuisine-pill' + (!_activeGenreFilter ? ' active' : '');
     allPill.textContent = t('allGenres');
     allPill.addEventListener('click', function() {
         _activeGenreFilter = null;
@@ -785,11 +778,11 @@ function _renderGenreFilters() {
     });
     container.appendChild(allPill);
 
-    // Genre pills
+    // Cuisine/genre pills with counts
     genreKeys.sort().forEach(function(genre) {
         var pill = document.createElement('button');
-        pill.className = 'genre-pill' + (_activeGenreFilter === genre ? ' active' : '');
-        pill.textContent = genre;
+        pill.className = 'cuisine-pill' + (_activeGenreFilter === genre ? ' active' : '');
+        pill.innerHTML = genre + '<span class="cuisine-pill-count">(' + genres[genre] + ')</span>';
         pill.addEventListener('click', function() {
             _activeGenreFilter = genre;
             localStorage.setItem('collectionsGenreFilter', genre);
@@ -802,15 +795,16 @@ function _renderGenreFilters() {
 
 /**
  * Build location filter pills from current collection data
- * Note: Hidden when AI search is active
+ * Flat layout: always visible with counts, horizontal scroll
  */
 function _renderLocationFilters() {
     var container = document.getElementById('locationFilterPills');
-    var section = document.getElementById('locationFilterSection');
-    if (!container || !section) return;
+    var row = document.getElementById('locationFilterRow');
+    if (!container || !row) return;
 
-    // Don't show location filters when AI is active (they're hidden)
+    // Hide when AI search is active
     if (_aiSearchState === 'loading' || _aiSearchState === 'results') {
+        row.style.display = 'none';
         return;
     }
 
@@ -823,18 +817,20 @@ function _renderLocationFilters() {
     });
 
     var locationKeys = Object.keys(locations);
+
+    // Hide row if fewer than 2 locations (nothing to filter)
     if (locationKeys.length < 2) {
-        section.style.display = 'none';
+        row.style.display = 'none';
         _activeLocationFilter = null;
         return;
     }
 
-    section.style.display = 'block';
+    row.style.display = '';
     container.innerHTML = '';
 
-    // "All" pill
+    // "All Areas" pill
     var allPill = document.createElement('button');
-    allPill.className = 'genre-pill' + (!_activeLocationFilter ? ' active' : '');
+    allPill.className = 'location-pill' + (!_activeLocationFilter ? ' active' : '');
     allPill.textContent = t('allLocations');
     allPill.addEventListener('click', function() {
         _activeLocationFilter = null;
@@ -844,10 +840,11 @@ function _renderLocationFilters() {
     });
     container.appendChild(allPill);
 
+    // Location pills with counts
     locationKeys.sort().forEach(function(location) {
         var pill = document.createElement('button');
-        pill.className = 'genre-pill' + (_activeLocationFilter === location ? ' active' : '');
-        pill.textContent = location;
+        pill.className = 'location-pill' + (_activeLocationFilter === location ? ' active' : '');
+        pill.innerHTML = location + '<span class="location-pill-count">(' + locations[location] + ')</span>';
         pill.addEventListener('click', function() {
             _activeLocationFilter = location;
             localStorage.setItem('collectionsLocationFilter', location);
@@ -1025,16 +1022,16 @@ function _updateAiSearchBarUI() {
  * Show/hide filter sections based on AI state
  */
 function _updateFilterSectionsVisibility() {
-    var genreSection = document.getElementById('genreFilterSection');
-    var locationSection = document.getElementById('locationFilterSection');
+    var cuisineRow = document.getElementById('cuisineFilterRow');
+    var locationRow = document.getElementById('locationFilterRow');
 
     var hideFilters = _aiSearchState === 'loading' || _aiSearchState === 'results';
 
-    if (genreSection) {
-        genreSection.style.display = hideFilters ? 'none' : '';
+    if (cuisineRow) {
+        cuisineRow.style.display = hideFilters ? 'none' : '';
     }
-    if (locationSection) {
-        locationSection.style.display = hideFilters ? 'none' : '';
+    if (locationRow) {
+        locationRow.style.display = hideFilters ? 'none' : '';
     }
 }
 
@@ -2486,52 +2483,13 @@ function closeSettingsDrawer() {
     if (overlay) overlay.classList.remove('active');
 }
 
-/**
- * Initialize content type toggle (YouTube/X/All) for collections page
- */
-function initContentTypeToggle() {
-    var buttons = document.querySelectorAll('.content-btn');
-    if (!buttons.length) return;
-
-    // Restore saved selection from localStorage
-    var saved = localStorage.getItem('selectedContentType') || 'all';
-    _activeContentTypeFilter = saved;
-
-    // Update button states
-    buttons.forEach(function(btn) {
-        if (btn.dataset.content === saved) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-
-        // Add click handler
-        btn.addEventListener('click', function() {
-            var contentType = btn.dataset.content;
-
-            // Update active states
-            buttons.forEach(function(b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-
-            // Update filter
-            _activeContentTypeFilter = contentType;
-            localStorage.setItem('selectedContentType', contentType);
-
-            // Re-render cards
-            _renderAllCards();
-        });
-    });
-}
-
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initCollectionsPage();
         initSettingsDrawer();
-        initContentTypeToggle();
     });
 } else {
     initCollectionsPage();
     initSettingsDrawer();
-    initContentTypeToggle();
 }

@@ -32,22 +32,8 @@
         <button id="expirationDismissBtn" class="expiration-dismiss-btn">&times;</button>
     </div>
 
-    <!-- Content Type + Language Selector + Settings Gear -->
+    <!-- Language Selector + Settings Gear -->
     <div class="top-right-controls">
-        <div class="content-type-selector">
-            <button class="content-btn" data-content="youtube" title="YouTube only">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="4"/>
-                    <polygon points="10,8 16,12 10,16"/>
-                </svg>
-            </button>
-            <button class="content-btn" data-content="x" title="X only">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-                    <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/>
-                </svg>
-            </button>
-            <button class="content-btn active" data-content="all" title="All content">All</button>
-        </div>
         <div class="language-selector">
             <button class="lang-btn" data-lang="en">EN</button>
             <button class="lang-btn" data-lang="ja">JA</button>
@@ -106,13 +92,15 @@
             </div>
         </div>
 
-        <!-- Filter Pills (matching index.html branched filter structure) -->
+        <!-- Filter Pills (flat layout: cuisine + location rows) -->
         <div class="collections-filter" id="collectionsFilter">
-            <div class="filter-step" id="genreFilterSection" style="display:none;">
-                <div class="filter-step-row" id="genreFilterPills"></div>
+            <!-- Cuisine/Genre Row -->
+            <div class="filter-row" id="cuisineFilterRow">
+                <div class="filter-row-pills" id="cuisineFilterPills"></div>
             </div>
-            <div class="filter-step" id="locationFilterSection" style="display:none;">
-                <div class="filter-step-row" id="locationFilterPills"></div>
+            <!-- Location/Area Row -->
+            <div class="filter-row" id="locationFilterRow">
+                <div class="filter-row-pills" id="locationFilterPills"></div>
             </div>
         </div>
 

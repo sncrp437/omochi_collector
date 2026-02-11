@@ -80,58 +80,6 @@ body {
     background-color: #f0f0f0;
 }
 
-/* Content Type Selector (YouTube/X/All toggle) */
-.content-type-selector {
-    display: flex;
-    gap: 2px;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    padding: 4px;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.content-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 8px;
-    background-color: transparent;
-    color: rgba(255, 255, 255, 0.7);
-    border: none;
-    border-radius: 16px;
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 28px;
-}
-
-.content-btn svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-}
-
-.content-btn:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.content-btn.active {
-    background-color: #fff;
-    color: #000;
-    font-weight: 600;
-}
-
-.content-btn.active svg {
-    stroke: #000;
-}
-
-.content-btn.active:hover {
-    background-color: #f0f0f0;
-}
-
 /* Branched Filter Container */
 .branched-filter {
     position: fixed;
@@ -967,22 +915,6 @@ body.has-tab-bar .swipe-hint {
     .lang-btn {
         padding: 5px 10px;
         font-size: 11px;
-    }
-
-    .content-type-selector {
-        padding: 3px;
-        gap: 2px;
-    }
-
-    .content-btn {
-        padding: 5px 6px;
-        font-size: 10px;
-        min-width: 24px;
-    }
-
-    .content-btn svg {
-        width: 12px;
-        height: 12px;
     }
 
     .branched-filter {
@@ -1826,16 +1758,108 @@ body.collections-body.has-expiration-banner .my-collections-page {
    Collection Filter Rows (My Collections Page)
    ============================================================================= */
 
-/* New collections filter container (matches branched filter style) */
+/* Collections filter container (flat layout with horizontal scroll rows) */
 .collections-filter {
-    padding: 8px 16px;
+    padding: 8px 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.collections-filter .filter-step {
-    animation: filterStepFadeIn 0.3s ease;
+/* Filter row container with horizontal scroll */
+.filter-row {
+    padding: 0 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.filter-row::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-row-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* Cuisine/Genre pill styles */
+.cuisine-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cuisine-pill:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cuisine-pill.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: 600;
+}
+
+.cuisine-pill-count {
+    opacity: 0.6;
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+.cuisine-pill.active .cuisine-pill-count {
+    opacity: 0.5;
+}
+
+/* Location/Area pill styles */
+.location-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.location-pill:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.location-pill.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: 600;
+}
+
+.location-pill-count {
+    opacity: 0.6;
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+.location-pill.active .location-pill-count {
+    opacity: 0.5;
 }
 
 /* Legacy styles (kept for backward compatibility) */
