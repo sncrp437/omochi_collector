@@ -83,7 +83,7 @@ body {
 /* Branched Filter Container */
 .branched-filter {
     position: fixed;
-    top: 52px;
+    top: 62px;
     left: 0;
     right: 0;
     z-index: 998;
@@ -431,7 +431,7 @@ body.has-tab-bar .reel-overlay {
     margin-bottom: 15px;
     max-width: 80%;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     cursor: pointer;
@@ -887,7 +887,7 @@ body.has-tab-bar .swipe-hint {
     }
 
     .branched-filter {
-        top: 44px;
+        top: 54px;
         padding: 6px 12px;
     }
 
