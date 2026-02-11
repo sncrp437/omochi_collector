@@ -765,7 +765,7 @@ function _renderGenreFilters() {
 
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeGenreFilter ? ' active' : '');
+    allPill.className = 'genre-pill' + (!_activeGenreFilter ? ' active' : '');
     allPill.textContent = t('allGenres');
     allPill.addEventListener('click', function() {
         _activeGenreFilter = null;
@@ -778,7 +778,7 @@ function _renderGenreFilters() {
     // Genre pills
     genreKeys.sort().forEach(function(genre) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (_activeGenreFilter === genre ? ' active' : '');
+        pill.className = 'genre-pill' + (_activeGenreFilter === genre ? ' active' : '');
         pill.textContent = genre;
         pill.addEventListener('click', function() {
             _activeGenreFilter = genre;
@@ -824,7 +824,7 @@ function _renderLocationFilters() {
 
     // "All" pill
     var allPill = document.createElement('button');
-    allPill.className = 'filter-pill' + (!_activeLocationFilter ? ' active' : '');
+    allPill.className = 'genre-pill' + (!_activeLocationFilter ? ' active' : '');
     allPill.textContent = t('allLocations');
     allPill.addEventListener('click', function() {
         _activeLocationFilter = null;
@@ -836,7 +836,7 @@ function _renderLocationFilters() {
 
     locationKeys.sort().forEach(function(location) {
         var pill = document.createElement('button');
-        pill.className = 'filter-pill' + (_activeLocationFilter === location ? ' active' : '');
+        pill.className = 'genre-pill' + (_activeLocationFilter === location ? ' active' : '');
         pill.textContent = location;
         pill.addEventListener('click', function() {
             _activeLocationFilter = location;

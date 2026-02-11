@@ -166,6 +166,13 @@ body {
     50% { box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.3); }
 }
 
+/* Active state for genre pills (used on collections page) */
+.genre-pill.active {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+}
+
 /* Combined Status Pill (tappable back) */
 .combined-pill {
     display: inline-flex;
@@ -424,7 +431,7 @@ body.has-tab-bar .reel-overlay {
     margin-bottom: 15px;
     max-width: 80%;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     cursor: pointer;
@@ -1720,6 +1727,19 @@ body.collections-body.has-expiration-banner .my-collections-page {
    Collection Filter Rows (My Collections Page)
    ============================================================================= */
 
+/* New collections filter container (matches branched filter style) */
+.collections-filter {
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.collections-filter .filter-step {
+    animation: filterStepFadeIn 0.3s ease;
+}
+
+/* Legacy styles (kept for backward compatibility) */
 .filter-section {
     margin-bottom: 12px;
 }
