@@ -2426,21 +2426,6 @@ function initSettingsDrawer() {
         });
     }
 
-    // Setup language buttons in drawer
-    var langBtns = drawer.querySelectorAll('.settings-lang-btn');
-    langBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var lang = btn.dataset.lang;
-            if (typeof setLanguage === 'function') {
-                setLanguage(lang);
-            }
-            updateSettingsLangButtons();
-        });
-    });
-
-    // Update language button states initially
-    updateSettingsLangButtons();
-
     // Show/hide logout section based on auth state
     if (logoutSection && typeof isLoggedIn === 'function') {
         logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
@@ -2478,8 +2463,6 @@ function openSettingsDrawer() {
     if (logoutSection && typeof isLoggedIn === 'function') {
         logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
     }
-
-    updateSettingsLangButtons();
 }
 
 /**
@@ -2491,25 +2474,6 @@ function closeSettingsDrawer() {
 
     if (drawer) drawer.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
-}
-
-/**
- * Update language button states in settings drawer
- */
-function updateSettingsLangButtons() {
-    var drawer = document.getElementById('settingsDrawer');
-    if (!drawer) return;
-
-    var currentLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
-    var langBtns = drawer.querySelectorAll('.settings-lang-btn');
-
-    langBtns.forEach(function(btn) {
-        if (btn.dataset.lang === currentLang) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
 }
 
 // Initialize when DOM is ready

@@ -3760,37 +3760,6 @@ body.collections-body.has-expiration-banner .my-collections-page {
     margin-bottom: 12px;
 }
 
-/* Language Buttons in Drawer */
-.settings-lang-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.settings-lang-btn {
-    flex: 1;
-    padding: 10px 16px;
-    background: #2a2a2a;
-    border: 1px solid #444;
-    border-radius: 8px;
-    color: #ccc;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.settings-lang-btn:hover {
-    background: #333;
-    border-color: #555;
-    color: #fff;
-}
-
-.settings-lang-btn.active {
-    background: #fff;
-    border-color: #fff;
-    color: #000;
-    font-weight: 600;
-}
-
 /* Settings Links */
 .settings-link {
     display: flex;
