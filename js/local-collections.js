@@ -46,6 +46,8 @@ function saveLocalCollection(video) {
         video_url: video.url || '',
         video_type: video.video_type || 'youtube',
         reservation_url: video.reservation_url || '',
+        phone_number: video.phone_number || '',
+        reservable: video.reservable !== false,
         date_added: new Date().toISOString(),
         expires_at: new Date(Date.now() + COLLECTION_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString(),
         synced: false

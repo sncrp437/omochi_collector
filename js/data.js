@@ -110,7 +110,8 @@ function clearVideoCache() {
  *   priority: 5 (optional),
  *   active: true (optional),
  *   tags: "tag1,tag2" (optional),
- *   venue_key: "venuename_area" (optional - used for NFC/QR auto-collect)
+ *   venue_key: "venuename_area" (optional - used for NFC/QR auto-collect),
+ *   reservable: true (optional - TRUE/FALSE, controls reservation availability display)
  * }
  *
  * Supported URL formats:
@@ -187,6 +188,9 @@ function parseVideoData(rawData) {
         if (item.video_type === 'x') {
             item.tweet_id = extractTweetId(item.url);
         }
+
+        // Normalize reservable to boolean (default true if not specified)
+        item.reservable = (item.reservable !== false && item.reservable !== 'FALSE' && item.reservable !== 'false');
 
         return item;
     });

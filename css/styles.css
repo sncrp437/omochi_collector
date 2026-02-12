@@ -2284,12 +2284,46 @@ body.collections-body.has-expiration-banner .my-collections-page {
     background: rgba(59, 130, 246, 0.12);
 }
 
-.venue-action-app {
-    border-color: rgba(168, 85, 247, 0.3);
+.venue-action-taxi {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    font-family: inherit;
 }
 
-.venue-action-app:hover {
-    background: rgba(168, 85, 247, 0.12);
+.venue-action-taxi:hover {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+/* Sub-label beneath action label (e.g., "No Reservation", "Not Available") */
+.venue-action-sub {
+    display: none;
+    font-size: 9px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+/* Disabled state for action buttons */
+.venue-action-btn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: default;
+}
+
+.venue-action-btn.disabled .venue-action-label {
+    text-decoration: line-through;
+}
+
+.venue-action-btn.disabled .venue-action-sub {
+    display: block;
+    color: rgba(255, 100, 100, 0.7);
+}
+
+/* Call button "no reservation" hint (still active, informational) */
+.venue-action-call .venue-action-sub {
+    color: rgba(255, 180, 100, 0.7);
+    font-size: 8px;
 }
 
 /* Venue Map Section */
@@ -3520,51 +3554,7 @@ body.collections-body.has-expiration-banner .my-collections-page {
    Taxi / Rides Feature
    ============================================================================= */
 
-/* Taxi Button Row (full-width, separate row below action buttons) */
-.venue-sheet-taxi-row {
-    margin-bottom: 20px;
-}
-
-.venue-taxi-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 14px 16px;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.venue-taxi-btn:hover {
-    background: rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.5);
-}
-
-.venue-taxi-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: rgba(245, 158, 11, 0.2);
-    border-radius: 8px;
-    color: #f59e0b;
-}
-
-.venue-taxi-label {
-    flex: 1;
-    text-align: left;
-}
-
-.venue-taxi-arrow {
-    color: rgba(255, 255, 255, 0.5);
-}
+/* Old taxi row styles removed - taxi now inside action buttons row */
 
 /* Taxi Picker Modal */
 .taxi-picker-modal {

@@ -409,7 +409,7 @@ function _getVenueInfo(item) {
             opening_time: v.opening_time || '',
             closing_time: v.closing_time || '',
             phone_number: v.phone_number || '',
-            enable_reservation: !!v.enable_reservation,
+            reservable: !!v.enable_reservation,
             enable_eat_in: !!v.enable_eat_in,
             enable_take_out: !!v.enable_take_out,
             announcement: (lang === 'en' && v.announcement_en) ? v.announcement_en : (v.announcement || ''),
@@ -429,8 +429,8 @@ function _getVenueInfo(item) {
         description: '',
         opening_time: '',
         closing_time: '',
-        phone_number: '',
-        enable_reservation: false,
+        phone_number: d.phone_number || '',
+        reservable: d.reservable !== false,
         enable_eat_in: false,
         enable_take_out: false,
         announcement: '',
@@ -1660,7 +1660,7 @@ async function _selectFolderForVenue(venueId, folderId) {
 var _currentSheetItem = null;
 
 // Omochi App base URL (DEV environment)
-var OMOCHI_APP_BASE_URL = 'https://d25ayioio4kluj.cloudfront.net';
+// OMOCHI_APP_BASE_URL removed - Omochi App button no longer in action row
 
 /**
  * Get reservation URL for an item (checks localStorage for Google Sheets data)
@@ -1750,69 +1750,84 @@ async function _openVenueSheet(item) {
 }
 
 /**
- * Render action buttons (Call, Reserve, Omochi App)
+ * Render action buttons (Call, Reserve, Taxi)
  */
 function _renderActionButtons(item, info, venueId) {
     var actionsEl = document.getElementById('venueSheetActions');
     var callBtn = document.getElementById('venueActionCall');
     var reserveBtn = document.getElementById('venueActionReserve');
-    var appBtn = document.getElementById('venueActionApp');
-    var taxiRow = document.getElementById('venueSheetTaxiRow');
     var taxiBtn = document.getElementById('venueActionTaxi');
+    var callSub = document.getElementById('venueCallSub');
+    var reserveSub = document.getElementById('venueReserveSub');
     var hasActions = false;
 
     var reservationUrl = _getReservationUrl(item);
-    var venueUuid = info.venue_uuid;
+    var isReservable = info.reservable !== false;
 
+    // --- Call button ---
     if (callBtn) {
         if (info.phone_number) {
             callBtn.href = 'tel:' + info.phone_number;
             callBtn.style.display = 'flex';
+            callBtn.classList.remove('disabled');
             callBtn.onclick = function(e) {
                 _logVenueAction('venue_call', venueId);
             };
+            // Show "No Reservation" hint if venue is not reservable
+            if (callSub) {
+                if (!isReservable) {
+                    callSub.textContent = t('noReservation');
+                    callSub.style.display = 'block';
+                } else {
+                    callSub.style.display = 'none';
+                }
+            }
             hasActions = true;
         } else {
             callBtn.style.display = 'none';
         }
     }
 
+    // --- Reserve button ---
     if (reserveBtn) {
         if (reservationUrl) {
+            // Has reservation URL - show as active link
             reserveBtn.href = reservationUrl;
             reserveBtn.style.display = 'flex';
+            reserveBtn.classList.remove('disabled');
             reserveBtn.onclick = function(e) {
                 _logVenueAction('venue_web_reserve', venueId);
             };
+            if (reserveSub) reserveSub.style.display = 'none';
+            hasActions = true;
+        } else if (!isReservable) {
+            // No URL and not reservable - show disabled with "Not Available"
+            reserveBtn.href = '#';
+            reserveBtn.style.display = 'flex';
+            reserveBtn.classList.add('disabled');
+            reserveBtn.onclick = function(e) { e.preventDefault(); };
+            if (reserveSub) {
+                reserveSub.textContent = t('notAvailable');
+                reserveSub.style.display = 'block';
+            }
             hasActions = true;
         } else {
+            // No URL but reservable (or unknown) - hide entirely
             reserveBtn.style.display = 'none';
         }
     }
 
-    if (appBtn) {
-        if (venueUuid) {
-            appBtn.href = OMOCHI_APP_BASE_URL + '/store/' + venueUuid;
-            appBtn.style.display = 'flex';
-            appBtn.onclick = function(e) {
-                _logVenueAction('venue_view_app', venueId);
-            };
-            hasActions = true;
-        } else {
-            appBtn.style.display = 'none';
-        }
-    }
-
-    // Taxi button (show if venue has address)
-    if (taxiRow && taxiBtn) {
+    // --- Taxi button (show if venue has address) ---
+    if (taxiBtn) {
         if (info.address) {
-            taxiRow.style.display = 'block';
+            taxiBtn.style.display = 'flex';
             taxiBtn.onclick = function(e) {
                 e.preventDefault();
                 _openTaxiPicker(info.address, venueId);
             };
+            hasActions = true;
         } else {
-            taxiRow.style.display = 'none';
+            taxiBtn.style.display = 'none';
         }
     }
 
@@ -1851,7 +1866,7 @@ function _renderVenueDetails(info) {
         var services = [];
         if (info.enable_eat_in) services.push(t('dineIn'));
         if (info.enable_take_out) services.push(t('takeout'));
-        if (info.enable_reservation) services.push(t('reservationAvailable'));
+        if (info.reservable) services.push(t('reservationAvailable'));
         if (services.length > 0) {
             servicesEl.textContent = services.join(' \u00B7 ');
             servicesEl.style.display = 'block';

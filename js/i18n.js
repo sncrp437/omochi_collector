@@ -150,7 +150,9 @@ const translations = {
         // Venue bottom sheet - action buttons
         callBtn: 'Call',
         webReserveBtn: 'Reserve',
-        viewOnAppBtn: 'Omochi App',
+        notAvailable: 'Not Available',
+        noReservation: 'No Reservation',
+        callTaxiBtn: 'Get a Ride',
 
         // Venue bottom sheet - map
         mapLabel: 'Location',
@@ -364,7 +366,9 @@ const translations = {
         // Venue bottom sheet - action buttons
         callBtn: '電話する',
         webReserveBtn: '予約',
-        viewOnAppBtn: 'Omochiアプリ',
+        notAvailable: '予約不可',
+        noReservation: '予約不可',
+        callTaxiBtn: '配車する',
 
         // Venue bottom sheet - map
         mapLabel: '場所',
