@@ -104,7 +104,9 @@ async function handleAutoCollect() {
 
     if (isNew) {
         // Show success toast with hint
-        var toastMsg = '\u2713 ' + (venue.venue_name || 'Venue') + ' ' + t('collected');
+        var acLang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+        var vName = (acLang === 'en' && venue.venue_name_en) ? venue.venue_name_en : (venue.venue_name || 'Venue');
+        var toastMsg = '\u2713 ' + vName + ' ' + t('collected');
         if (typeof showToast === 'function') {
             showToast(toastMsg, 3500);
         }
@@ -420,7 +422,7 @@ function _getVenueInfo(item) {
     // Local item
     var d = item.data;
     return {
-        name: d.venue_name || (lang === 'ja' ? d.caption_ja : d.caption_en) || 'Saved Venue',
+        name: (lang === 'en' && d.venue_name_en) ? d.venue_name_en : (d.venue_name || (lang === 'ja' ? d.caption_ja : d.caption_en) || 'Saved Venue'),
         genre: (lang === 'en' && d.genre_en) ? d.genre_en : (d.genre || ''),
         nearest_station: (lang === 'en' && d.nearest_station_en) ? d.nearest_station_en : (d.nearest_station || ''),
         address: d.address || '',

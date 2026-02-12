@@ -103,6 +103,7 @@ function clearVideoCache() {
  *   caption_en: "English caption text",
  *   caption_ja: "Japanese caption text",
  *   venue_name: "Restaurant Name" (required),
+ *   venue_name_en: "English Venue Name" (optional - falls back to venue_name),
  *   category: "food" (required - top-level: food/nightlife/entertainment/shopping/beauty/travel),
  *   genre: "Cuisine type" (optional - sub-category like italian, yakiniku, club),
  *   address: "Physical location" (optional),

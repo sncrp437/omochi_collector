@@ -380,7 +380,8 @@ function createOverlay(video) {
                 collectBtn.classList.add('collected');
                 // Meta Pixel: track collect as AddToWishlist
                 if (typeof fbq === 'function') {
-                    fbq('track', 'AddToWishlist', { content_name: video.venue_name || video.caption || video.id });
+                    var fbName = (typeof getCurrentLanguage === 'function' && getCurrentLanguage() === 'en' && video.venue_name_en) ? video.venue_name_en : (video.venue_name || video.caption || video.id);
+                    fbq('track', 'AddToWishlist', { content_name: fbName });
                 }
                 // Show folder prompt modal instead of toast
                 var venueId = video.venue_uuid || video.id;

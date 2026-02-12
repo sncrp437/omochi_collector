@@ -36,6 +36,7 @@ function saveLocalCollection(video) {
         venue_uuid: video.venue_uuid || null,
         venue_key: video.venue_key || null,
         venue_name: video.venue_name || '',
+        venue_name_en: video.venue_name_en || video.venue_name || '',
         genre: video.genre || '',
         genre_en: video.genre_en || video.genre || '',
         address: video.address || '',
