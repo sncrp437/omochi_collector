@@ -1671,11 +1671,21 @@ function _getReservationUrl(item) {
     if (item.source === 'local') {
         return item.data.reservation_url || '';
     }
-    // API items: look up matching local collection by venue_uuid
-    if (item.source === 'api' && item.data.venue) {
+    // API items: look up matching local collection
+    if (item.source === 'api') {
         var locals = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
+        // Pass 1: match by venue_uuid
+        if (item.data.venue) {
+            for (var i = 0; i < locals.length; i++) {
+                if (locals[i].venue_uuid === item.data.venue && locals[i].reservation_url) {
+                    return locals[i].reservation_url;
+                }
+            }
+        }
+        // Pass 2: match by video_id (always present in local collections)
+        var apiId = item.data.venue || item.data.id;
         for (var i = 0; i < locals.length; i++) {
-            if (locals[i].venue_uuid === item.data.venue && locals[i].reservation_url) {
+            if (locals[i].video_id && locals[i].video_id === apiId && locals[i].reservation_url) {
                 return locals[i].reservation_url;
             }
         }
@@ -1693,10 +1703,20 @@ function _getPhoneNumber(item) {
     // API items: check venue_details first, then fall back to local collection
     var vd = item.data.venue_details || {};
     if (vd.phone_number) return vd.phone_number;
-    if (item.source === 'api' && item.data.venue) {
+    if (item.source === 'api') {
         var locals = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
+        // Pass 1: match by venue_uuid
+        if (item.data.venue) {
+            for (var i = 0; i < locals.length; i++) {
+                if (locals[i].venue_uuid === item.data.venue && locals[i].phone_number) {
+                    return locals[i].phone_number;
+                }
+            }
+        }
+        // Pass 2: match by video_id (always present in local collections)
+        var apiId = item.data.venue || item.data.id;
         for (var i = 0; i < locals.length; i++) {
-            if (locals[i].venue_uuid === item.data.venue && locals[i].phone_number) {
+            if (locals[i].video_id && locals[i].video_id === apiId && locals[i].phone_number) {
                 return locals[i].phone_number;
             }
         }
@@ -1812,7 +1832,7 @@ function _renderActionButtons(item, info, venueId) {
         }
     }
 
-    // --- Reserve button ---
+    // --- Reserve button (always visible) ---
     if (reserveBtn) {
         if (reservationUrl) {
             // Has reservation URL - show as active link
@@ -1823,9 +1843,8 @@ function _renderActionButtons(item, info, venueId) {
                 _logVenueAction('venue_web_reserve', venueId);
             };
             if (reserveSub) reserveSub.style.display = 'none';
-            hasActions = true;
-        } else if (!isReservable) {
-            // No URL and not reservable - show disabled with "Not Available"
+        } else {
+            // No reservation URL - show disabled with disclaimer
             reserveBtn.href = '#';
             reserveBtn.style.display = 'flex';
             reserveBtn.classList.add('disabled');
@@ -1834,11 +1853,8 @@ function _renderActionButtons(item, info, venueId) {
                 reserveSub.textContent = t('notAvailable');
                 reserveSub.style.display = 'block';
             }
-            hasActions = true;
-        } else {
-            // No URL but reservable (or unknown) - hide entirely
-            reserveBtn.style.display = 'none';
         }
+        hasActions = true;
     }
 
     // --- Taxi button (show if venue has address) ---
