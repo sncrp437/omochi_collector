@@ -6,7 +6,7 @@
  */
 
 // TODO: Replace this with your actual Google Apps Script URL
-const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxaVlIan_XuGPo5m9olPBXaPighiFzJ1MLnRNS6qc2wNcKGIvd1vlcPq1edY4JoBiAYTQ/exec';
+const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzz0P-raF8R-_7xBNItcSdh8T4pNRnHLBt9nxu_VLly0B7uBna-rsDMjEvB3ptaJBRqJw/exec';
 
 // Cache configuration
 var VIDEO_CACHE_KEY = 'omochi_video_cache';
