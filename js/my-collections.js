@@ -1682,6 +1682,27 @@ function _getReservationUrl(item) {
 }
 
 /**
+ * Get phone number for an item (checks localStorage for Google Sheets data)
+ */
+function _getPhoneNumber(item) {
+    if (item.source === 'local') {
+        return item.data.phone_number || '';
+    }
+    // API items: check venue_details first, then fall back to local collection
+    var vd = item.data.venue_details || {};
+    if (vd.phone_number) return vd.phone_number;
+    if (item.source === 'api' && item.data.venue) {
+        var locals = typeof getLocalCollections === 'function' ? getLocalCollections() : [];
+        for (var i = 0; i < locals.length; i++) {
+            if (locals[i].venue_uuid === item.data.venue && locals[i].phone_number) {
+                return locals[i].phone_number;
+            }
+        }
+    }
+    return '';
+}
+
+/**
  * Log a venue action to analytics
  */
 function _logVenueAction(eventType, venueId) {
@@ -1762,12 +1783,13 @@ function _renderActionButtons(item, info, venueId) {
     var hasActions = false;
 
     var reservationUrl = _getReservationUrl(item);
+    var phoneNumber = _getPhoneNumber(item);
     var isReservable = info.reservable !== false;
 
     // --- Call button ---
     if (callBtn) {
-        if (info.phone_number) {
-            callBtn.href = 'tel:' + info.phone_number;
+        if (phoneNumber) {
+            callBtn.href = 'tel:' + phoneNumber;
             callBtn.style.display = 'flex';
             callBtn.classList.remove('disabled');
             callBtn.onclick = function(e) {

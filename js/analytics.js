@@ -197,7 +197,7 @@ function sendBatchedEvents() {
 
 /**
  * Log a generic analytics event with custom event type
- * Used for venue actions: venue_detail_view, venue_call, venue_web_reserve, venue_view_app
+ * Used for venue actions, filter events, NFC/QR events, taxi events, etc.
  * @param {string} eventType - The event type string
  * @param {string} videoId - Optional video/venue ID
  */
