@@ -383,8 +383,12 @@ function createOverlay(video) {
                     var fbName = (typeof getCurrentLanguage === 'function' && getCurrentLanguage() === 'en' && video.venue_name_en) ? video.venue_name_en : (video.venue_name || video.caption || video.id);
                     fbq('track', 'AddToWishlist', { content_name: fbName });
                 }
-                // Show folder prompt modal instead of toast
+                // Set default visit status to "want_to_go"
                 var venueId = video.venue_uuid || video.id;
+                if (typeof initDefaultVisitStatus === 'function') {
+                    initDefaultVisitStatus(venueId);
+                }
+                // Show folder prompt modal instead of toast
                 showFolderPrompt(venueId);
             } else {
                 if (typeof showToast === 'function') {

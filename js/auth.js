@@ -309,6 +309,12 @@ async function _handlePendingCollect() {
         }
     } catch (err) { console.warn('Folder sync failed:', err); }
 
+    try {
+        if (typeof syncLocalVisitsToApi === 'function') {
+            await syncLocalVisitsToApi();
+        }
+    } catch (err) { console.warn('Visit sync failed:', err); }
+
     // Invalidate folder caches to force refresh from API
     if (typeof invalidateFolderCache === 'function') {
         invalidateFolderCache();

@@ -674,8 +674,44 @@ function _createUnifiedCard(item, index) {
         _removeItem(item, card);
     });
 
+    // Visit status column (right side of card)
+    var visitCol = document.createElement('div');
+    visitCol.className = 'venue-card-visit-col';
+    if (venueId) visitCol.dataset.venueId = venueId;
+
+    var visitWantBtn = document.createElement('button');
+    visitWantBtn.className = 'venue-card-visit-btn want';
+    visitWantBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> ' + t('visitWantToGo');
+    visitWantBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _toggleCardVisitStatus(venueId, 'want_to_go', visitCol);
+    });
+
+    var visitWentBtn = document.createElement('button');
+    visitWentBtn.className = 'venue-card-visit-btn went';
+    visitWentBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> ' + t('visitWent');
+    visitWentBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _toggleCardVisitStatus(venueId, 'went', visitCol);
+    });
+
+    var visitTrophy = document.createElement('span');
+    visitTrophy.className = 'venue-card-trophy';
+    visitTrophy.style.display = 'none';
+
+    visitCol.appendChild(visitWantBtn);
+    visitCol.appendChild(visitWentBtn);
+    visitCol.appendChild(visitTrophy);
+
+    // Populate visit status from localStorage (synchronous)
+    if (venueId && typeof getLocalVisitStatus === 'function') {
+        var vs = getLocalVisitStatus(venueId);
+        _updateCardVisitUI(visitCol, vs);
+    }
+
     card.appendChild(logoDiv);
     card.appendChild(infoDiv);
+    card.appendChild(visitCol);
     card.appendChild(removeBtn);
 
     // Note: Click handling is done via event delegation in _setupCardClickDelegation()
@@ -1735,6 +1771,157 @@ function _getPhoneNumber(item) {
     return '';
 }
 
+// =============================================================================
+// Visit Status Helpers (Card + Bottom Sheet)
+// =============================================================================
+
+var _visitIncrementDebounce = null;
+
+/**
+ * Update the visit status UI on a card's visit column
+ */
+function _updateCardVisitUI(visitCol, visitStatus) {
+    if (!visitCol) return;
+    var wantBtn = visitCol.querySelector('.venue-card-visit-btn.want');
+    var wentBtn = visitCol.querySelector('.venue-card-visit-btn.went');
+    var trophy = visitCol.querySelector('.venue-card-trophy');
+
+    if (wantBtn) wantBtn.classList.toggle('active', visitStatus && visitStatus.status === 'want_to_go');
+    if (wentBtn) wentBtn.classList.toggle('active', visitStatus && visitStatus.status === 'went');
+
+    if (trophy) {
+        if (visitStatus && visitStatus.status === 'went' && visitStatus.visit_count > 0) {
+            trophy.style.display = 'inline-flex';
+            trophy.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> x' + visitStatus.visit_count;
+        } else {
+            trophy.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Toggle visit status from a card button click
+ */
+function _toggleCardVisitStatus(venueId, newStatus, visitCol) {
+    if (!venueId || typeof getLocalVisitStatus !== 'function') return;
+
+    var current = getLocalVisitStatus(venueId);
+
+    if (current && current.status === newStatus) {
+        // Toggle off (clear)
+        removeLocalVisitStatus(venueId);
+        _updateCardVisitUI(visitCol, null);
+        if (typeof removeVisitStatus === 'function') removeVisitStatus(venueId);
+    } else if (newStatus === 'went') {
+        var count = (current && current.status === 'went') ? current.visit_count : 0;
+        setLocalVisitStatus(venueId, 'went', count + 1);
+        var updated = getLocalVisitStatus(venueId);
+        _updateCardVisitUI(visitCol, updated);
+        if (typeof setVisitStatus === 'function') setVisitStatus(venueId, 'went', updated.visit_count);
+    } else {
+        setLocalVisitStatus(venueId, 'want_to_go', 0);
+        _updateCardVisitUI(visitCol, getLocalVisitStatus(venueId));
+        if (typeof setVisitStatus === 'function') setVisitStatus(venueId, 'want_to_go', 0);
+    }
+}
+
+/**
+ * Render visit status section in the bottom sheet
+ */
+function _renderVisitStatus(venueId) {
+    var section = document.getElementById('venueSheetVisitSection');
+    if (!section) return;
+
+    var wantBtn = document.getElementById('visitBtnWant');
+    var wentBtn = document.getElementById('visitBtnWent');
+    var trophyBadge = document.getElementById('visitTrophyBadge');
+    var trophyCount = document.getElementById('visitTrophyCount');
+    var incrementBtn = document.getElementById('visitIncrementBtn');
+
+    // Get current status
+    var vs = venueId && typeof getLocalVisitStatus === 'function' ? getLocalVisitStatus(venueId) : null;
+
+    // Update button states
+    if (wantBtn) {
+        wantBtn.classList.toggle('active', vs && vs.status === 'want_to_go');
+        wantBtn.onclick = function() {
+            if (vs && vs.status === 'want_to_go') {
+                removeLocalVisitStatus(venueId);
+                if (typeof removeVisitStatus === 'function') removeVisitStatus(venueId);
+                vs = null;
+            } else {
+                setLocalVisitStatus(venueId, 'want_to_go', 0);
+                if (typeof setVisitStatus === 'function') setVisitStatus(venueId, 'want_to_go', 0);
+                vs = getLocalVisitStatus(venueId);
+            }
+            _renderVisitStatus(venueId);
+            _syncCardVisitFromSheet(venueId);
+        };
+    }
+
+    if (wentBtn) {
+        wentBtn.classList.toggle('active', vs && vs.status === 'went');
+        wentBtn.onclick = function() {
+            if (vs && vs.status === 'went') {
+                removeLocalVisitStatus(venueId);
+                if (typeof removeVisitStatus === 'function') removeVisitStatus(venueId);
+                vs = null;
+            } else {
+                var count = (vs && vs.status === 'went') ? vs.visit_count : 0;
+                setLocalVisitStatus(venueId, 'went', count + 1);
+                if (typeof setVisitStatus === 'function') setVisitStatus(venueId, 'went', count + 1);
+                vs = getLocalVisitStatus(venueId);
+            }
+            _renderVisitStatus(venueId);
+            _syncCardVisitFromSheet(venueId);
+        };
+    }
+
+    // Trophy badge
+    if (trophyBadge && trophyCount) {
+        if (vs && vs.status === 'went' && vs.visit_count > 0) {
+            trophyBadge.style.display = 'inline-flex';
+            trophyCount.textContent = vs.visit_count + t('visitCountSuffix');
+        } else {
+            trophyBadge.style.display = 'none';
+        }
+    }
+
+    // Increment button
+    if (incrementBtn) {
+        if (vs && vs.status === 'went') {
+            incrementBtn.style.display = 'inline-block';
+            incrementBtn.onclick = function() {
+                if (_visitIncrementDebounce) return;
+                _visitIncrementDebounce = setTimeout(function() { _visitIncrementDebounce = null; }, 500);
+
+                var cur = getLocalVisitStatus(venueId);
+                var newCount = (cur ? cur.visit_count : 0) + 1;
+                setLocalVisitStatus(venueId, 'went', newCount);
+                if (typeof setVisitStatus === 'function') setVisitStatus(venueId, 'went', newCount);
+                _renderVisitStatus(venueId);
+                _syncCardVisitFromSheet(venueId);
+            };
+        } else {
+            incrementBtn.style.display = 'none';
+        }
+    }
+
+    section.style.display = venueId ? '' : 'none';
+}
+
+/**
+ * Sync card visit UI when bottom sheet status changes
+ */
+function _syncCardVisitFromSheet(venueId) {
+    if (!venueId) return;
+    var visitCols = document.querySelectorAll('.venue-card-visit-col[data-venue-id="' + venueId + '"]');
+    var vs = typeof getLocalVisitStatus === 'function' ? getLocalVisitStatus(venueId) : null;
+    visitCols.forEach(function(col) {
+        _updateCardVisitUI(col, vs);
+    });
+}
+
 /**
  * Log a venue action to analytics
  */
@@ -1769,6 +1956,9 @@ async function _openVenueSheet(item) {
 
     // Render folder row (before memo)
     _renderSheetFolderRow(venueId);
+
+    // Render visit status section
+    _renderVisitStatus(venueId);
 
     // Render memo section (prominent, always visible)
     await _renderSheetMemo(venueId);

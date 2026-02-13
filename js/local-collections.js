@@ -182,8 +182,9 @@ function getExpirationInfo() {
     var memos = typeof getLocalMemos === 'function' ? getLocalMemos() : [];
     var tags = typeof getLocalTags === 'function' ? getLocalTags() : [];
     var folders = typeof getLocalFolders === 'function' ? getLocalFolders() : [];
+    var visits = typeof getLocalVisits === 'function' ? getLocalVisits() : [];
 
-    var totalCount = collections.length + memos.length + tags.length + folders.length;
+    var totalCount = collections.length + memos.length + tags.length + folders.length + visits.length;
     if (totalCount === 0) return null;
 
     // Find soonest expiring item across all data types
@@ -194,6 +195,7 @@ function getExpirationInfo() {
         .concat(memos.map(function(m) { return m.expires_at; }))
         .concat(tags.map(function(t) { return t.expires_at; }))
         .concat(folders.map(function(f) { return f.expires_at; }))
+        .concat(visits.map(function(v) { return v.expires_at; }))
         .filter(Boolean);
 
     for (var i = 0; i < allExpiries.length; i++) {
@@ -214,6 +216,7 @@ function getExpirationInfo() {
         memos: memos.length,
         tags: tags.length,
         folders: folders.length,
+        visits: visits.length,
         daysLeft: Math.max(0, daysLeft),
         soonestExpiry: soonest.toISOString()
     };
@@ -267,6 +270,7 @@ function updateExpirationBanner() {
         if (info.memos > 0) parts.push('メモ' + info.memos + '件');
         if (info.tags > 0) parts.push('タグ' + info.tags + '件');
         if (info.folders > 0) parts.push('フォルダ' + info.folders + '個');
+        if (info.visits > 0) parts.push('訪問記録' + info.visits + '件');
         itemDesc = parts.join('、');
     } else {
         var parts = [];
@@ -274,6 +278,7 @@ function updateExpirationBanner() {
         if (info.memos > 0) parts.push(info.memos + ' memo' + (info.memos === 1 ? '' : 's'));
         if (info.tags > 0) parts.push(info.tags + ' tag' + (info.tags === 1 ? '' : 's'));
         if (info.folders > 0) parts.push(info.folders + ' folder' + (info.folders === 1 ? '' : 's'));
+        if (info.visits > 0) parts.push(info.visits + ' visit record' + (info.visits === 1 ? '' : 's'));
         itemDesc = parts.join(', ');
     }
 

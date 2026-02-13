@@ -831,7 +831,8 @@ function cleanupAllExpiredGuestData() {
     return {
         memos: cleanupExpiredMemos(),
         tags: cleanupExpiredTags(),
-        folders: cleanupExpiredFolders()
+        folders: cleanupExpiredFolders(),
+        visits: cleanupExpiredVisits()
     };
 }
 
@@ -903,6 +904,252 @@ async function syncLocalFoldersToApi() {
             } catch (err) {
                 console.warn('Failed to sync venue folder:', err);
             }
+        }
+    }
+}
+
+// =============================================================================
+// Visit Status Tracking (Went / Want to Go)
+// =============================================================================
+
+var LOCAL_VISITS_KEY = 'omochi_local_visits';
+var _visitStatusCache = {};
+
+var VISIT_STATUSES = {
+    WENT: 'went',
+    WANT_TO_GO: 'want_to_go'
+};
+
+// --- localStorage Helpers ---
+
+function getLocalVisits() {
+    try {
+        var data = localStorage.getItem(LOCAL_VISITS_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setLocalVisits(visits) {
+    try {
+        localStorage.setItem(LOCAL_VISITS_KEY, JSON.stringify(visits));
+    } catch (e) {
+        console.warn('Failed to save visits to localStorage:', e);
+    }
+}
+
+/**
+ * Get visit status for a venue (synchronous, from localStorage)
+ * @returns {{ status: string, visit_count: number }} or null
+ */
+function getLocalVisitStatus(venueId) {
+    if (!venueId) return null;
+    var visits = getLocalVisits();
+    var entry = visits.find(function(v) { return v.venue_id === venueId; });
+    if (!entry) return null;
+    return { status: entry.status, visit_count: entry.visit_count || 0 };
+}
+
+/**
+ * Set visit status for a venue in localStorage
+ */
+function setLocalVisitStatus(venueId, status, visitCount) {
+    if (!venueId) return;
+    var visits = getLocalVisits();
+    var existingIdx = visits.findIndex(function(v) { return v.venue_id === venueId; });
+
+    var entry = {
+        venue_id: venueId,
+        status: status,
+        visit_count: typeof visitCount === 'number' ? visitCount : (status === VISIT_STATUSES.WENT ? 1 : 0),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        expires_at: _guestExpiresAt(),
+        synced: false
+    };
+
+    if (existingIdx >= 0) {
+        entry.created_at = visits[existingIdx].created_at || entry.created_at;
+        entry.expires_at = visits[existingIdx].expires_at || entry.expires_at;
+        visits[existingIdx] = entry;
+    } else {
+        visits.push(entry);
+    }
+    setLocalVisits(visits);
+
+    // Invalidate cache
+    delete _visitStatusCache['visit_' + venueId];
+}
+
+/**
+ * Remove visit status for a venue
+ */
+function removeLocalVisitStatus(venueId) {
+    if (!venueId) return;
+    var visits = getLocalVisits();
+    visits = visits.filter(function(v) { return v.venue_id !== venueId; });
+    setLocalVisits(visits);
+    delete _visitStatusCache['visit_' + venueId];
+}
+
+/**
+ * Set default "want_to_go" if no status exists yet (called on collect)
+ */
+function initDefaultVisitStatus(venueId) {
+    if (!venueId) return;
+    var existing = getLocalVisitStatus(venueId);
+    if (!existing) {
+        setLocalVisitStatus(venueId, VISIT_STATUSES.WANT_TO_GO, 0);
+    }
+}
+
+// --- API Operations ---
+
+/**
+ * Fetch visit status from API (logged-in) or localStorage (guest)
+ * @returns {{ status: string, visit_count: number }} or null
+ */
+async function fetchVisitStatus(venueId) {
+    if (!venueId) return null;
+
+    var userHash = await getUserHash();
+    if (!userHash) {
+        // Guest: use localStorage
+        return getLocalVisitStatus(venueId);
+    }
+
+    if (!isTagsApiConfigured()) return getLocalVisitStatus(venueId);
+
+    // Check cache (5 min TTL)
+    var cacheKey = 'visit_' + venueId;
+    var cached = _visitStatusCache[cacheKey];
+    if (cached && Date.now() - cached.time < 300000) return cached.data;
+
+    try {
+        var url = TAGS_API_URL + '?action=get_visit_status&venue_id=' + encodeURIComponent(venueId) +
+                  '&user_hash=' + encodeURIComponent(userHash);
+        var response = await fetch(url);
+        var result = await response.json();
+        if (result.status === 'ok') {
+            var data = result.visit_status ? {
+                status: result.visit_status,
+                visit_count: result.visit_count || 0
+            } : null;
+            _visitStatusCache[cacheKey] = { data: data, time: Date.now() };
+            return data;
+        }
+    } catch (err) {
+        console.warn('Failed to fetch visit status:', err);
+    }
+    return getLocalVisitStatus(venueId); // Fallback to local
+}
+
+/**
+ * Set visit status (localStorage-first + API sync)
+ */
+async function setVisitStatus(venueId, status, visitCount) {
+    if (!venueId) return false;
+
+    // Save locally first
+    setLocalVisitStatus(venueId, status, visitCount);
+
+    // If logged in, sync to API
+    var userHash = await getUserHash();
+    if (!userHash || !isTagsApiConfigured()) return true;
+
+    try {
+        var response = await fetch(TAGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'set_visit_status',
+                venue_id: venueId,
+                user_hash: userHash,
+                visit_status: status,
+                visit_count: visitCount || (status === VISIT_STATUSES.WENT ? 1 : 0)
+            })
+        });
+        var result = await response.json();
+        if (result.status === 'ok') {
+            // Mark as synced
+            var visits = getLocalVisits();
+            var idx = visits.findIndex(function(v) { return v.venue_id === venueId; });
+            if (idx >= 0) {
+                visits[idx].synced = true;
+                setLocalVisits(visits);
+            }
+            delete _visitStatusCache['visit_' + venueId];
+            return true;
+        }
+    } catch (err) {
+        console.warn('Failed to set visit status via API:', err);
+    }
+    return true; // Local save succeeded
+}
+
+/**
+ * Remove visit status (localStorage-first + API sync)
+ */
+async function removeVisitStatus(venueId) {
+    if (!venueId) return false;
+
+    removeLocalVisitStatus(venueId);
+
+    var userHash = await getUserHash();
+    if (!userHash || !isTagsApiConfigured()) return true;
+
+    try {
+        var response = await fetch(TAGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'remove_visit_status',
+                venue_id: venueId,
+                user_hash: userHash
+            })
+        });
+        var result = await response.json();
+        if (result.status === 'ok') {
+            delete _visitStatusCache['visit_' + venueId];
+        }
+    } catch (err) {
+        console.warn('Failed to remove visit status via API:', err);
+    }
+    return true;
+}
+
+// --- Cleanup & Sync ---
+
+/**
+ * Remove expired visit status entries
+ * @returns {number} Number of items deleted
+ */
+function cleanupExpiredVisits() {
+    var visits = getLocalVisits();
+    var now = new Date();
+    var valid = visits.filter(function(v) {
+        if (!v.expires_at) return true; // Legacy items kept
+        return new Date(v.expires_at) > now;
+    });
+    var deletedCount = visits.length - valid.length;
+    if (deletedCount > 0) setLocalVisits(valid);
+    return deletedCount;
+}
+
+/**
+ * Sync unsynced local visit statuses to the Tags API
+ */
+async function syncLocalVisitsToApi() {
+    var userHash = await getUserHash();
+    if (!userHash) return;
+
+    var visits = getLocalVisits().filter(function(v) { return !v.synced; });
+    for (var i = 0; i < visits.length; i++) {
+        try {
+            await setVisitStatus(visits[i].venue_id, visits[i].status, visits[i].visit_count);
+        } catch (err) {
+            console.warn('Failed to sync visit status:', err);
         }
     }
 }

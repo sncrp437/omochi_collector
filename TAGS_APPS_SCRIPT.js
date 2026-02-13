@@ -7,6 +7,7 @@
  *   memos         - timestamp | venue_id | user_hash | memo_text
  *   folders       - timestamp | folder_id | user_hash | folder_name | color | order
  *   venue_folders - timestamp | venue_id | folder_id | user_hash
+ *   visit_status  - timestamp | venue_id | user_hash | status | visit_count
  *   rate_limits   - timestamp | user_hash | action_type
  */
 
@@ -18,7 +19,8 @@ var VALID_TAGS = [
   'lively_fun', 'pet_friendly', 'great_drinks', 'photogenic'
 ];
 
-var RATE_LIMITS = { tag: 30, memo: 10, folder: 20 }; // per user_hash per hour
+var RATE_LIMITS = { tag: 30, memo: 10, folder: 20, visit: 30 }; // per user_hash per hour
+var VALID_VISIT_STATUSES = ['went', 'want_to_go'];
 var MEMO_MAX_LENGTH = 500;
 var FOLDER_NAME_MAX_LENGTH = 20;
 var MAX_FOLDERS_PER_USER = 20;
@@ -143,6 +145,8 @@ function doGet(e) {
       return _handleGetFolders(e);
     case 'get_venue_folders':
       return _handleGetVenueFolders(e);
+    case 'get_visit_status':
+      return _handleGetVisitStatus(e);
     default:
       return _errorResponse('Unknown action: ' + action);
   }
@@ -310,6 +314,10 @@ function doPost(e) {
       return _handleSetVenueFolder(body);
     case 'remove_venue_folder':
       return _handleRemoveVenueFolder(body);
+    case 'set_visit_status':
+      return _handleSetVisitStatus(body);
+    case 'remove_visit_status':
+      return _handleRemoveVisitStatus(body);
     default:
       return _errorResponse('Unknown action: ' + action);
   }
@@ -557,6 +565,95 @@ function _handleRemoveVenueFolder(body) {
   var data = sheet.getDataRange().getValues();
   for (var i = data.length - 1; i >= 1; i--) {
     if (data[i][1] === venueId && data[i][3] === userHash) {
+      sheet.deleteRow(i + 1);
+      return _jsonResponse({ status: 'ok', action: 'removed' });
+    }
+  }
+
+  return _jsonResponse({ status: 'ok', action: 'not_found' });
+}
+
+// === VISIT STATUS HANDLERS ===
+
+function _handleGetVisitStatus(e) {
+  var venueId = e.parameter.venue_id;
+  var userHash = e.parameter.user_hash;
+  if (!_isValidVenueId(venueId)) return _errorResponse('Invalid venue_id');
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('visit_status');
+  if (!sheet) return _jsonResponse({ status: 'ok', venue_id: venueId, visit_status: null, visit_count: 0 });
+
+  var data = sheet.getDataRange().getValues();
+
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === venueId && data[i][2] === userHash) {
+      return _jsonResponse({
+        status: 'ok',
+        venue_id: venueId,
+        visit_status: data[i][3],
+        visit_count: data[i][4] || 0
+      });
+    }
+  }
+
+  return _jsonResponse({ status: 'ok', venue_id: venueId, visit_status: null, visit_count: 0 });
+}
+
+function _handleSetVisitStatus(body) {
+  var venueId = body.venue_id;
+  var userHash = body.user_hash;
+  var visitStatus = body.visit_status;
+  var visitCount = typeof body.visit_count === 'number' ? body.visit_count : null;
+
+  if (!_isValidVenueId(venueId)) return _errorResponse('Invalid venue_id');
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+  if (VALID_VISIT_STATUSES.indexOf(visitStatus) === -1) return _errorResponse('Invalid visit_status');
+
+  // Rate limit check
+  if (!_checkRateLimit(userHash, 'visit')) {
+    return _errorResponse('Rate limit exceeded. Try again later.', 429);
+  }
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('visit_status');
+  if (!sheet) return _errorResponse('visit_status sheet not found');
+
+  var data = sheet.getDataRange().getValues();
+
+  // Check for existing entry
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === venueId && data[i][2] === userHash) {
+      // Update existing
+      sheet.getRange(i + 1, 1).setValue(new Date());          // timestamp
+      sheet.getRange(i + 1, 4).setValue(visitStatus);          // status
+      var count = visitCount !== null ? visitCount : (visitStatus === 'went' ? (data[i][4] || 0) + 1 : 0);
+      sheet.getRange(i + 1, 5).setValue(count);                // visit_count
+      _logRateLimit(userHash, 'visit');
+      return _jsonResponse({ status: 'ok', action: 'updated', visit_count: count });
+    }
+  }
+
+  // New entry
+  var newCount = visitCount !== null ? visitCount : (visitStatus === 'went' ? 1 : 0);
+  sheet.appendRow([new Date(), venueId, userHash, visitStatus, newCount]);
+  _logRateLimit(userHash, 'visit');
+
+  return _jsonResponse({ status: 'ok', action: 'set', visit_count: newCount });
+}
+
+function _handleRemoveVisitStatus(body) {
+  var venueId = body.venue_id;
+  var userHash = body.user_hash;
+
+  if (!_isValidVenueId(venueId)) return _errorResponse('Invalid venue_id');
+  if (!_isValidHash(userHash)) return _errorResponse('Invalid user_hash');
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName('visit_status');
+  if (!sheet) return _errorResponse('visit_status sheet not found');
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === venueId && data[i][2] === userHash) {
       sheet.deleteRow(i + 1);
       return _jsonResponse({ status: 'ok', action: 'removed' });
     }

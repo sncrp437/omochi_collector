@@ -171,6 +171,15 @@ const translations = {
         memoLoginPrompt: 'Add a note',
         memoLoginHint: 'Register to keep notes forever',
 
+        // Visit status
+        visitWent: 'Went',
+        visitWantToGo: 'Want to Go',
+        visitCountSuffix: 'visits',
+        visitStatusUpdated: 'Status updated!',
+        visitStatusCleared: 'Status cleared',
+        visitCountIncremented: 'Visit count updated!',
+        visitLoginHint: 'Register to keep visit history',
+
         // Category selector
         categoryFood: 'Food',
         categoryNightlife: 'Nightlife',
@@ -386,6 +395,15 @@ const translations = {
         memoPlaceholderFriendly: 'どうでしたか？メモを追加...',
         memoLoginPrompt: 'メモを追加',
         memoLoginHint: '登録で永久保存',
+
+        // Visit status
+        visitWent: '行った',
+        visitWantToGo: '行きたい',
+        visitCountSuffix: '回目',
+        visitStatusUpdated: 'ステータスを更新しました',
+        visitStatusCleared: 'ステータスをクリアしました',
+        visitCountIncremented: '訪問回数を更新しました',
+        visitLoginHint: '登録で訪問履歴を永久保存',
 
         // Category selector
         categoryFood: '飲食',
