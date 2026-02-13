@@ -15,6 +15,8 @@ var _userFolders = [];
 var _venueFolders = {};
 var _editingFolderId = null; // For folder edit modal
 var _autoCollectedVenue = null; // Venue that was auto-collected via URL param
+var _pendingDeleteItem = null;
+var _pendingDeleteCard = null;
 
 // =============================================================================
 // NFC/QR Auto-Collect via URL Parameters
@@ -261,6 +263,7 @@ async function initCollectionsPage() {
 
     // Setup event delegation for venue card clicks (once, before any rendering)
     _setupCardClickDelegation();
+    _setupDeleteConfirmModal();
 
     // Setup AI search bar event listeners
     _setupAiSearchBar();
@@ -671,7 +674,7 @@ function _createUnifiedCard(item, index) {
     removeBtn.title = t('removeVenue') || 'Remove';
     removeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        _removeItem(item, card);
+        _showDeleteConfirm(item, card);
     });
 
     // Visit status column (right side of card)
@@ -755,6 +758,37 @@ async function _removeItem(item, cardElement) {
         _renderGenreFilters();
         _renderLocationFilters();
     }, 300);
+}
+
+function _showDeleteConfirm(item, cardElement) {
+    _pendingDeleteItem = item;
+    _pendingDeleteCard = cardElement;
+    var modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.classList.add('active');
+}
+
+function _hideDeleteConfirm() {
+    var modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.classList.remove('active');
+    _pendingDeleteItem = null;
+    _pendingDeleteCard = null;
+}
+
+function _setupDeleteConfirmModal() {
+    var overlay = document.getElementById('deleteConfirmOverlay');
+    var cancelBtn = document.getElementById('deleteConfirmCancel');
+    var confirmBtn = document.getElementById('deleteConfirmBtn');
+
+    if (overlay) overlay.addEventListener('click', _hideDeleteConfirm);
+    if (cancelBtn) cancelBtn.addEventListener('click', _hideDeleteConfirm);
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (_pendingDeleteItem && _pendingDeleteCard) {
+                _removeItem(_pendingDeleteItem, _pendingDeleteCard);
+            }
+            _hideDeleteConfirm();
+        });
+    }
 }
 
 /**

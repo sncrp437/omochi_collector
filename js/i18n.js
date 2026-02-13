@@ -68,6 +68,8 @@ const translations = {
         discoverVenues: 'Discover Venues',
         collected: 'Saved!',
         removeVenue: 'Remove',
+        removeConfirmTitle: 'Do you really want to delete this?',
+        removeConfirmMessage: 'This venue will be removed from your collection.',
 
         // Errors
         networkError: 'Network error. Please check your connection.',
@@ -293,6 +295,8 @@ const translations = {
         discoverVenues: '店舗を探す',
         collected: '保存済み！',
         removeVenue: '削除',
+        removeConfirmTitle: '本当に削除しますか？',
+        removeConfirmMessage: 'コレクションから削除されます。',
 
         // Errors
         networkError: 'ネットワークエラー。接続を確認してください。',
