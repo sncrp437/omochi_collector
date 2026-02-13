@@ -289,11 +289,30 @@ async function _handlePendingCollect() {
     if (typeof syncLocalCollectionsToApi === 'function') {
         await syncLocalCollectionsToApi();
     }
-    // Update collect buttons to reflect synced state
-    var collectBtns = document.querySelectorAll('.collect-btn.collected');
-    collectBtns.forEach(function(btn) {
-        // Already showing collected state, no change needed
-    });
+
+    // Sync guest memos, tags, and folders to the Tags API
+    try {
+        if (typeof syncLocalMemosToApi === 'function') {
+            await syncLocalMemosToApi();
+        }
+    } catch (err) { console.warn('Memo sync failed:', err); }
+
+    try {
+        if (typeof syncLocalTagsToApi === 'function') {
+            await syncLocalTagsToApi();
+        }
+    } catch (err) { console.warn('Tag sync failed:', err); }
+
+    try {
+        if (typeof syncLocalFoldersToApi === 'function') {
+            await syncLocalFoldersToApi();
+        }
+    } catch (err) { console.warn('Folder sync failed:', err); }
+
+    // Invalidate folder caches to force refresh from API
+    if (typeof invalidateFolderCache === 'function') {
+        invalidateFolderCache();
+    }
 }
 
 /**

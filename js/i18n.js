@@ -139,8 +139,8 @@ const translations = {
         tagAdded: 'Tag added!',
         tagRemoved: 'Tag removed',
         tagFailed: 'Failed to update tag',
-        loginToTag: 'Log in to add tags',
-        loginToMemo: 'Log in to save notes',
+        loginToTag: 'Register to keep tags forever',
+        loginToMemo: 'Register to keep notes forever',
         noTagsYet: 'No community tags yet. Be the first!',
         tagCount: 'person',
         tagCountPlural: 'people',
@@ -168,8 +168,8 @@ const translations = {
         myNoteTitle: 'My Note',
         memoPrivateHint: 'Only you can see this',
         memoPlaceholderFriendly: 'What did you think? Add your personal note...',
-        memoLoginPrompt: 'Tap to add your personal note',
-        memoLoginHint: 'Log in to save private notes',
+        memoLoginPrompt: 'Add a note',
+        memoLoginHint: 'Register to keep notes forever',
 
         // Category selector
         categoryFood: 'Food',
@@ -355,8 +355,8 @@ const translations = {
         tagAdded: 'タグを追加しました！',
         tagRemoved: 'タグを削除しました',
         tagFailed: 'タグの更新に失敗しました',
-        loginToTag: 'タグを追加するにはログインしてください',
-        loginToMemo: 'メモを保存するにはログインしてください',
+        loginToTag: '登録でタグを永久保存',
+        loginToMemo: '登録でメモを永久保存',
         noTagsYet: 'まだタグがありません。最初のタグを追加しましょう！',
         tagCount: '人',
         tagCountPlural: '人',
@@ -384,8 +384,8 @@ const translations = {
         myNoteTitle: 'マイメモ',
         memoPrivateHint: '自分だけに見えます',
         memoPlaceholderFriendly: 'どうでしたか？メモを追加...',
-        memoLoginPrompt: 'タップしてメモを追加',
-        memoLoginHint: 'ログインしてメモを保存',
+        memoLoginPrompt: 'メモを追加',
+        memoLoginHint: '登録で永久保存',
 
         // Category selector
         categoryFood: '飲食',

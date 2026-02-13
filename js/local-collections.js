@@ -179,18 +179,27 @@ function cleanupExpiredCollections() {
  */
 function getExpirationInfo() {
     var collections = getLocalCollections();
-    if (collections.length === 0) return null;
+    var memos = typeof getLocalMemos === 'function' ? getLocalMemos() : [];
+    var tags = typeof getLocalTags === 'function' ? getLocalTags() : [];
+    var folders = typeof getLocalFolders === 'function' ? getLocalFolders() : [];
 
-    // Find soonest expiring item
+    var totalCount = collections.length + memos.length + tags.length + folders.length;
+    if (totalCount === 0) return null;
+
+    // Find soonest expiring item across all data types
     var now = new Date();
     var soonest = null;
-    for (var i = 0; i < collections.length; i++) {
-        var c = collections[i];
-        if (c.expires_at) {
-            var exp = new Date(c.expires_at);
-            if (!soonest || exp < soonest) {
-                soonest = exp;
-            }
+    var allExpiries = []
+        .concat(collections.map(function(c) { return c.expires_at; }))
+        .concat(memos.map(function(m) { return m.expires_at; }))
+        .concat(tags.map(function(t) { return t.expires_at; }))
+        .concat(folders.map(function(f) { return f.expires_at; }))
+        .filter(Boolean);
+
+    for (var i = 0; i < allExpiries.length; i++) {
+        var exp = new Date(allExpiries[i]);
+        if (!soonest || exp < soonest) {
+            soonest = exp;
         }
     }
 
@@ -200,7 +209,11 @@ function getExpirationInfo() {
     var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
 
     return {
-        count: collections.length,
+        count: totalCount,
+        collections: collections.length,
+        memos: memos.length,
+        tags: tags.length,
+        folders: folders.length,
         daysLeft: Math.max(0, daysLeft),
         soonestExpiry: soonest.toISOString()
     };
@@ -226,8 +239,11 @@ function updateExpirationBanner() {
         return;
     }
 
-    // Cleanup expired items first
+    // Cleanup expired items first (collections + memos/tags/folders)
     cleanupExpiredCollections();
+    if (typeof cleanupAllExpiredGuestData === 'function') {
+        cleanupAllExpiredGuestData();
+    }
 
     var info = getExpirationInfo();
     if (!info || info.count === 0) {
@@ -243,25 +259,42 @@ function updateExpirationBanner() {
     var lang = (typeof getCurrentLanguage === 'function') ? getCurrentLanguage() : 'en';
     var text, urgencyClass = '';
 
+    // Build item summary
+    var itemDesc = '';
+    if (lang === 'ja') {
+        var parts = [];
+        if (info.collections > 0) parts.push('店舗' + info.collections + '件');
+        if (info.memos > 0) parts.push('メモ' + info.memos + '件');
+        if (info.tags > 0) parts.push('タグ' + info.tags + '件');
+        if (info.folders > 0) parts.push('フォルダ' + info.folders + '個');
+        itemDesc = parts.join('、');
+    } else {
+        var parts = [];
+        if (info.collections > 0) parts.push(info.collections + ' venue' + (info.collections === 1 ? '' : 's'));
+        if (info.memos > 0) parts.push(info.memos + ' memo' + (info.memos === 1 ? '' : 's'));
+        if (info.tags > 0) parts.push(info.tags + ' tag' + (info.tags === 1 ? '' : 's'));
+        if (info.folders > 0) parts.push(info.folders + ' folder' + (info.folders === 1 ? '' : 's'));
+        itemDesc = parts.join(', ');
+    }
+
     if (info.daysLeft > 1) {
         if (lang === 'ja') {
-            text = '保存した' + info.count + '件の店舗は' + info.daysLeft + '日後に削除されます。登録して永久保存。';
+            text = '保存した' + itemDesc + 'は' + info.daysLeft + '日後に削除されます。登録して永久保存。';
         } else {
-            var plural = info.count === 1 ? 'venue' : 'venues';
-            text = 'Your ' + info.count + ' saved ' + plural + ' will expire in ' + info.daysLeft + ' days. Register to keep forever.';
+            text = 'Your ' + itemDesc + ' will expire in ' + info.daysLeft + ' days. Register to keep forever.';
         }
     } else if (info.daysLeft === 1) {
         if (lang === 'ja') {
             text = '⚠️ 明日削除されます！今すぐ登録を。';
         } else {
-            text = '⚠️ Your venues expire TOMORROW! Register now to keep them.';
+            text = '⚠️ Your data expires TOMORROW! Register now to keep it.';
         }
         urgencyClass = 'urgent';
     } else {
         if (lang === 'ja') {
             text = '🚨 本日削除！最後のチャンス。';
         } else {
-            text = '🚨 Last chance! Your venues expire TODAY.';
+            text = '🚨 Last chance! Your data expires TODAY.';
         }
         urgencyClass = 'critical';
     }

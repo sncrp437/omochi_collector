@@ -254,6 +254,11 @@ async function initCollectionsPage() {
     var emptyEl = document.getElementById('collectionsEmpty');
     var cardsListEl = document.getElementById('venueCardsList');
 
+    // Clean up expired guest data (memos, tags, folders)
+    if (typeof cleanupAllExpiredGuestData === 'function') {
+        cleanupAllExpiredGuestData();
+    }
+
     // Setup event delegation for venue card clicks (once, before any rendering)
     _setupCardClickDelegation();
 
@@ -591,10 +596,9 @@ function _createUnifiedCard(item, index) {
 
     infoDiv.appendChild(nameRow);
 
-    // Async: check if user has a memo for this venue
+    // Async: check if user has a memo for this venue (works for both guests and logged-in)
     var venueIdForMemo = typeof getVenueIdFromItem === 'function' ? getVenueIdFromItem(item) : null;
-    if (venueIdForMemo && typeof isLoggedIn === 'function' && isLoggedIn() &&
-        typeof fetchMemo === 'function' && typeof isTagsApiConfigured === 'function' && isTagsApiConfigured()) {
+    if (venueIdForMemo && typeof fetchMemo === 'function') {
         fetchMemo(venueIdForMemo).then(function(memo) {
             if (memo && memo.trim()) {
                 memoIndicator.style.display = 'inline';
@@ -1172,11 +1176,18 @@ async function _loadFolders() {
         _userFolders = getLocalFolders ? getLocalFolders() : [];
     }
 
+    var rawVenueFolders = {};
     if (typeof fetchVenueFolders === 'function') {
-        _venueFolders = await fetchVenueFolders();
-    } else {
-        _venueFolders = getLocalVenueFolders ? getLocalVenueFolders() : {};
+        rawVenueFolders = await fetchVenueFolders();
+    } else if (typeof getLocalVenueFolders === 'function') {
+        rawVenueFolders = getLocalVenueFolders();
     }
+    // Normalize: extract folder_id from new object format { folder_id, expires_at, synced }
+    _venueFolders = {};
+    Object.keys(rawVenueFolders).forEach(function(venueId) {
+        var val = rawVenueFolders[venueId];
+        _venueFolders[venueId] = typeof val === 'object' ? val.folder_id : val;
+    });
 }
 
 /**
@@ -1986,19 +1997,20 @@ async function _renderSheetTags(venueId) {
 
     if (venueId && typeof isTagsApiConfigured === 'function' && isTagsApiConfigured()) {
         tagCounts = await fetchVenueTags(venueId);
-        if (loggedIn) {
-            myTags = await fetchMyTags(venueId);
-        }
+    }
+    // Fetch user's tags for both guests (localStorage) and logged-in (API)
+    if (venueId && typeof fetchMyTags === 'function') {
+        myTags = await fetchMyTags(venueId);
     }
 
-    var hasAnyTags = Object.keys(tagCounts).length > 0;
+    var hasAnyTags = Object.keys(tagCounts).length > 0 || myTags.length > 0;
 
     VENUE_TAGS.forEach(function(tagDef) {
         var count = tagCounts[tagDef.key] || 0;
         var isMyTag = myTags.indexOf(tagDef.key) !== -1;
 
         var pill = document.createElement('button');
-        pill.className = 'venue-tag-pill' + (isMyTag ? ' active' : '') + (!loggedIn ? ' readonly' : '');
+        pill.className = 'venue-tag-pill' + (isMyTag ? ' active' : '');
 
         var iconSpan = document.createElement('span');
         iconSpan.className = 'tag-icon';
@@ -2017,17 +2029,10 @@ async function _renderSheetTags(venueId) {
             pill.appendChild(countSpan);
         }
 
-        if (loggedIn && venueId) {
+        // Tags are now toggleable for all users (guests save to localStorage)
+        if (venueId) {
             pill.addEventListener('click', function() {
                 _toggleTag(venueId, tagDef.key, pill, count, isMyTag);
-            });
-        } else if (!loggedIn) {
-            pill.addEventListener('click', function() {
-                if (typeof showAuthModal === 'function') {
-                    showAuthModal('login');
-                } else if (typeof showToast === 'function') {
-                    showToast(t('loginToTag'));
-                }
             });
         }
 
@@ -2113,52 +2118,39 @@ async function _renderSheetMemo(venueId) {
 
     var loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
 
-    // Always show the memo section
+    // Always show the memo section and textarea (guests + logged-in)
     section.style.display = 'block';
+    if (loggedInDiv) loggedInDiv.style.display = 'block';
+    if (loginPrompt) loginPrompt.style.display = 'none';
+    if (textarea) textarea.value = '';
 
-    if (loggedIn) {
-        // Show textarea, hide login prompt
-        if (loggedInDiv) loggedInDiv.style.display = 'block';
-        if (loginPrompt) loginPrompt.style.display = 'none';
-        if (hintEl) hintEl.style.display = 'inline';
-        if (textarea) textarea.value = '';
+    // Hint: "Only you can see this" for logged-in, "Register to keep forever" for guests
+    if (hintEl) {
+        hintEl.style.display = 'inline';
+        hintEl.textContent = loggedIn ? t('memoPrivateHint') : t('memoLoginHint');
+    }
 
-        // Load existing memo
-        if (venueId && typeof fetchMemo === 'function') {
-            var memo = await fetchMemo(venueId);
-            if (memo && textarea) textarea.value = memo;
-        }
+    // Load existing memo (works for both - fetchMemo() now checks localStorage for guests)
+    if (venueId && typeof fetchMemo === 'function') {
+        var memo = await fetchMemo(venueId);
+        if (memo && textarea) textarea.value = memo;
+    }
 
-        // Save handler
-        if (saveBtn) {
-            saveBtn.onclick = async function() {
-                if (!textarea || !venueId) return;
-                saveBtn.disabled = true;
-                saveBtn.textContent = '...';
+    // Save handler (works for both - saveMemo() now saves to localStorage for guests)
+    if (saveBtn) {
+        saveBtn.onclick = async function() {
+            if (!textarea || !venueId) return;
+            saveBtn.disabled = true;
+            saveBtn.textContent = '...';
 
-                var success = await saveMemo(venueId, textarea.value);
-                saveBtn.disabled = false;
-                saveBtn.textContent = t('saveMemo');
+            var success = await saveMemo(venueId, textarea.value);
+            saveBtn.disabled = false;
+            saveBtn.textContent = t('saveMemo');
 
-                if (typeof showToast === 'function') {
-                    showToast(success ? t('memoSaved') : t('memoSaveFailed'));
-                }
-            };
-        }
-    } else {
-        // Show login prompt, hide textarea
-        if (loggedInDiv) loggedInDiv.style.display = 'none';
-        if (loginPrompt) loginPrompt.style.display = 'flex';
-        if (hintEl) hintEl.style.display = 'none';
-
-        // Tap prompt to trigger auth modal
-        if (loginPrompt) {
-            loginPrompt.onclick = function() {
-                if (typeof showAuthModal === 'function') {
-                    showAuthModal('login');
-                }
-            };
-        }
+            if (typeof showToast === 'function') {
+                showToast(success ? t('memoSaved') : t('memoSaveFailed'));
+            }
+        };
     }
 }
 

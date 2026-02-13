@@ -146,10 +146,18 @@ async function fetchVenueTagsBatch(venueIds) {
  * Fetch which tags the current user has applied to a venue
  */
 async function fetchMyTags(venueId) {
-    if (!isTagsApiConfigured() || !venueId) return [];
+    if (!venueId) return [];
 
     var userHash = await getUserHash();
-    if (!userHash) return [];
+    if (!userHash) {
+        // Guest: check local tags
+        var localTags = getLocalTags();
+        return localTags
+            .filter(function(t) { return t.venue_id === venueId; })
+            .map(function(t) { return t.tag_key; });
+    }
+
+    if (!isTagsApiConfigured()) return [];
 
     // Check cache
     var cacheKey = 'my_' + venueId;
@@ -175,10 +183,17 @@ async function fetchMyTags(venueId) {
  * Fetch the current user's private memo for a venue
  */
 async function fetchMemo(venueId) {
-    if (!isTagsApiConfigured() || !venueId) return null;
+    if (!venueId) return null;
 
     var userHash = await getUserHash();
-    if (!userHash) return null;
+    if (!userHash) {
+        // Guest: check local memos
+        var localMemos = getLocalMemos();
+        var localMemo = localMemos.find(function(m) { return m.venue_id === venueId; });
+        return localMemo ? localMemo.memo_text : null;
+    }
+
+    if (!isTagsApiConfigured()) return null;
 
     // Check cache
     var cacheKey = 'memo_' + venueId;
@@ -208,11 +223,31 @@ async function fetchMemo(venueId) {
  * Add a tag to a venue
  */
 async function addVenueTag(venueId, tagKey) {
-    if (!isTagsApiConfigured()) return false;
+    if (!venueId) return false;
 
     var userHash = await getUserHash();
-    if (!userHash) return false;
 
+    // Save to localStorage first (works for both guests and logged-in)
+    var localTags = getLocalTags();
+    var exists = localTags.some(function(t) {
+        return t.venue_id === venueId && t.tag_key === tagKey;
+    });
+
+    if (!exists) {
+        localTags.push({
+            venue_id: venueId,
+            tag_key: tagKey,
+            created_at: new Date().toISOString(),
+            expires_at: _guestExpiresAt(),
+            synced: false
+        });
+        setLocalTags(localTags);
+    }
+
+    // Guest: local save only
+    if (!userHash || !isTagsApiConfigured()) return true;
+
+    // Logged-in: also sync to API
     try {
         var response = await fetch(TAGS_API_URL, {
             method: 'POST',
@@ -230,23 +265,42 @@ async function addVenueTag(venueId, tagKey) {
             // Invalidate caches
             delete _tagsCache['tags_' + venueId];
             delete _myTagsCache['my_' + venueId];
+            // Mark as synced
+            var tags = getLocalTags();
+            var idx = tags.findIndex(function(t) {
+                return t.venue_id === venueId && t.tag_key === tagKey;
+            });
+            if (idx >= 0) {
+                tags[idx].synced = true;
+                setLocalTags(tags);
+            }
             return true;
         }
     } catch (err) {
-        console.warn('Failed to add tag:', err);
+        console.warn('Failed to add tag to API:', err);
     }
-    return false;
+    return true; // Local save succeeded
 }
 
 /**
  * Remove a tag from a venue
  */
 async function removeVenueTag(venueId, tagKey) {
-    if (!isTagsApiConfigured()) return false;
+    if (!venueId) return false;
 
     var userHash = await getUserHash();
-    if (!userHash) return false;
 
+    // Remove from localStorage first
+    var localTags = getLocalTags();
+    localTags = localTags.filter(function(t) {
+        return !(t.venue_id === venueId && t.tag_key === tagKey);
+    });
+    setLocalTags(localTags);
+
+    // Guest: local removal only
+    if (!userHash || !isTagsApiConfigured()) return true;
+
+    // Logged-in: also remove from API
     try {
         var response = await fetch(TAGS_API_URL, {
             method: 'POST',
@@ -265,20 +319,45 @@ async function removeVenueTag(venueId, tagKey) {
             return true;
         }
     } catch (err) {
-        console.warn('Failed to remove tag:', err);
+        console.warn('Failed to remove tag from API:', err);
     }
-    return false;
+    return true; // Local removal succeeded
 }
 
 /**
  * Save a private memo for a venue
  */
 async function saveMemo(venueId, memoText) {
-    if (!isTagsApiConfigured()) return false;
+    if (!venueId) return false;
 
     var userHash = await getUserHash();
-    if (!userHash) return false;
 
+    // Save to localStorage first (works for both guests and logged-in)
+    var localMemos = getLocalMemos();
+    var existingIdx = localMemos.findIndex(function(m) { return m.venue_id === venueId; });
+
+    var memoObj = {
+        venue_id: venueId,
+        memo_text: memoText,
+        created_at: new Date().toISOString(),
+        expires_at: _guestExpiresAt(),
+        synced: false
+    };
+
+    // Preserve original created_at/expires_at on update
+    if (existingIdx >= 0) {
+        memoObj.created_at = localMemos[existingIdx].created_at || memoObj.created_at;
+        memoObj.expires_at = localMemos[existingIdx].expires_at || memoObj.expires_at;
+        localMemos[existingIdx] = memoObj;
+    } else {
+        localMemos.push(memoObj);
+    }
+    setLocalMemos(localMemos);
+
+    // Guest: local save only
+    if (!userHash || !isTagsApiConfigured()) return true;
+
+    // Logged-in: also sync to API
     try {
         var response = await fetch(TAGS_API_URL, {
             method: 'POST',
@@ -293,12 +372,19 @@ async function saveMemo(venueId, memoText) {
         var result = await response.json();
         if (result.status === 'ok') {
             _memosCache['memo_' + venueId] = { data: memoText, time: Date.now() };
+            // Mark as synced in localStorage
+            var memos = getLocalMemos();
+            var idx = memos.findIndex(function(m) { return m.venue_id === venueId; });
+            if (idx >= 0) {
+                memos[idx].synced = true;
+                setLocalMemos(memos);
+            }
             return true;
         }
     } catch (err) {
-        console.warn('Failed to save memo:', err);
+        console.warn('Failed to save memo to API:', err);
     }
-    return false;
+    return true; // Local save succeeded even if API failed
 }
 
 /**
@@ -387,10 +473,17 @@ async function saveFolder(folderId, name, color, order) {
         id: folderId || 'folder_' + Date.now(),
         name: name,
         color: color || FOLDER_COLORS[0],
-        order: typeof order === 'number' ? order : localFolders.length
+        order: typeof order === 'number' ? order : localFolders.length,
+        created_at: new Date().toISOString(),
+        expires_at: _guestExpiresAt(),
+        synced: false
     };
 
     if (existingIdx >= 0) {
+        // Preserve original timestamps on update
+        folder.created_at = localFolders[existingIdx].created_at || folder.created_at;
+        folder.expires_at = localFolders[existingIdx].expires_at || folder.expires_at;
+        folder.synced = localFolders[existingIdx].synced || false;
         localFolders[existingIdx] = folder;
     } else {
         localFolders.push(folder);
@@ -419,6 +512,14 @@ async function saveFolder(folderId, name, color, order) {
         var result = await response.json();
         if (result.status === 'ok') {
             folder.id = result.folder_id || folder.id;
+            folder.synced = true;
+            // Update local with synced flag
+            var folders = getLocalFolders();
+            var idx = folders.findIndex(function(f) { return f.id === folder.id; });
+            if (idx >= 0) {
+                folders[idx].synced = true;
+                setLocalFolders(folders);
+            }
             // Invalidate cache
             _foldersCache = null;
         }
@@ -437,10 +538,12 @@ async function deleteFolder(folderId) {
     localFolders = localFolders.filter(function(f) { return f.id !== folderId; });
     setLocalFolders(localFolders);
 
-    // Remove venue-folder associations
+    // Remove venue-folder associations (handle both old string and new object format)
     var venueFolders = getLocalVenueFolders();
     Object.keys(venueFolders).forEach(function(venueId) {
-        if (venueFolders[venueId] === folderId) {
+        var val = venueFolders[venueId];
+        var linkedFolderId = typeof val === 'object' ? val.folder_id : val;
+        if (linkedFolderId === folderId) {
             delete venueFolders[venueId];
         }
     });
@@ -481,7 +584,12 @@ async function setVenueFolder(venueId, folderId) {
     // Save to local cache first
     var venueFolders = getLocalVenueFolders();
     if (folderId) {
-        venueFolders[venueId] = folderId;
+        venueFolders[venueId] = {
+            folder_id: folderId,
+            created_at: new Date().toISOString(),
+            expires_at: _guestExpiresAt(),
+            synced: false
+        };
     } else {
         delete venueFolders[venueId];
     }
@@ -509,6 +617,14 @@ async function setVenueFolder(venueId, folderId) {
         });
         var result = await response.json();
         if (result.status === 'ok') {
+            // Mark as synced
+            if (folderId) {
+                var vf = getLocalVenueFolders();
+                if (vf[venueId] && typeof vf[venueId] === 'object') {
+                    vf[venueId].synced = true;
+                    setLocalVenueFolders(vf);
+                }
+            }
             _venueFoldersCache = null;
         }
         return result.status === 'ok';
@@ -523,7 +639,10 @@ async function setVenueFolder(venueId, folderId) {
  */
 function getVenueFolderSync(venueId) {
     var venueFolders = getLocalVenueFolders();
-    return venueFolders[venueId] || null;
+    var val = venueFolders[venueId];
+    if (!val) return null;
+    // Handle both old format (plain string) and new format ({ folder_id, ... })
+    return typeof val === 'object' ? val.folder_id : val;
 }
 
 /**
@@ -548,6 +667,9 @@ function invalidateFolderCache() {
 
 var LOCAL_FOLDERS_KEY = 'omochi_user_folders';
 var LOCAL_VENUE_FOLDERS_KEY = 'omochi_venue_folders';
+var LOCAL_MEMOS_KEY = 'omochi_local_memos';
+var LOCAL_TAGS_KEY = 'omochi_local_tags';
+var GUEST_EXPIRY_DAYS = 7;
 
 function getLocalFolders() {
     try {
@@ -580,5 +702,207 @@ function setLocalVenueFolders(venueFolders) {
         localStorage.setItem(LOCAL_VENUE_FOLDERS_KEY, JSON.stringify(venueFolders));
     } catch (e) {
         console.warn('Failed to save venue folders to localStorage:', e);
+    }
+}
+
+// =============================================================================
+// Local Storage Helpers for Memos & Tags (Guest Mode)
+// =============================================================================
+
+function getLocalMemos() {
+    try {
+        var data = localStorage.getItem(LOCAL_MEMOS_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setLocalMemos(memos) {
+    try {
+        localStorage.setItem(LOCAL_MEMOS_KEY, JSON.stringify(memos));
+    } catch (e) {
+        console.warn('Failed to save memos to localStorage:', e);
+    }
+}
+
+function getLocalTags() {
+    try {
+        var data = localStorage.getItem(LOCAL_TAGS_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setLocalTags(tags) {
+    try {
+        localStorage.setItem(LOCAL_TAGS_KEY, JSON.stringify(tags));
+    } catch (e) {
+        console.warn('Failed to save tags to localStorage:', e);
+    }
+}
+
+function _guestExpiresAt() {
+    return new Date(Date.now() + GUEST_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
+}
+
+// =============================================================================
+// Guest Data Expiration Cleanup
+// =============================================================================
+
+/**
+ * Remove expired local memos
+ * @returns {number} Number of items deleted
+ */
+function cleanupExpiredMemos() {
+    var memos = getLocalMemos();
+    var now = new Date();
+    var valid = memos.filter(function(m) {
+        if (!m.expires_at) return true; // Legacy items kept
+        return new Date(m.expires_at) > now;
+    });
+    var deletedCount = memos.length - valid.length;
+    if (deletedCount > 0) setLocalMemos(valid);
+    return deletedCount;
+}
+
+/**
+ * Remove expired local tags
+ * @returns {number} Number of items deleted
+ */
+function cleanupExpiredTags() {
+    var tags = getLocalTags();
+    var now = new Date();
+    var valid = tags.filter(function(t) {
+        if (!t.expires_at) return true;
+        return new Date(t.expires_at) > now;
+    });
+    var deletedCount = tags.length - valid.length;
+    if (deletedCount > 0) setLocalTags(valid);
+    return deletedCount;
+}
+
+/**
+ * Remove expired folders and their venue-folder associations
+ * @returns {number} Number of folders deleted
+ */
+function cleanupExpiredFolders() {
+    var folders = getLocalFolders();
+    var now = new Date();
+    var deletedCount = 0;
+
+    var validFolders = folders.filter(function(f) {
+        if (!f.expires_at) return true; // Legacy items kept
+        var expired = new Date(f.expires_at) <= now;
+        if (expired) deletedCount++;
+        return !expired;
+    });
+
+    if (deletedCount > 0) {
+        setLocalFolders(validFolders);
+
+        // Clean orphaned venue-folder associations
+        var validIds = validFolders.map(function(f) { return f.id; });
+        var venueFolders = getLocalVenueFolders();
+        var cleaned = {};
+        Object.keys(venueFolders).forEach(function(venueId) {
+            var val = venueFolders[venueId];
+            var fId = typeof val === 'object' ? val.folder_id : val;
+            // Check folder still exists and association not expired
+            if (validIds.indexOf(fId) >= 0) {
+                if (typeof val === 'object' && val.expires_at && new Date(val.expires_at) <= now) {
+                    return; // Expired association
+                }
+                cleaned[venueId] = val;
+            }
+        });
+        setLocalVenueFolders(cleaned);
+    }
+
+    return deletedCount;
+}
+
+/**
+ * Clean up all expired guest data
+ * @returns {Object} { memos, tags, folders } - counts deleted
+ */
+function cleanupAllExpiredGuestData() {
+    return {
+        memos: cleanupExpiredMemos(),
+        tags: cleanupExpiredTags(),
+        folders: cleanupExpiredFolders()
+    };
+}
+
+// =============================================================================
+// Post-Login Sync Functions
+// =============================================================================
+
+/**
+ * Sync unsynced local memos to the Tags API
+ */
+async function syncLocalMemosToApi() {
+    var userHash = await getUserHash();
+    if (!userHash) return;
+
+    var memos = getLocalMemos().filter(function(m) { return !m.synced; });
+    for (var i = 0; i < memos.length; i++) {
+        try {
+            await saveMemo(memos[i].venue_id, memos[i].memo_text);
+        } catch (err) {
+            console.warn('Failed to sync memo:', err);
+        }
+    }
+}
+
+/**
+ * Sync unsynced local tags to the Tags API
+ */
+async function syncLocalTagsToApi() {
+    var userHash = await getUserHash();
+    if (!userHash) return;
+
+    var tags = getLocalTags().filter(function(t) { return !t.synced; });
+    for (var i = 0; i < tags.length; i++) {
+        try {
+            await addVenueTag(tags[i].venue_id, tags[i].tag_key);
+        } catch (err) {
+            console.warn('Failed to sync tag:', err);
+        }
+    }
+}
+
+/**
+ * Sync unsynced local folders and venue-folder mappings to the Tags API
+ */
+async function syncLocalFoldersToApi() {
+    var userHash = await getUserHash();
+    if (!userHash) return;
+
+    // Sync folders first
+    var folders = getLocalFolders().filter(function(f) { return !f.synced; });
+    for (var i = 0; i < folders.length; i++) {
+        try {
+            await saveFolder(folders[i].id, folders[i].name, folders[i].color, folders[i].order);
+        } catch (err) {
+            console.warn('Failed to sync folder:', err);
+        }
+    }
+
+    // Then sync venue-folder associations
+    var venueFolders = getLocalVenueFolders();
+    var venueIds = Object.keys(venueFolders);
+    for (var i = 0; i < venueIds.length; i++) {
+        var val = venueFolders[venueIds[i]];
+        var isSynced = typeof val === 'object' ? val.synced : true;
+        if (!isSynced) {
+            var fId = typeof val === 'object' ? val.folder_id : val;
+            try {
+                await setVenueFolder(venueIds[i], fId);
+            } catch (err) {
+                console.warn('Failed to sync venue folder:', err);
+            }
+        }
     }
 }

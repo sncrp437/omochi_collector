@@ -112,7 +112,7 @@ i18n.js
 | `updateAuthUI()` | Toggle auth status indicator, logout button |
 | `initAuthModal()` | Setup all modal event listeners |
 
-**Post-login:** Calls `syncLocalCollectionsToApi()` (from local-collections.js) if available.
+**Post-login:** Calls `syncLocalCollectionsToApi()`, `syncLocalMemosToApi()`, `syncLocalTagsToApi()`, `syncLocalFoldersToApi()`, then `invalidateFolderCache()`.
 
 **localStorage:** `access_token`, `refresh_token`, `user` (JSON: `{id, email, first_name, last_name}`)
 
@@ -245,10 +245,12 @@ i18n.js
 | `getUnsyncedCollections()` | Get items with venue_uuid not yet synced |
 | `showToast(message, duration)` | Display toast notification |
 | `cleanupExpiredCollections()` | Remove expired items from localStorage |
-| `getExpirationInfo()` | Get count and days until soonest expiry |
+| `getExpirationInfo()` | Get count and days until soonest expiry (all data types) |
 | `initExpirationBanner()` | Initialize warning banner + event listeners |
 | `updateExpirationBanner()` | Update banner text/urgency based on expiry |
 | `hideExpirationBanner()` | Hide the warning banner |
+
+**Expiration info** includes counts for all guest data types: `{count, collections, memos, tags, folders, daysLeft}`. Banner shows itemized breakdown.
 
 **localStorage:** `omochi_local_collections` (JSON array)
 
@@ -287,19 +289,28 @@ i18n.js
 | Function | Description |
 |----------|-------------|
 | `isTagsApiConfigured()` | Check if TAGS_API_URL is set |
-| `getUserHash()` | SHA-256 hash of user email |
+| `getUserHash()` | SHA-256 hash of user email (null for guests) |
 | `getTagLabel(tagKey)` / `getTagIcon(tagKey)` | Get translated label / SVG icon |
 | `fetchVenueTags(venueId)` | GET aggregated tag counts |
 | `fetchVenueTagsBatch(venueIds)` | GET batch tag counts |
-| `fetchMyTags(venueId)` | GET user's tags for venue |
-| `fetchMemo(venueId)` | GET user's private memo |
-| `addVenueTag(venueId, tagKey)` | POST add tag |
-| `removeVenueTag(venueId, tagKey)` | POST remove tag |
-| `saveMemo(venueId, memoText)` | POST save/update memo |
+| `fetchMyTags(venueId)` | GET user's tags (localStorage for guests, API for logged-in) |
+| `fetchMemo(venueId)` | GET user's memo (localStorage for guests, API for logged-in) |
+| `addVenueTag(venueId, tagKey)` | Save to localStorage + API sync if logged in |
+| `removeVenueTag(venueId, tagKey)` | Remove from localStorage + API sync if logged in |
+| `saveMemo(venueId, memoText)` | Save to localStorage + API sync if logged in |
+| `getLocalMemos()` / `setLocalMemos(memos)` | localStorage helpers for guest memos |
+| `getLocalTags()` / `setLocalTags(tags)` | localStorage helpers for guest tags |
+| `cleanupExpiredMemos()` | Remove expired local memos |
+| `cleanupExpiredTags()` | Remove expired local tags |
+| `cleanupExpiredFolders()` | Remove expired folders + orphaned venue-folder links |
+| `cleanupAllExpiredGuestData()` | Clean all expired guest data (memos + tags + folders) |
+| `syncLocalMemosToApi()` | Upload unsynced local memos to Tags API |
+| `syncLocalTagsToApi()` | Upload unsynced local tags to Tags API |
+| `syncLocalFoldersToApi()` | Upload unsynced folders + venue-folder mappings to Tags API |
 
 **12 predefined tags:** date_spot, business_dinner, family_friendly, solo_dining, late_night, budget_friendly, special_occasion, quiet_calm, lively_fun, pet_friendly, great_drinks, photogenic
 
-**Constants:** `TAGS_API_URL` (placeholder, needs real URL)
+**Constants:** `TAGS_API_URL` (placeholder, needs real URL), `LOCAL_MEMOS_KEY`, `LOCAL_TAGS_KEY`, `GUEST_EXPIRY_DAYS` (7)
 **Cache:** Session-level caches with 5-minute TTL (`_tagsCache`, `_memosCache`, `_myTagsCache`)
 
 ---
@@ -321,8 +332,8 @@ i18n.js
 | `_clearAiFilter()` | Reset AI search |
 | `_removeItem(item, cardElement)` | DELETE from API or remove from localStorage |
 | `_openVenueSheet(item)` | Open bottom sheet with venue details |
-| `_renderSheetMemo()` | Memo textarea (logged in) or login prompt (guest) |
-| `_renderActionButtons()` | Call / Reserve / Omochi App buttons |
+| `_renderSheetMemo()` | Memo textarea for all users (guests save to localStorage) |
+| `_renderActionButtons()` | Call / Reserve / Taxi buttons |
 | `_renderVenueDetails()` | Description, hours, services, announcement |
 | `_logVenueAction(actionType, venueId)` | Log to analytics |
 
@@ -471,6 +482,11 @@ Base: `https://5w1pl59sr9.execute-api.ap-northeast-1.amazonaws.com/dev`
 | `omochi_local_collections` | local-collections.js | JSON array | Saved venues (browser-level, with `expires_at`) |
 | `collectionsGenreFilter` | my-collections.js | string | Cuisine filter on collections page |
 | `collectionsLocationFilter` | my-collections.js | string | Area filter on collections page |
+| `omochi_user_folders` | venue-tags.js | JSON array | User-created folders (with `expires_at`, `synced`) |
+| `omochi_venue_folders` | venue-tags.js | JSON object | `{venueId: {folder_id, expires_at, synced}}` |
+| `omochi_local_memos` | venue-tags.js | JSON array | Guest memos `[{venue_id, memo_text, expires_at, synced}]` |
+| `omochi_local_tags` | venue-tags.js | JSON array | Guest tags `[{venue_id, tag_key, expires_at, synced}]` |
+| `collectionsFolderFilter` | my-collections.js | string | Active folder filter on collections page |
 
 **sessionStorage Keys:**
 | Key | Module | Description |
@@ -479,21 +495,22 @@ Base: `https://5w1pl59sr9.execute-api.ap-northeast-1.amazonaws.com/dev`
 
 ---
 
-## Guest Collection Expiration
+## Guest Data Expiration
 
-Guest users' collections are stored in localStorage with a 7-day expiration to encourage registration:
+All guest data (collections, memos, tags, folders) is stored in localStorage with a 7-day expiration to encourage registration:
 
-- **On save**: Each collection item gets `expires_at` = current time + 7 days
-- **On page load**: `cleanupExpiredCollections()` removes expired items
-- **Warning banner**: Shows dynamic countdown on both pages (index + my-collections)
-- **On register**: Collections sync to API → stored permanently (no expiration)
+- **On save**: Each item gets `expires_at` = current time + 7 days
+- **On page load**: `cleanupExpiredCollections()` + `cleanupAllExpiredGuestData()` remove expired items
+- **Warning banner**: Shows dynamic countdown with itemized breakdown ("3 venues, 2 memos, 1 tag")
+- **On register**: All data syncs to APIs → stored permanently (no expiration)
+- **Post-login sync**: `syncLocalCollectionsToApi()`, `syncLocalMemosToApi()`, `syncLocalTagsToApi()`, `syncLocalFoldersToApi()`
 
 **Banner messaging progression:**
 | Days Left | Message | Style |
 |-----------|---------|-------|
-| 7-2 | "Your X venues will expire in Y days..." | Orange gradient |
-| 1 | "⚠️ Expire TOMORROW!" | Red + pulse animation |
-| 0 | "🚨 Last chance! Expire TODAY" | Dark red + fast pulse |
+| 7-2 | "Your [itemized list] will expire in Y days..." | Orange gradient |
+| 1 | "⚠️ Your data expires TOMORROW!" | Red + pulse animation |
+| 0 | "🚨 Last chance! Your data expires TODAY" | Dark red + fast pulse |
 
 ---
 
@@ -536,4 +553,4 @@ my-collections.html
 
 ---
 
-*Last updated: 2026-02-09*
+*Last updated: 2026-02-13*
