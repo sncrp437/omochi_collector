@@ -417,6 +417,8 @@ body.has-tab-bar .reel-item {
     max-width: 56.25vh;
     aspect-ratio: 9 / 16;
     background-color: #000;
+    background-size: cover;
+    background-position: center;
 }
 
 body.has-tab-bar .video-wrapper {

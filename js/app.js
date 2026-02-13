@@ -21,6 +21,12 @@ let _renderQueue = [];
 let _renderIndex = 0;
 let _pendingRenderFrame = null;
 
+// Viewport-aware iframe management
+let _globalObserver = null;
+const IFRAME_LOAD_DISTANCE = 2;   // Load iframes within ±2 of current
+const IFRAME_UNLOAD_DISTANCE = 3; // Unload iframes beyond ±3 of current
+let _currentVisibleIndex = 0;
+
 /**
  * Sanitize caption text for safe HTML rendering
  * - Converts newlines to <br> tags
@@ -91,9 +97,6 @@ async function init() {
         // Hide loading indicator
         loading.classList.add('hidden');
 
-        // Set up intersection observer for autoplay
-        setupIntersectionObserver();
-
         // Show welcome modal (if enabled)
         if (typeof showWelcomeModal === 'function') {
             const collectionName = typeof getCurrentCollectionName === 'function'
@@ -161,6 +164,9 @@ function renderVideoFeed(videosToRender) {
     // Set up IntersectionObserver for initial batch
     setupIntersectionObserver();
 
+    // Seed: load iframes near the first visible position
+    _manageIframeLifecycle(0);
+
     // Render remaining videos in background batches
     if (videosArray.length > INITIAL_BATCH_SIZE) {
         _renderRemainingBatches(container);
@@ -224,6 +230,11 @@ function _cancelPendingRender() {
     }
     _renderQueue = [];
     _renderIndex = 0;
+
+    // Disconnect observer since DOM elements are about to be removed
+    if (_globalObserver) {
+        _globalObserver.disconnect();
+    }
 }
 
 /**
@@ -251,6 +262,15 @@ function createReelItem(video, index) {
     // Create iframe based on video type
     const iframe = createVideoIframe(video, index);
     videoWrapper.appendChild(iframe);
+
+    // Set YouTube thumbnail as placeholder background (visible while iframe loads)
+    if (video.video_type !== 'x' && video.url) {
+        const ytId = _extractYouTubeId(video.url);
+        if (ytId) {
+            videoWrapper.style.backgroundImage = `url(https://img.youtube.com/vi/${ytId}/sddefault.jpg)`;
+        }
+    }
+
     videoContainer.appendChild(videoWrapper);
 
     // Create overlay with caption and collect button
@@ -284,12 +304,27 @@ function createYouTubeIframe(video, index) {
     iframe.dataset.videoIndex = index;
     iframe.dataset.videoType = 'youtube';
 
-    iframe.src = `${video.url}?enablejsapi=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
+    // Lazy load: store real src in data attribute, start with blank
+    const realSrc = `${video.url}?enablejsapi=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
+    iframe.dataset.src = realSrc;
+    iframe.src = 'about:blank';
+
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     iframe.allowFullscreen = true;
     iframe.title = video.caption || 'YouTube Short';
 
     return iframe;
+}
+
+/**
+ * Extract YouTube video ID from embed URL
+ * @param {string} url - URL like "https://www.youtube.com/embed/VIDEO_ID"
+ * @returns {string|null} Video ID or null
+ */
+function _extractYouTubeId(url) {
+    if (!url) return null;
+    const match = url.match(/youtube\.com\/embed\/([^?/]+)/);
+    return match ? match[1] : null;
 }
 
 /**
@@ -419,38 +454,97 @@ function createOverlay(video) {
 
 /**
  * Sets up Intersection Observer for autoplay functionality
+ * Uses a single global observer to prevent memory leaks
  */
 function setupIntersectionObserver() {
+    // Disconnect previous observer to prevent leak
+    if (_globalObserver) {
+        _globalObserver.disconnect();
+    }
+
     const options = {
         root: null,
         rootMargin: '0px',
         threshold: 0.5 // Video must be 50% visible
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    _globalObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const iframe = entry.target.querySelector('iframe');
-            if (!iframe) return;
-
             if (entry.isIntersecting) {
-                // Video is visible - play
-                playVideo(iframe);
+                const index = parseInt(entry.target.dataset.index, 10);
+                _currentVisibleIndex = index;
+
+                // Load/unload iframes around current position
+                _manageIframeLifecycle(index);
+
+                // Play current video
+                const iframe = entry.target.querySelector('iframe');
+                if (iframe) {
+                    playVideo(iframe);
+                }
 
                 // Log video view (if analytics enabled)
-                const videoIndex = entry.target.dataset.index;
-                if (typeof logVideoView === 'function' && videos[videoIndex] && videos[videoIndex].id) {
-                    logVideoView(videos[videoIndex].id);
+                if (typeof logVideoView === 'function' && videos[index] && videos[index].id) {
+                    logVideoView(videos[index].id);
                 }
             } else {
-                // Video is not visible - pause
-                pauseVideo(iframe);
+                // Pause video leaving viewport
+                const iframe = entry.target.querySelector('iframe');
+                if (iframe) {
+                    pauseVideo(iframe);
+                }
             }
         });
     }, options);
 
     // Observe all reel items
     const reelItems = document.querySelectorAll('.reel-item');
-    reelItems.forEach(item => observer.observe(item));
+    reelItems.forEach(item => _globalObserver.observe(item));
+}
+
+/**
+ * Load iframes near the current viewport and unload distant ones
+ * @param {number} currentIndex - Index of the currently visible reel-item
+ */
+function _manageIframeLifecycle(currentIndex) {
+    const reelItems = document.querySelectorAll('.reel-item');
+
+    reelItems.forEach((item) => {
+        const itemIndex = parseInt(item.dataset.index, 10);
+        const distance = Math.abs(itemIndex - currentIndex);
+        const iframe = item.querySelector('iframe');
+        if (!iframe || iframe.dataset.videoType !== 'youtube') return;
+
+        if (distance <= IFRAME_LOAD_DISTANCE) {
+            _loadIframe(iframe);
+        } else if (distance > IFRAME_UNLOAD_DISTANCE) {
+            _unloadIframe(iframe);
+        }
+        // Items between LOAD and UNLOAD distance are left as-is (prevents thrashing)
+    });
+}
+
+/**
+ * Load a YouTube iframe by setting its real src
+ * @param {HTMLIFrameElement} iframe
+ */
+function _loadIframe(iframe) {
+    if (iframe.dataset.src && iframe.src !== iframe.dataset.src) {
+        iframe.src = iframe.dataset.src;
+    }
+}
+
+/**
+ * Unload a YouTube iframe by clearing its src to free memory
+ * @param {HTMLIFrameElement} iframe
+ */
+function _unloadIframe(iframe) {
+    if (iframe.src && iframe.src !== 'about:blank') {
+        if (!iframe.dataset.src) {
+            iframe.dataset.src = iframe.src;
+        }
+        iframe.src = 'about:blank';
+    }
 }
 
 /**
@@ -460,6 +554,7 @@ function setupIntersectionObserver() {
 function playVideo(iframe) {
     try {
         if (iframe.dataset.videoType === 'x') return;
+        if (!iframe.src || iframe.src === 'about:blank') return;
         iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     } catch (error) {
         console.error('Error playing video:', error);
@@ -473,6 +568,7 @@ function playVideo(iframe) {
 function pauseVideo(iframe) {
     try {
         if (iframe.dataset.videoType === 'x') return;
+        if (!iframe.src || iframe.src === 'about:blank') return;
         iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     } catch (error) {
         console.error('Error pausing video:', error);
