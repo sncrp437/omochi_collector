@@ -373,6 +373,26 @@ async function initCollectionsPage() {
             }, 600);
         }
     }
+
+    // 13. Initialize campaigns and notifications (logged-in users only)
+    if (loggedIn) {
+        // Init campaign modal handlers
+        if (typeof initCampaignModule === 'function') initCampaignModule();
+        // Init notification module handlers
+        if (typeof initNotificationModule === 'function') initNotificationModule();
+
+        // Load notifications (bell badge, in-app banner, push permission)
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+
+        // Load and show campaign modal (delayed to avoid conflicts)
+        if (typeof loadAndShowGlobalCampaigns === 'function') {
+            setTimeout(function() {
+                loadAndShowGlobalCampaigns();
+            }, _autoCollectedVenue ? 2000 : 800);
+        }
+    }
 }
 
 /**
@@ -642,6 +662,14 @@ function _createUnifiedCard(item, index) {
                                  _escapeHtml(folder.name);
             infoDiv.appendChild(folderEl);
         }
+    }
+
+    // Campaign badge (API items with active campaigns)
+    if (item.source === 'api' && item.data.campaigns && item.data.campaigns.length > 0) {
+        var campaignBadge = document.createElement('span');
+        campaignBadge.className = 'venue-card-campaign-badge';
+        campaignBadge.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ' + t('campaignLatestInfo');
+        infoDiv.appendChild(campaignBadge);
     }
 
     // Tag badges placeholder (populated async)
@@ -2008,6 +2036,13 @@ async function _openVenueSheet(item) {
 
     // Render tags
     await _renderSheetTags(venueId);
+
+    // Render venue campaigns (API items only)
+    if (typeof renderVenueCampaignsInSheet === 'function') {
+        var venueCampaigns = (item.source === 'api' && typeof getVenueCampaigns === 'function')
+            ? getVenueCampaigns(item.data) : [];
+        renderVenueCampaignsInSheet(venueCampaigns);
+    }
 
     // Show overlay
     overlay.classList.add('active');

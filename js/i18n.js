@@ -230,7 +230,30 @@ const translations = {
         alreadyInCollection: 'Already in your collection',
         tapCardHint: 'Tap card to see details & reserve',
         discoverMoreVenues: 'Discover more venues like this',
-        exploreFeed: 'Explore the Feed'
+        exploreFeed: 'Explore the Feed',
+
+        // Campaigns
+        campaignProgressLabel: 'In Progress',
+        campaignDeadlinePrefix: 'Until ',
+        campaignViewDetails: 'View Details',
+        campaignLatestInfo: 'Latest Info',
+        campaignNoCampaigns: 'No campaigns right now',
+
+        // Notifications
+        notificationsTitle: 'Notifications',
+        viewCampaigns: 'View Campaigns',
+        noNotifications: 'No notifications',
+        markAllRead: 'Mark all as read',
+        justNow: 'Just now',
+        minutesAgo: '{n}m ago',
+        hoursAgo: '{n}h ago',
+        daysAgo: '{n}d ago',
+
+        // Push permission
+        pushPermissionTitle: 'Stay in the loop',
+        pushPermissionBody: 'Get notified about campaigns, deals & updates from your saved venues.',
+        pushPermissionEnable: 'Enable Notifications',
+        pushPermissionLater: 'Not Now'
     },
     ja: {
         // Index page
@@ -457,7 +480,30 @@ const translations = {
         alreadyInCollection: 'すでに保存済みです',
         tapCardHint: 'カードをタップして詳細・予約',
         discoverMoreVenues: 'このような店舗をもっと発見',
-        exploreFeed: 'フィードを探索'
+        exploreFeed: 'フィードを探索',
+
+        // Campaigns
+        campaignProgressLabel: '開催中',
+        campaignDeadlinePrefix: '〜 ',
+        campaignViewDetails: '詳しく見る',
+        campaignLatestInfo: '最新情報',
+        campaignNoCampaigns: '現在キャンペーンはありません',
+
+        // Notifications
+        notificationsTitle: 'お知らせ',
+        viewCampaigns: 'キャンペーンを見る',
+        noNotifications: 'お知らせはありません',
+        markAllRead: 'すべて既読にする',
+        justNow: 'たった今',
+        minutesAgo: '{n}分前',
+        hoursAgo: '{n}時間前',
+        daysAgo: '{n}日前',
+
+        // Push permission
+        pushPermissionTitle: '最新情報を受け取る',
+        pushPermissionBody: 'キャンペーンやお得な情報、保存した店舗からのお知らせを受け取りましょう。',
+        pushPermissionEnable: '通知を有効にする',
+        pushPermissionLater: '後で'
     }
 };
 

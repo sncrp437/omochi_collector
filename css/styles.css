@@ -4291,3 +4291,652 @@ html[lang="ja"] .policy-text.lang-ja {
     background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
 }
+
+/* =============================================================================
+   Notification Bell Icon
+   ============================================================================= */
+
+.notification-bell-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.notification-bell-btn:hover {
+    color: #fff;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    background: #e53935;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+/* =============================================================================
+   In-App Notification Banner
+   ============================================================================= */
+
+.in-app-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 8000;
+    background: linear-gradient(135deg, #00b4d8, #0096b7);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    animation: bannerSlideDown 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes bannerSlideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+.in-app-banner-icon {
+    flex-shrink: 0;
+}
+
+.in-app-banner-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.in-app-banner-close {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.in-app-banner-close:hover {
+    color: #fff;
+}
+
+/* =============================================================================
+   Campaign Modal
+   ============================================================================= */
+
+.campaign-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.campaign-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.campaign-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+.campaign-modal-content {
+    position: relative;
+    background: #272525;
+    border-radius: 16px;
+    padding: 16px;
+    width: 90%;
+    max-width: 380px;
+    max-height: 85vh;
+    overflow-y: auto;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.campaign-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.campaign-progress-badge {
+    background: #00b4d8;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+}
+
+.campaign-modal-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.campaign-modal-close:hover {
+    color: #fff;
+}
+
+/* Campaign Slides */
+.campaign-slide {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campaign-slide-venue {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.campaign-img-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campaign-slide-images {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    display: flex;
+    scroll-behavior: smooth;
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.campaign-slide-images::-webkit-scrollbar {
+    display: none;
+}
+
+.campaign-slide-images img {
+    flex: 0 0 100%;
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    scroll-snap-align: start;
+    border-radius: 8px;
+}
+
+.campaign-image-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.campaign-image-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.campaign-image-dot.active {
+    background: #fff;
+}
+
+.campaign-deadline-badge {
+    display: inline-block;
+    background: #1a3a5c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+.campaign-slide-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.campaign-slide-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+/* Campaign Navigation Dots */
+.campaign-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.campaign-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.campaign-dot.active {
+    background: #fff;
+    transform: scale(1.25);
+}
+
+/* Campaign CTA Button */
+.campaign-cta-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #00b4d8;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.campaign-cta-btn:active {
+    transform: scale(0.98);
+    background: #0096b7;
+}
+
+/* =============================================================================
+   Notification Drawer
+   ============================================================================= */
+
+.notification-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9099;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.notification-drawer-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.notification-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    max-width: 85vw;
+    height: 100%;
+    background: #1a1a1a;
+    z-index: 9100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.notification-drawer.active {
+    transform: translateX(0);
+}
+
+.notification-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-drawer-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.notification-drawer-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+}
+
+.notification-drawer-close:hover {
+    color: #fff;
+}
+
+/* View Campaigns Button (prominent) */
+.notification-campaign-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 32px);
+    margin: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.notification-campaign-btn:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.notification-campaign-btn svg {
+    color: #ffd700;
+}
+
+/* Notification List */
+.notification-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 16px 80px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.notification-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+    padding: 40px 0;
+}
+
+.notification-mark-all {
+    display: block;
+    width: 100%;
+    text-align: right;
+    background: transparent;
+    border: none;
+    color: #00b4d8;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0 12px;
+}
+
+.notification-item {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.notification-item.unread {
+    border-left-color: #00b4d8;
+    background: rgba(0, 180, 216, 0.08);
+}
+
+.notification-item:active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.notification-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.notification-item-message {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.notification-item-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* =============================================================================
+   Push Permission Modal
+   ============================================================================= */
+
+.push-permission-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.push-permission-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.push-permission-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+}
+
+.push-permission-content {
+    position: relative;
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 32px 24px;
+    width: 90%;
+    max-width: 340px;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.push-permission-icon {
+    color: #00b4d8;
+    margin-bottom: 16px;
+}
+
+.push-permission-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+
+.push-permission-content p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.push-permission-enable {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #00b4d8;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.2s ease;
+}
+
+.push-permission-enable:active {
+    background: #0096b7;
+}
+
+.push-permission-later {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.push-permission-later:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* =============================================================================
+   Venue Card Campaign Badge
+   ============================================================================= */
+
+.venue-card-campaign-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    color: #00b4d8;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-top: 4px;
+}
+
+.venue-card-campaign-badge svg {
+    color: #00b4d8;
+}
+
+/* =============================================================================
+   Venue Bottom Sheet - Campaign Section
+   ============================================================================= */
+
+.venue-sheet-campaigns {
+    padding: 0 16px;
+    margin-bottom: 12px;
+}
+
+.venue-sheet-campaigns h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+}
+
+.venue-campaign-card {
+    background: rgba(0, 180, 216, 0.08);
+    border: 1px solid rgba(0, 180, 216, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.venue-campaign-card-deadline {
+    display: inline-block;
+    background: #1a3a5c;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+.venue-campaign-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+.venue-campaign-card-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 8px;
+}
+
+.venue-campaign-cta {
+    display: inline-block;
+    background: #00b4d8;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s ease;
+}
+
+.venue-campaign-cta:active {
+    background: #0096b7;
+}
