@@ -427,6 +427,15 @@ body.has-tab-bar .video-wrapper {
     max-width: calc((100vh - 56px) * 9 / 16);
 }
 
+/* YouTube placeholder div (before YT.Player replaces it with iframe) */
+.video-container [data-video-type="youtube"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .video-container iframe {
     position: absolute;
     top: 0;

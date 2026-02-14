@@ -563,6 +563,8 @@ function _loadPlayer(index) {
 
     _ytPlayers[index] = new YT.Player('yt-player-' + index, {
         videoId: videoId,
+        width: '100%',
+        height: '100%',
         playerVars: {
             autoplay: 0,
             mute: 1,
@@ -576,6 +578,11 @@ function _loadPlayer(index) {
         },
         events: {
             onReady: function(event) {
+                // Set allow attribute for autoplay permission
+                var iframe = event.target.getIframe();
+                if (iframe) {
+                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                }
                 if (index === _currentVisibleIndex) {
                     event.target.playVideo();
                 }
