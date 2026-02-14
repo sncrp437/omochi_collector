@@ -305,7 +305,7 @@ function createYouTubeIframe(video, index) {
     iframe.dataset.videoType = 'youtube';
 
     // Lazy load: store real src in data attribute, start with blank
-    const realSrc = `${video.url}?enablejsapi=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
+    const realSrc = `${video.url}?enablejsapi=1&autoplay=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
     iframe.dataset.src = realSrc;
     iframe.src = 'about:blank';
 
@@ -530,7 +530,18 @@ function _manageIframeLifecycle(currentIndex) {
  */
 function _loadIframe(iframe) {
     if (iframe.dataset.src && iframe.src !== iframe.dataset.src) {
+        iframe.dataset.ready = 'false';
         iframe.src = iframe.dataset.src;
+
+        iframe.addEventListener('load', function _onLoad() {
+            iframe.removeEventListener('load', _onLoad);
+            setTimeout(function() {
+                iframe.dataset.ready = 'true';
+                if (parseInt(iframe.dataset.videoIndex, 10) === _currentVisibleIndex) {
+                    playVideo(iframe);
+                }
+            }, 500);
+        });
     }
 }
 
@@ -544,6 +555,7 @@ function _unloadIframe(iframe) {
             iframe.dataset.src = iframe.src;
         }
         iframe.src = 'about:blank';
+        iframe.dataset.ready = 'false';
     }
 }
 
@@ -555,6 +567,7 @@ function playVideo(iframe) {
     try {
         if (iframe.dataset.videoType === 'x') return;
         if (!iframe.src || iframe.src === 'about:blank') return;
+        if (iframe.dataset.ready !== 'true') return;
         iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     } catch (error) {
         console.error('Error playing video:', error);
@@ -1045,7 +1058,19 @@ document.addEventListener('visibilitychange', function() {
         if (hiddenDuration > 1000) {
             reinitFilters();
         }
+        // Resume the current video when tab becomes visible
+        var visibleItem = document.querySelector('.reel-item[data-index="' + _currentVisibleIndex + '"]');
+        if (visibleItem) {
+            var visibleIframe = visibleItem.querySelector('iframe');
+            if (visibleIframe) playVideo(visibleIframe);
+        }
     } else {
         _lastVisibleTime = Date.now();
+        // Pause the current video when tab is hidden
+        var currentItem = document.querySelector('.reel-item[data-index="' + _currentVisibleIndex + '"]');
+        if (currentItem) {
+            var currentIframe = currentItem.querySelector('iframe');
+            if (currentIframe) pauseVideo(currentIframe);
+        }
     }
 });
