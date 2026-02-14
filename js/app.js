@@ -14,7 +14,11 @@ const BATCH_DELAY_MS = 50;          // Delay between batches
 // Global state
 let videos = [];
 let currentVideoIndex = 0;
-let players = [];
+
+// YouTube IFrame Player API state
+var _ytPlayers = {};       // Map of video index -> YT.Player instance
+var _ytApiReady = false;   // Set to true when onYouTubeIframeAPIReady fires
+var _ytPendingLoads = [];  // Indices queued before API was ready
 
 // Progressive render state
 let _renderQueue = [];
@@ -26,6 +30,19 @@ let _globalObserver = null;
 const IFRAME_LOAD_DISTANCE = 2;   // Load iframes within ±2 of current
 const IFRAME_UNLOAD_DISTANCE = 3; // Unload iframes beyond ±3 of current
 let _currentVisibleIndex = 0;
+
+/**
+ * YouTube IFrame API ready callback (called automatically by the API)
+ * Must be global (window-level) for the API to find it.
+ */
+function onYouTubeIframeAPIReady() {
+    _ytApiReady = true;
+    // Process any players queued before API loaded
+    _ytPendingLoads.forEach(function(index) {
+        _loadPlayer(index);
+    });
+    _ytPendingLoads = [];
+}
 
 /**
  * Sanitize caption text for safe HTML rendering
@@ -231,6 +248,13 @@ function _cancelPendingRender() {
     _renderQueue = [];
     _renderIndex = 0;
 
+    // Destroy all active YouTube players before removing DOM
+    Object.keys(_ytPlayers).forEach(function(key) {
+        try { _ytPlayers[key].destroy(); } catch (e) { /* ignore */ }
+    });
+    _ytPlayers = {};
+    _ytPendingLoads = [];
+
     // Disconnect observer since DOM elements are about to be removed
     if (_globalObserver) {
         _globalObserver.disconnect();
@@ -297,23 +321,16 @@ function createVideoIframe(video, index) {
 }
 
 /**
- * Creates YouTube Shorts iframe element
+ * Creates YouTube Shorts placeholder div for YT.Player API
+ * The div will be replaced by an iframe when _loadPlayer() is called
  */
 function createYouTubeIframe(video, index) {
-    const iframe = document.createElement('iframe');
-    iframe.dataset.videoIndex = index;
-    iframe.dataset.videoType = 'youtube';
-
-    // Lazy load: store real src in data attribute, start with blank
-    const realSrc = `${video.url}?enablejsapi=1&autoplay=1&mute=1&loop=1&controls=1&modestbranding=1&playsinline=1`;
-    iframe.dataset.src = realSrc;
-    iframe.src = 'about:blank';
-
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    iframe.allowFullscreen = true;
-    iframe.title = video.caption || 'YouTube Short';
-
-    return iframe;
+    var div = document.createElement('div');
+    div.id = 'yt-player-' + index;
+    div.dataset.videoIndex = index;
+    div.dataset.videoType = 'youtube';
+    div.dataset.videoId = _extractYouTubeId(video.url) || '';
+    return div;
 }
 
 /**
@@ -468,20 +485,18 @@ function setupIntersectionObserver() {
         threshold: 0.5 // Video must be 50% visible
     };
 
-    _globalObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+    _globalObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            var index = parseInt(entry.target.dataset.index, 10);
+
             if (entry.isIntersecting) {
-                const index = parseInt(entry.target.dataset.index, 10);
                 _currentVisibleIndex = index;
 
-                // Load/unload iframes around current position
+                // Load/unload players around current position
                 _manageIframeLifecycle(index);
 
-                // Play current video
-                const iframe = entry.target.querySelector('iframe');
-                if (iframe) {
-                    playVideo(iframe);
-                }
+                // Play current video (no-op for X embeds since no player exists)
+                playVideo(index);
 
                 // Log video view (if analytics enabled)
                 if (typeof logVideoView === 'function' && videos[index] && videos[index].id) {
@@ -489,10 +504,7 @@ function setupIntersectionObserver() {
                 }
             } else {
                 // Pause video leaving viewport
-                const iframe = entry.target.querySelector('iframe');
-                if (iframe) {
-                    pauseVideo(iframe);
-                }
+                pauseVideo(index);
             }
         });
     }, options);
@@ -503,88 +515,145 @@ function setupIntersectionObserver() {
 }
 
 /**
- * Load iframes near the current viewport and unload distant ones
+ * Load/unload YouTube players around the current viewport position
  * @param {number} currentIndex - Index of the currently visible reel-item
  */
 function _manageIframeLifecycle(currentIndex) {
-    const reelItems = document.querySelectorAll('.reel-item');
+    var reelItems = document.querySelectorAll('.reel-item');
 
-    reelItems.forEach((item) => {
-        const itemIndex = parseInt(item.dataset.index, 10);
-        const distance = Math.abs(itemIndex - currentIndex);
-        const iframe = item.querySelector('iframe');
-        if (!iframe || iframe.dataset.videoType !== 'youtube') return;
+    reelItems.forEach(function(item) {
+        var itemIndex = parseInt(item.dataset.index, 10);
+        var distance = Math.abs(itemIndex - currentIndex);
+
+        // Find the YouTube placeholder/iframe element
+        var ytEl = item.querySelector('[data-video-type="youtube"]');
+        if (!ytEl) return;
 
         if (distance <= IFRAME_LOAD_DISTANCE) {
-            _loadIframe(iframe);
+            _loadPlayer(itemIndex);
         } else if (distance > IFRAME_UNLOAD_DISTANCE) {
-            _unloadIframe(iframe);
+            _unloadPlayer(itemIndex);
         }
         // Items between LOAD and UNLOAD distance are left as-is (prevents thrashing)
     });
 }
 
 /**
- * Load a YouTube iframe by setting its real src
- * @param {HTMLIFrameElement} iframe
+ * Create a YT.Player for the given video index
+ * @param {number} index - Video index
  */
-function _loadIframe(iframe) {
-    if (iframe.dataset.src && iframe.src !== iframe.dataset.src) {
-        iframe.dataset.ready = 'false';
-        iframe.src = iframe.dataset.src;
+function _loadPlayer(index) {
+    // Already loaded
+    if (_ytPlayers[index]) return;
 
-        iframe.addEventListener('load', function _onLoad() {
-            iframe.removeEventListener('load', _onLoad);
-            setTimeout(function() {
-                iframe.dataset.ready = 'true';
-                if (parseInt(iframe.dataset.videoIndex, 10) === _currentVisibleIndex) {
-                    playVideo(iframe);
-                }
-            }, 500);
-        });
-    }
-}
-
-/**
- * Unload a YouTube iframe by clearing its src to free memory
- * @param {HTMLIFrameElement} iframe
- */
-function _unloadIframe(iframe) {
-    if (iframe.src && iframe.src !== 'about:blank') {
-        if (!iframe.dataset.src) {
-            iframe.dataset.src = iframe.src;
+    // API not ready yet - queue for later
+    if (!_ytApiReady) {
+        if (_ytPendingLoads.indexOf(index) === -1) {
+            _ytPendingLoads.push(index);
         }
-        iframe.src = 'about:blank';
-        iframe.dataset.ready = 'false';
+        return;
+    }
+
+    // Find the placeholder div
+    var container = document.getElementById('yt-player-' + index);
+    if (!container || container.tagName === 'IFRAME') return;
+
+    var videoId = container.dataset.videoId;
+    if (!videoId) return;
+
+    _ytPlayers[index] = new YT.Player('yt-player-' + index, {
+        videoId: videoId,
+        playerVars: {
+            autoplay: 0,
+            mute: 1,
+            loop: 1,
+            controls: 1,
+            modestbranding: 1,
+            playsinline: 1,
+            playlist: videoId,
+            rel: 0,
+            enablejsapi: 1
+        },
+        events: {
+            onReady: function(event) {
+                if (index === _currentVisibleIndex) {
+                    event.target.playVideo();
+                }
+            },
+            onStateChange: function(event) {
+                if (event.data === YT.PlayerState.ENDED) {
+                    event.target.playVideo();
+                }
+            },
+            onError: function(event) {
+                console.warn('YT Player error for index ' + index + ':', event.data);
+            }
+        }
+    });
+}
+
+/**
+ * Destroy a YT.Player to free memory when scrolling far away
+ * @param {number} index - Video index
+ */
+function _unloadPlayer(index) {
+    var player = _ytPlayers[index];
+    if (!player) return;
+
+    // Get the iframe before destroying (to find parent wrapper)
+    var iframe = null;
+    try { iframe = player.getIframe(); } catch (e) { /* ignore */ }
+    var wrapper = iframe ? iframe.parentElement : null;
+
+    try {
+        player.destroy();
+    } catch (e) {
+        console.warn('Error destroying player ' + index + ':', e);
+    }
+    delete _ytPlayers[index];
+
+    // Recreate placeholder div so player can be re-created on scroll-back
+    if (wrapper && !document.getElementById('yt-player-' + index)) {
+        var div = document.createElement('div');
+        div.id = 'yt-player-' + index;
+        div.dataset.videoIndex = index;
+        div.dataset.videoType = 'youtube';
+        if (_renderQueue[index]) {
+            div.dataset.videoId = _extractYouTubeId(_renderQueue[index].url) || '';
+        }
+        wrapper.appendChild(div);
     }
 }
 
 /**
- * Play video (works for YouTube iframes; no-op for X embeds)
- * @param {HTMLIFrameElement} iframe - Video iframe element
+ * Play video at the given index (uses YT.Player API; no-op for X embeds)
+ * @param {number} index - Video index
  */
-function playVideo(iframe) {
+function playVideo(index) {
+    var player = _ytPlayers[index];
+    if (!player) return;
     try {
-        if (iframe.dataset.videoType === 'x') return;
-        if (!iframe.src || iframe.src === 'about:blank') return;
-        if (iframe.dataset.ready !== 'true') return;
-        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    } catch (error) {
-        console.error('Error playing video:', error);
+        if (typeof player.playVideo === 'function') {
+            player.playVideo();
+        }
+    } catch (e) {
+        console.warn('Error playing video ' + index + ':', e);
     }
 }
 
 /**
- * Pause video (works for YouTube iframes; no-op for X embeds)
- * @param {HTMLIFrameElement} iframe - Video iframe element
+ * Pause video at the given index (uses YT.Player API; no-op for X embeds)
+ * @param {number} index - Video index
  */
-function pauseVideo(iframe) {
+function pauseVideo(index) {
+    var player = _ytPlayers[index];
+    if (!player) return;
     try {
-        if (iframe.dataset.videoType === 'x') return;
-        if (!iframe.src || iframe.src === 'about:blank') return;
-        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-    } catch (error) {
-        console.error('Error pausing video:', error);
+        if (typeof player.pauseVideo === 'function') {
+            player.pauseVideo();
+        }
+    } catch (e) {
+        console.warn('Error pausing video ' + index + ':', e);
     }
 }
 
@@ -1059,18 +1128,10 @@ document.addEventListener('visibilitychange', function() {
             reinitFilters();
         }
         // Resume the current video when tab becomes visible
-        var visibleItem = document.querySelector('.reel-item[data-index="' + _currentVisibleIndex + '"]');
-        if (visibleItem) {
-            var visibleIframe = visibleItem.querySelector('iframe');
-            if (visibleIframe) playVideo(visibleIframe);
-        }
+        playVideo(_currentVisibleIndex);
     } else {
         _lastVisibleTime = Date.now();
         // Pause the current video when tab is hidden
-        var currentItem = document.querySelector('.reel-item[data-index="' + _currentVisibleIndex + '"]');
-        if (currentItem) {
-            var currentIframe = currentItem.querySelector('iframe');
-            if (currentIframe) pauseVideo(currentIframe);
-        }
+        pauseVideo(_currentVisibleIndex);
     }
 });
