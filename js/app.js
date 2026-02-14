@@ -188,6 +188,15 @@ function renderVideoFeed(videosToRender) {
     // Seed: load iframes near the first visible position
     _manageIframeLifecycle(0);
 
+    // Fix: If YT API already loaded but our flag missed it (e.g. callback fired early)
+    if (!_ytApiReady && window.YT && window.YT.Player) {
+        _ytApiReady = true;
+        _manageIframeLifecycle(0);
+    }
+
+    // Safety net: ensure the first video plays even if all timing-based attempts failed
+    _ensureFirstVideoPlays();
+
     // Render remaining videos in background batches
     if (videosArray.length > INITIAL_BATCH_SIZE) {
         _renderRemainingBatches(container);
@@ -264,6 +273,41 @@ function _cancelPendingRender() {
     if (_globalObserver) {
         _globalObserver.disconnect();
     }
+}
+
+var _ensurePlayTimeout = null;
+
+/**
+ * Safety net: retry playing the visible video after a delay
+ * Catches all edge cases where initial play attempts were lost due to timing
+ */
+function _ensureFirstVideoPlays() {
+    // Clear any previous timeout (e.g. from filter re-render)
+    if (_ensurePlayTimeout) {
+        clearTimeout(_ensurePlayTimeout);
+    }
+
+    _ensurePlayTimeout = setTimeout(function() {
+        _ensurePlayTimeout = null;
+        var idx = _currentVisibleIndex;
+        var player = _ytPlayers[idx];
+
+        if (!player || !_ytPlayerReady[idx]) return;
+
+        // Check if player is already playing
+        try {
+            var state = player.getPlayerState();
+            // YT.PlayerState: -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (cued)
+            if (state !== 1 && state !== 3) {
+                // Not playing and not buffering — try to play
+                if (_isIndexVisible(idx)) {
+                    player.playVideo();
+                }
+            }
+        } catch (e) {
+            // Player may have been destroyed
+        }
+    }, 1500);
 }
 
 /**
@@ -487,36 +531,63 @@ function setupIntersectionObserver() {
     const options = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.5 // Video must be 50% visible
+        threshold: [0.5, 0.75, 1.0] // Multiple thresholds for better visibility tracking
     };
 
     _globalObserver = new IntersectionObserver(function(entries) {
+        // Find the most visible intersecting entry in this batch
+        var bestEntry = null;
+        var bestRatio = 0;
+
         entries.forEach(function(entry) {
-            var index = parseInt(entry.target.dataset.index, 10);
-
-            if (entry.isIntersecting) {
-                _currentVisibleIndex = index;
-
-                // Load/unload players around current position
-                _manageIframeLifecycle(index);
-
-                // Play current video (no-op for X embeds since no player exists)
-                playVideo(index);
-
-                // Log video view (if analytics enabled)
-                if (typeof logVideoView === 'function' && videos[index] && videos[index].id) {
-                    logVideoView(videos[index].id);
-                }
-            } else {
-                // Pause video leaving viewport
-                pauseVideo(index);
+            if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
+                bestRatio = entry.intersectionRatio;
+                bestEntry = entry;
+            }
+            // Pause videos leaving viewport
+            if (!entry.isIntersecting) {
+                var idx = parseInt(entry.target.dataset.index, 10);
+                pauseVideo(idx);
             }
         });
+
+        // Only act on the most visible entry to avoid _currentVisibleIndex thrashing
+        if (bestEntry) {
+            var index = parseInt(bestEntry.target.dataset.index, 10);
+            _currentVisibleIndex = index;
+
+            // Load/unload players around current position
+            _manageIframeLifecycle(index);
+
+            // Play current video (no-op for X embeds since no player exists)
+            playVideo(index);
+
+            // Log video view (if analytics enabled)
+            if (typeof logVideoView === 'function' && videos[index] && videos[index].id) {
+                logVideoView(videos[index].id);
+            }
+        }
     }, options);
 
     // Observe all reel items
     const reelItems = document.querySelectorAll('.reel-item');
     reelItems.forEach(item => _globalObserver.observe(item));
+}
+
+/**
+ * Check if a reel-item at the given index is visible in the viewport
+ * Uses getBoundingClientRect for reliable visibility detection
+ * (more robust than comparing _currentVisibleIndex which can be stale)
+ * @param {number} index - Video index
+ * @returns {boolean} true if the item is substantially visible
+ */
+function _isIndexVisible(index) {
+    var el = document.querySelector('.reel-item[data-index="' + index + '"]');
+    if (!el) return false;
+    var rect = el.getBoundingClientRect();
+    var viewHeight = window.innerHeight;
+    // Consider visible if at least 50% of viewport is covered
+    return rect.top < viewHeight * 0.75 && rect.bottom > viewHeight * 0.25;
 }
 
 /**
@@ -589,13 +660,18 @@ function _loadPlayer(index) {
                 if (iframe) {
                     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
                 }
-                // Autoplay if this is the currently visible video
-                if (index === _currentVisibleIndex) {
+                // Autoplay if this video is actually visible in viewport
+                // (uses getBoundingClientRect instead of _currentVisibleIndex which can be stale)
+                if (_isIndexVisible(index)) {
                     event.target.playVideo();
                 }
             },
             onStateChange: function(event) {
                 if (event.data === YT.PlayerState.ENDED) {
+                    event.target.playVideo();
+                }
+                // Retry if player got cued but should be playing (YT sometimes cues instead of playing)
+                if (event.data === YT.PlayerState.CUED && _isIndexVisible(index)) {
                     event.target.playVideo();
                 }
             },
