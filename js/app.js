@@ -19,6 +19,7 @@ let currentVideoIndex = 0;
 var _ytPlayers = {};       // Map of video index -> YT.Player instance
 var _ytApiReady = false;   // Set to true when onYouTubeIframeAPIReady fires
 var _ytPendingLoads = [];  // Indices queued before API was ready
+var _ytPlayerReady = {};   // Map of video index -> boolean (true when onReady has fired)
 
 // Progressive render state
 let _renderQueue = [];
@@ -42,6 +43,9 @@ function onYouTubeIframeAPIReady() {
         _loadPlayer(index);
     });
     _ytPendingLoads = [];
+
+    // Ensure currently visible video gets loaded (may not have been in pending queue)
+    _manageIframeLifecycle(_currentVisibleIndex);
 }
 
 /**
@@ -253,6 +257,7 @@ function _cancelPendingRender() {
         try { _ytPlayers[key].destroy(); } catch (e) { /* ignore */ }
     });
     _ytPlayers = {};
+    _ytPlayerReady = {};
     _ytPendingLoads = [];
 
     // Disconnect observer since DOM elements are about to be removed
@@ -578,11 +583,13 @@ function _loadPlayer(index) {
         },
         events: {
             onReady: function(event) {
+                _ytPlayerReady[index] = true;
                 // Set allow attribute for autoplay permission
                 var iframe = event.target.getIframe();
                 if (iframe) {
                     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
                 }
+                // Autoplay if this is the currently visible video
                 if (index === _currentVisibleIndex) {
                     event.target.playVideo();
                 }
@@ -618,6 +625,7 @@ function _unloadPlayer(index) {
         console.warn('Error destroying player ' + index + ':', e);
     }
     delete _ytPlayers[index];
+    delete _ytPlayerReady[index];
 
     // Recreate placeholder div so player can be re-created on scroll-back
     if (wrapper && !document.getElementById('yt-player-' + index)) {
@@ -625,8 +633,9 @@ function _unloadPlayer(index) {
         div.id = 'yt-player-' + index;
         div.dataset.videoIndex = index;
         div.dataset.videoType = 'youtube';
-        if (_renderQueue[index]) {
-            div.dataset.videoId = _extractYouTubeId(_renderQueue[index].url) || '';
+        var sourceVideo = videos[index] || _renderQueue[index];
+        if (sourceVideo) {
+            div.dataset.videoId = _extractYouTubeId(sourceVideo.url) || '';
         }
         wrapper.appendChild(div);
     }
@@ -638,11 +647,9 @@ function _unloadPlayer(index) {
  */
 function playVideo(index) {
     var player = _ytPlayers[index];
-    if (!player) return;
+    if (!player || !_ytPlayerReady[index]) return; // Skip if player not ready yet; onReady will handle it
     try {
-        if (typeof player.playVideo === 'function') {
-            player.playVideo();
-        }
+        player.playVideo();
     } catch (e) {
         console.warn('Error playing video ' + index + ':', e);
     }
@@ -654,11 +661,9 @@ function playVideo(index) {
  */
 function pauseVideo(index) {
     var player = _ytPlayers[index];
-    if (!player) return;
+    if (!player || !_ytPlayerReady[index]) return;
     try {
-        if (typeof player.pauseVideo === 'function') {
-            player.pauseVideo();
-        }
+        player.pauseVideo();
     } catch (e) {
         console.warn('Error pausing video ' + index + ':', e);
     }
