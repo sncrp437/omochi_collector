@@ -380,6 +380,13 @@ function getUniqueStations(videosData) {
         });
     }
 
+    // Filter by content type (YouTube, X, or All)
+    if (selectedContentType !== 'all') {
+        filteredVideos = filteredVideos.filter(function(v) {
+            return v.video_type === selectedContentType;
+        });
+    }
+
     filteredVideos.forEach(function(video) {
         var station = (currentLang === 'en' && video.nearest_station_en)
             ? video.nearest_station_en
@@ -406,6 +413,13 @@ function getUniqueSubGenres() {
     if (selectedCategory !== 'all') {
         var catVideos = _categoryIndex[selectedCategory.toLowerCase()];
         filteredVideos = catVideos || [];
+    }
+
+    // Apply TIER 0: content type filter
+    if (selectedContentType !== 'all') {
+        filteredVideos = filteredVideos.filter(function(v) {
+            return v.video_type === selectedContentType;
+        });
     }
 
     // Apply TIER 2: location filter

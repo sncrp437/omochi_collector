@@ -1360,6 +1360,11 @@ function initContentTypeToggle() {
                     : (localStorage.getItem('selectedCollection') || 'all');
                 filterAndRerenderFeed(currentCollection);
             }
+
+            // Refresh branched filter pills so counts match content type
+            if (typeof updateBranchedFilterNames === 'function') {
+                updateBranchedFilterNames();
+            }
         });
     });
 
