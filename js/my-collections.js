@@ -214,8 +214,9 @@ function _setupCardClickDelegation() {
     if (!cardsListEl || cardsListEl._delegationSetup) return;
 
     cardsListEl.addEventListener('click', function(e) {
-        // Ignore remove button clicks (handled separately with stopPropagation)
+        // Ignore remove button and visit column clicks (handled separately with stopPropagation)
         if (e.target.closest('.venue-card-remove')) return;
+        if (e.target.closest('.venue-card-visit-col')) return;
 
         var card = e.target.closest('.venue-card');
         if (!card) return;
@@ -2056,6 +2057,10 @@ async function _openVenueSheet(item) {
             ? getVenueCampaigns(item.data) : [];
         renderVenueCampaignsInSheet(venueCampaigns);
     }
+
+    // Reset scroll to top before showing
+    var venueSheetEl = document.getElementById('venueSheet');
+    if (venueSheetEl) venueSheetEl.scrollTop = 0;
 
     // Show overlay
     overlay.classList.add('active');
