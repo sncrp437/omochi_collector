@@ -71,6 +71,25 @@ async function register(formData) {
 }
 
 /**
+ * Request password reset email
+ */
+async function requestPasswordReset(email) {
+    const response = await apiRequest('/api/auth/reset-password/', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+        skipAuth: true
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw data;
+    }
+
+    return data;
+}
+
+/**
  * Logout - clear all auth data
  */
 function logout() {
@@ -376,6 +395,20 @@ function updateAuthUI() {
         } else {
             authStatus.classList.remove('logged-in');
         }
+    }
+
+    // Update settings drawer account sections
+    const accountGuest = document.getElementById('settingsAccountGuest');
+    const accountUser = document.getElementById('settingsAccountUser');
+    const userNameEl = document.getElementById('settingsUserName');
+    const userEmailEl = document.getElementById('settingsUserEmail');
+
+    if (accountGuest) accountGuest.style.display = loggedIn ? 'none' : 'block';
+    if (accountUser) accountUser.style.display = loggedIn ? 'block' : 'none';
+
+    if (loggedIn && user) {
+        if (userNameEl) userNameEl.textContent = user.first_name || user.email.split('@')[0];
+        if (userEmailEl) userEmailEl.textContent = user.email;
     }
 }
 

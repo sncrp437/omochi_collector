@@ -4129,28 +4129,154 @@ body.collections-body.has-expiration-banner .my-collections-page {
     font-size: 15px;
 }
 
-/* Logout Section */
-.settings-logout-section {
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid #333;
+/* Account Section */
+.settings-account-section {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #333;
 }
 
+.settings-user-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.settings-user-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.settings-user-icon svg {
+    color: #fff;
+}
+
+.settings-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-user-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-user-email {
+    font-size: 13px;
+    color: #888;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Login Link (Guest) */
+.settings-login-link {
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    border: none;
+    border-radius: 8px;
+    color: #fff !important;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.settings-login-link:hover {
+    background: linear-gradient(135deg, #0096c7, #005f8a) !important;
+}
+
+/* Danger Link (Delete Account) */
+.settings-link-danger {
+    color: #ff6b6b !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.settings-link-danger:hover {
+    background: rgba(255, 107, 107, 0.1) !important;
+}
+
+.settings-link-danger .settings-link-icon svg {
+    stroke: #ff6b6b;
+}
+
+/* Logout Button (subtle, not danger) */
 .settings-logout-btn {
     width: 100%;
     padding: 12px 16px;
     background: transparent;
-    border: 1px solid #ff4444;
+    border: 1px solid #555;
     border-radius: 8px;
-    color: #ff4444;
+    color: #999;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin-top: 12px;
 }
 
 .settings-logout-btn:hover {
-    background: rgba(255, 68, 68, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888;
+    color: #fff;
+}
+
+/* Password Reset button as settings-link */
+#settingsPasswordResetLink {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Password Reset Modal */
+.reset-password-hint {
+    font-size: 14px;
+    color: #999;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.reset-password-success {
+    font-size: 14px;
+    color: #00b4d8;
+    background: rgba(0, 180, 216, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Delete Account Modal */
+.delete-account-warning {
+    font-size: 14px;
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.delete-account-instructions {
+    font-size: 14px;
+    color: #ccc;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
 }
 
 /* Mobile adjustments for settings */

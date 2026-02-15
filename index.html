@@ -194,8 +194,39 @@
             </button>
         </div>
         <div class="settings-drawer-content">
+            <!-- Account Section (Guest) -->
+            <div class="settings-section settings-account-section" id="settingsAccountGuest" style="display: none;">
+                <h3 data-i18n="accountLabel">Account</h3>
+                <button class="settings-link settings-login-link" id="settingsLoginLink">
+                    <span class="settings-link-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></span>
+                    <span data-i18n="loginOrRegisterBtn">Log In / Register</span>
+                </button>
+            </div>
+            <!-- Account Section (Logged In) -->
+            <div class="settings-section settings-account-section" id="settingsAccountUser" style="display: none;">
+                <h3 data-i18n="accountLabel">Account</h3>
+                <div class="settings-user-display">
+                    <div class="settings-user-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="settings-user-info">
+                        <div class="settings-user-name" id="settingsUserName"></div>
+                        <div class="settings-user-email" id="settingsUserEmail"></div>
+                    </div>
+                </div>
+                <button class="settings-link" id="settingsPasswordResetLink">
+                    <span class="settings-link-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                    <span data-i18n="resetPasswordLink">Reset Password</span>
+                </button>
+                <button class="settings-link settings-link-danger" id="settingsDeleteAccountLink">
+                    <span class="settings-link-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+                    <span data-i18n="deleteAccountLink">Delete Account</span>
+                </button>
+                <button class="settings-logout-btn" id="settingsLogoutBtn" data-i18n="logoutBtn">Log Out</button>
+            </div>
             <!-- Legal Links Section -->
             <div class="settings-section">
+                <h3 data-i18n="legalLabel">Legal</h3>
                 <a href="policy/terms.html" class="settings-link">
                     <span class="settings-link-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
                     <span data-i18n="termsLink">Terms of Service</span>
@@ -217,10 +248,38 @@
                     <span data-i18n="couponLink">Coupon Terms</span>
                 </a>
             </div>
-            <!-- Logout Section (only visible when logged in) -->
-            <div class="settings-section settings-logout-section" id="settingsLogoutSection" style="display: none;">
-                <button class="settings-logout-btn" id="settingsLogoutBtn" data-i18n="logoutBtn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div class="auth-modal" id="passwordResetModal">
+        <div class="auth-modal-overlay" id="passwordResetModalOverlay"></div>
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" id="passwordResetModalClose">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h2 data-i18n="resetPasswordTitle">Reset Password</h2>
+            <p class="reset-password-hint" data-i18n="resetPasswordHint">Enter your email and we'll send a reset link.</p>
+            <div id="passwordResetFormContainer">
+                <input type="email" class="auth-input" id="resetEmail" placeholder="Email" required autocomplete="email">
+                <p class="auth-form-error" id="resetPasswordError"></p>
+                <button class="auth-btn" id="resetPasswordSubmitBtn" data-i18n="sendResetLinkBtn">Send Reset Link</button>
             </div>
+            <p class="reset-password-success" id="resetPasswordSuccess" style="display: none;" data-i18n="resetPasswordSuccess">Check your email for the reset link!</p>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="auth-modal" id="deleteAccountModal">
+        <div class="auth-modal-overlay" id="deleteAccountModalOverlay"></div>
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" id="deleteAccountModalClose">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h2 data-i18n="deleteAccountTitle">Delete Account</h2>
+            <p class="delete-account-warning" data-i18n="deleteAccountWarning">Account deletion is handled through support to ensure safe data removal.</p>
+            <p class="delete-account-instructions" data-i18n="deleteAccountInstructions">Contact info@omochiapp.com with your account email.</p>
+            <button class="auth-btn" id="deleteAccountContactBtn" data-i18n="contactSupportBtn">Contact Support</button>
         </div>
     </div>
 

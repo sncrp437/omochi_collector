@@ -18,6 +18,19 @@ var _autoCollectedVenue = null; // Venue that was auto-collected via URL param
 var _pendingDeleteItem = null;
 var _pendingDeleteCard = null;
 
+/**
+ * Strip HTML tags from a string, preserving line breaks from block-level elements.
+ */
+function _stripHtml(html) {
+    if (!html) return '';
+    var text = html.replace(/<br\s*\/?>/gi, '\n')
+                   .replace(/<\/p>/gi, '\n')
+                   .replace(/<\/div>/gi, '\n');
+    var tmp = document.createElement('div');
+    tmp.innerHTML = text;
+    return (tmp.textContent || tmp.innerText || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 // =============================================================================
 // NFC/QR Auto-Collect via URL Parameters
 // =============================================================================
@@ -2157,7 +2170,7 @@ function _renderVenueDetails(info) {
     var hasDetails = false;
 
     if (descEl) {
-        descEl.textContent = info.description || '';
+        descEl.textContent = _stripHtml(info.description);
         descEl.style.display = info.description ? 'block' : 'none';
         if (info.description) hasDetails = true;
     }
@@ -2187,7 +2200,7 @@ function _renderVenueDetails(info) {
     }
 
     if (announcementEl) {
-        announcementEl.textContent = info.announcement || '';
+        announcementEl.textContent = _stripHtml(info.announcement);
         announcementEl.style.display = info.announcement ? 'block' : 'none';
         if (info.announcement) hasDetails = true;
     }
@@ -2710,48 +2723,68 @@ function initSettingsDrawer() {
     var drawer = document.getElementById('settingsDrawer');
     var overlay = document.getElementById('settingsDrawerOverlay');
     var closeBtn = document.getElementById('settingsDrawerClose');
-    var logoutSection = document.getElementById('settingsLogoutSection');
+    var loginLink = document.getElementById('settingsLoginLink');
+    var passwordResetLink = document.getElementById('settingsPasswordResetLink');
+    var deleteAccountLink = document.getElementById('settingsDeleteAccountLink');
     var logoutBtn = document.getElementById('settingsLogoutBtn');
 
     if (!gearBtn || !drawer || !overlay) return;
 
-    // Open drawer on gear click
     gearBtn.addEventListener('click', function() {
         openSettingsDrawer();
     });
 
-    // Close drawer on overlay click
     overlay.addEventListener('click', function() {
         closeSettingsDrawer();
     });
 
-    // Close drawer on close button click
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             closeSettingsDrawer();
         });
     }
 
-    // Show/hide logout section based on auth state
-    if (logoutSection && typeof isLoggedIn === 'function') {
-        logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
+    // Login/Register link (guest)
+    if (loginLink) {
+        loginLink.addEventListener('click', function() {
+            closeSettingsDrawer();
+            if (typeof showAuthModal === 'function') {
+                showAuthModal('login');
+            }
+        });
     }
 
-    // Setup logout button
+    // Password Reset link
+    if (passwordResetLink) {
+        passwordResetLink.addEventListener('click', function() {
+            closeSettingsDrawer();
+            _showPasswordResetModal();
+        });
+    }
+
+    // Delete Account link
+    if (deleteAccountLink) {
+        deleteAccountLink.addEventListener('click', function() {
+            closeSettingsDrawer();
+            _showDeleteAccountModal();
+        });
+    }
+
+    // Logout button
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             if (typeof logout === 'function') {
                 logout();
             }
             closeSettingsDrawer();
-            // Update logout section visibility
-            if (logoutSection) {
-                logoutSection.style.display = 'none';
-            }
             // Reload page to reflect logged out state
             window.location.reload();
         });
     }
+
+    // Initialize modals
+    _initPasswordResetModal();
+    _initDeleteAccountModal();
 }
 
 /**
@@ -2760,14 +2793,13 @@ function initSettingsDrawer() {
 function openSettingsDrawer() {
     var drawer = document.getElementById('settingsDrawer');
     var overlay = document.getElementById('settingsDrawerOverlay');
-    var logoutSection = document.getElementById('settingsLogoutSection');
 
     if (drawer) drawer.classList.add('active');
     if (overlay) overlay.classList.add('active');
 
-    // Update logout visibility when opening
-    if (logoutSection && typeof isLoggedIn === 'function') {
-        logoutSection.style.display = isLoggedIn() ? 'block' : 'none';
+    // Update account sections when opening
+    if (typeof updateAuthUI === 'function') {
+        updateAuthUI();
     }
 }
 
@@ -2780,6 +2812,161 @@ function closeSettingsDrawer() {
 
     if (drawer) drawer.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
+}
+
+// =============================================================================
+// Password Reset Modal
+// =============================================================================
+
+function _showPasswordResetModal() {
+    var modal = document.getElementById('passwordResetModal');
+    if (!modal) return;
+
+    // Reset state
+    var formContainer = document.getElementById('passwordResetFormContainer');
+    var errorEl = document.getElementById('resetPasswordError');
+    var successEl = document.getElementById('resetPasswordSuccess');
+    var emailInput = document.getElementById('resetEmail');
+    var submitBtn = document.getElementById('resetPasswordSubmitBtn');
+
+    if (formContainer) formContainer.style.display = 'block';
+    if (errorEl) { errorEl.textContent = ''; errorEl.style.display = 'none'; }
+    if (successEl) successEl.style.display = 'none';
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('auth-btn-loading'); }
+
+    // Pre-fill email from logged-in user
+    if (emailInput && typeof getUser === 'function') {
+        var user = getUser();
+        if (user && user.email) {
+            emailInput.value = user.email;
+        }
+    }
+
+    modal.classList.add('show');
+}
+
+function _hidePasswordResetModal() {
+    var modal = document.getElementById('passwordResetModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function _initPasswordResetModal() {
+    var modal = document.getElementById('passwordResetModal');
+    var closeBtn = document.getElementById('passwordResetModalClose');
+    var overlay = document.getElementById('passwordResetModalOverlay');
+    var submitBtn = document.getElementById('resetPasswordSubmitBtn');
+
+    if (!modal) return;
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            _hidePasswordResetModal();
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            _hidePasswordResetModal();
+        });
+    }
+
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async function() {
+            var emailInput = document.getElementById('resetEmail');
+            var errorEl = document.getElementById('resetPasswordError');
+            var successEl = document.getElementById('resetPasswordSuccess');
+            var formContainer = document.getElementById('passwordResetFormContainer');
+
+            if (!emailInput) return;
+
+            var email = emailInput.value.trim();
+            if (!email) {
+                if (errorEl) {
+                    errorEl.textContent = t('resetPasswordError') || 'Failed to send reset link. Please try again.';
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('auth-btn-loading');
+            if (errorEl) { errorEl.textContent = ''; errorEl.style.display = 'none'; }
+
+            try {
+                if (typeof requestPasswordReset === 'function') {
+                    await requestPasswordReset(email);
+                }
+
+                // Show success
+                if (formContainer) formContainer.style.display = 'none';
+                if (successEl) successEl.style.display = 'block';
+
+                // Auto-close after 3 seconds
+                setTimeout(function() {
+                    _hidePasswordResetModal();
+                }, 3000);
+            } catch (err) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('auth-btn-loading');
+
+                if (errorEl) {
+                    if (err && err.detail && (err.detail.toLowerCase().includes('wait') || err.detail.toLowerCase().includes('too many'))) {
+                        errorEl.textContent = t('resetPasswordRateLimit') || 'Too many requests. Please wait before trying again.';
+                    } else if (err && err.detail) {
+                        errorEl.textContent = err.detail;
+                    } else {
+                        errorEl.textContent = t('resetPasswordError') || 'Failed to send reset link. Please try again.';
+                    }
+                    errorEl.style.display = 'block';
+                }
+            }
+        });
+    }
+}
+
+// =============================================================================
+// Delete Account Modal
+// =============================================================================
+
+function _showDeleteAccountModal() {
+    var modal = document.getElementById('deleteAccountModal');
+    if (modal) modal.classList.add('show');
+}
+
+function _hideDeleteAccountModal() {
+    var modal = document.getElementById('deleteAccountModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function _initDeleteAccountModal() {
+    var modal = document.getElementById('deleteAccountModal');
+    var closeBtn = document.getElementById('deleteAccountModalClose');
+    var overlay = document.getElementById('deleteAccountModalOverlay');
+    var contactBtn = document.getElementById('deleteAccountContactBtn');
+
+    if (!modal) return;
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            _hideDeleteAccountModal();
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            _hideDeleteAccountModal();
+        });
+    }
+
+    if (contactBtn) {
+        contactBtn.addEventListener('click', function() {
+            var user = typeof getUser === 'function' ? getUser() : null;
+            var subject = encodeURIComponent('Account Deletion Request');
+            var body = encodeURIComponent('Please delete my account.\n\nAccount Email: ' + (user && user.email ? user.email : ''));
+            window.location.href = 'mailto:info@omochiapp.com?subject=' + subject + '&body=' + body;
+            _hideDeleteAccountModal();
+        });
+    }
 }
 
 // Initialize when DOM is ready
