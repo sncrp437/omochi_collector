@@ -1466,38 +1466,6 @@ body.collections-body {
     margin-bottom: 20px;
 }
 
-/* Discovery CTA (NFC/QR flow) */
-.discovery-cta {
-    text-align: center;
-    padding: 24px 16px;
-    margin: 16px 0;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    border: 1px dashed rgba(255, 255, 255, 0.2);
-}
-
-.discovery-cta p {
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0 0 12px 0;
-    font-size: 14px;
-}
-
-.discovery-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
-    color: white;
-    text-decoration: none;
-    border-radius: 24px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: transform 0.15s, opacity 0.15s;
-}
-
-.discovery-btn:active {
-    transform: scale(0.97);
-    opacity: 0.9;
-}
 
 /* Venue Cards */
 .venue-cards-list {
@@ -1506,11 +1474,27 @@ body.collections-body {
     gap: 12px;
 }
 
-.card-loading-indicator {
-    display: flex;
-    justify-content: center;
-    padding: 16px 0;
-    opacity: 0.5;
+/* Load More Button */
+.load-more-btn {
+    display: block;
+    width: auto;
+    margin: 16px auto;
+    padding: 12px 32px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.load-more-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* Row wrapper: card body + visit column side by side */
@@ -2004,7 +1988,7 @@ body.collections-body.has-expiration-banner .my-collections-page {
     z-index: 9000;
     display: none;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 }
 
 .venue-sheet-overlay.active {
@@ -2025,7 +2009,7 @@ body.collections-body.has-expiration-banner .my-collections-page {
     display: flex;
     flex-direction: column;
     transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     z-index: 9001;
 }
 

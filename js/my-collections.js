@@ -18,13 +18,9 @@ var _autoCollectedVenue = null; // Venue that was auto-collected via URL param
 var _pendingDeleteItem = null;
 var _pendingDeleteCard = null;
 
-// Progressive card rendering
-var INITIAL_CARD_BATCH = 8;
-var SUBSEQUENT_CARD_BATCH = 12;
-var CARD_BATCH_DELAY_MS = 50;
-var _cardRenderQueue = [];
-var _cardRenderIndex = 0;
-var _pendingCardFrame = null;
+// Pagination for card rendering
+var CARDS_PER_PAGE = 10;
+var _displayedCount = 0;
 
 /**
  * Strip HTML tags from a string, preserving line breaks from block-level elements.
@@ -291,6 +287,14 @@ async function initCollectionsPage() {
     _setupCardClickDelegation();
     _setupDeleteConfirmModal();
 
+    // Setup Load More button
+    var loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            _appendNextPage();
+        });
+    }
+
     // Setup AI search bar event listeners
     _setupAiSearchBar();
 
@@ -359,8 +363,8 @@ async function initCollectionsPage() {
         aiSearchBar.style.display = _allMergedItems.length >= 2 ? 'block' : 'none';
     }
 
-    // 6. Render cards
-    _renderAllCards();
+    // 6. Render cards (show all if NFC/QR auto-collect needs to highlight a card)
+    _renderAllCards(!!_autoCollectedVenue);
 
     // 7. Build filter pills
     _renderGenreFilters();
@@ -507,16 +511,16 @@ function _getVenueInfo(item) {
 
 /**
  * Render all venue cards (respecting current filters)
+ * Shows first CARDS_PER_PAGE cards, rest available via Load More button.
+ * @param {boolean} [showAll] - If true, render all cards (used for NFC/QR auto-collect)
  */
-function _renderAllCards() {
+function _renderAllCards(showAll) {
     var cardsListEl = document.getElementById('venueCardsList');
     var emptyEl = document.getElementById('collectionsEmpty');
     if (!cardsListEl) return;
 
-    // Cancel any pending background card rendering
-    _cancelPendingCardRender();
-
     cardsListEl.innerHTML = '';
+    _displayedCount = 0;
 
     var filtered = _getFilteredItems();
     _filteredItems = filtered; // Store for event delegation lookup (must be complete immediately)
@@ -524,94 +528,70 @@ function _renderAllCards() {
     if (filtered.length === 0) {
         cardsListEl.style.display = 'none';
         if (emptyEl) emptyEl.style.display = 'block';
+        _hideLoadMoreButton();
         return;
     }
 
     if (emptyEl) emptyEl.style.display = 'none';
     cardsListEl.style.display = 'flex';
 
-    // Store queue for progressive rendering
-    _cardRenderQueue = filtered;
-    _cardRenderIndex = 0;
-
-    // Render initial batch synchronously (fast first paint)
-    var initialEnd = Math.min(INITIAL_CARD_BATCH, filtered.length);
-    for (var i = 0; i < initialEnd; i++) {
-        var card = _createUnifiedCard(filtered[i], i);
-        cardsListEl.appendChild(card);
-    }
-    _cardRenderIndex = initialEnd;
-
-    // Render remaining cards in background batches
-    if (filtered.length > INITIAL_CARD_BATCH) {
-        _showCardLoadingIndicator(cardsListEl);
-        _renderRemainingCards(cardsListEl);
+    if (showAll) {
+        // Render all cards at once (NFC/QR auto-collect needs all in DOM for highlight)
+        for (var i = 0; i < filtered.length; i++) {
+            var card = _createUnifiedCard(filtered[i], i);
+            cardsListEl.appendChild(card);
+        }
+        _displayedCount = filtered.length;
+        _hideLoadMoreButton();
+    } else {
+        // Render first page only
+        _appendNextPage(cardsListEl);
     }
 }
 
 /**
- * Renders remaining venue cards in background batches using requestIdleCallback
+ * Append the next page of venue cards to the list
  */
-function _renderRemainingCards(container) {
-    if (_cardRenderIndex >= _cardRenderQueue.length) {
-        _pendingCardFrame = null;
-        _removeCardLoadingIndicator();
-        return;
+function _appendNextPage(container) {
+    if (!container) container = document.getElementById('venueCardsList');
+    if (!container || !_filteredItems) return;
+
+    var endIndex = Math.min(_displayedCount + CARDS_PER_PAGE, _filteredItems.length);
+    var fragment = document.createDocumentFragment();
+
+    for (var i = _displayedCount; i < endIndex; i++) {
+        var card = _createUnifiedCard(_filteredItems[i], i);
+        fragment.appendChild(card);
     }
 
-    var scheduleRender = window.requestIdleCallback ||
-        function(cb) { return setTimeout(cb, CARD_BATCH_DELAY_MS); };
+    container.appendChild(fragment);
+    _displayedCount = endIndex;
 
-    _pendingCardFrame = scheduleRender(function() {
-        if (_pendingCardFrame === null) return;
-
-        var endIndex = Math.min(
-            _cardRenderIndex + SUBSEQUENT_CARD_BATCH,
-            _cardRenderQueue.length
-        );
-        var fragment = document.createDocumentFragment();
-
-        for (var i = _cardRenderIndex; i < endIndex; i++) {
-            var card = _createUnifiedCard(_cardRenderQueue[i], i);
-            fragment.appendChild(card);
-        }
-
-        container.appendChild(fragment);
-        _cardRenderIndex = endIndex;
-
-        _renderRemainingCards(container);
-    });
+    // Show/hide Load More button
+    if (_displayedCount < _filteredItems.length) {
+        _showLoadMoreButton();
+    } else {
+        _hideLoadMoreButton();
+    }
 }
 
 /**
- * Cancels any pending background card rendering
+ * Show the Load More button with remaining count
  */
-function _cancelPendingCardRender() {
-    if (_pendingCardFrame !== null) {
-        if (window.cancelIdleCallback) {
-            window.cancelIdleCallback(_pendingCardFrame);
-        } else {
-            clearTimeout(_pendingCardFrame);
-        }
-        _pendingCardFrame = null;
-    }
-    _cardRenderQueue = [];
-    _cardRenderIndex = 0;
-    _removeCardLoadingIndicator();
+function _showLoadMoreButton() {
+    var btn = document.getElementById('loadMoreBtn');
+    if (!btn) return;
+    var remaining = _filteredItems.length - _displayedCount;
+    btn.textContent = t('loadMoreBtn') + ' (' + remaining + ')';
+    btn.style.display = 'block';
 }
 
-function _showCardLoadingIndicator(container) {
-    _removeCardLoadingIndicator();
-    var indicator = document.createElement('div');
-    indicator.className = 'card-loading-indicator';
-    indicator.id = 'cardLoadingIndicator';
-    indicator.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
-    container.appendChild(indicator);
-}
-
-function _removeCardLoadingIndicator() {
-    var el = document.getElementById('cardLoadingIndicator');
-    if (el) el.remove();
+/**
+ * Hide the Load More button
+ */
+function _hideLoadMoreButton() {
+    var btn = document.getElementById('loadMoreBtn');
+    if (btn) btn.style.display = 'none';
 }
 
 /**
@@ -2130,6 +2110,8 @@ async function _openVenueSheet(item) {
     var info = _getVenueInfo(item);
     var venueId = typeof getVenueIdFromItem === 'function' ? getVenueIdFromItem(item) : null;
 
+    // === PHASE 1: Synchronous content + show sheet immediately ===
+
     // Populate header
     var nameEl = document.getElementById('venueSheetName');
     var metaEl = document.getElementById('venueSheetMeta');
@@ -2142,28 +2124,26 @@ async function _openVenueSheet(item) {
         metaEl.textContent = metaParts.join(' \u00B7 ');
     }
 
-    // Render folder row (before memo)
+    // Render folder row (synchronous)
     _renderSheetFolderRow(venueId);
 
-    // Render visit status section
+    // Render visit status section (synchronous)
     _renderVisitStatus(venueId);
 
-    // Render memo section (prominent, always visible)
-    await _renderSheetMemo(venueId);
+    // Show placeholders for async content (memo + tags)
+    _showMemoPlaceholder();
+    _showTagsPlaceholder();
 
-    // Populate action buttons
+    // Populate action buttons (synchronous)
     _renderActionButtons(item, info, venueId);
 
-    // Render map
+    // Render map (synchronous)
     _renderVenueMap(info);
 
-    // Populate venue details
+    // Populate venue details (synchronous)
     _renderVenueDetails(info);
 
-    // Render tags
-    await _renderSheetTags(venueId);
-
-    // Render venue campaigns (API items only)
+    // Render venue campaigns (synchronous)
     if (typeof renderVenueCampaignsInSheet === 'function') {
         var venueCampaigns = (item.source === 'api' && typeof getVenueCampaigns === 'function')
             ? getVenueCampaigns(item.data) : [];
@@ -2174,7 +2154,7 @@ async function _openVenueSheet(item) {
     var venueSheetBody = document.getElementById('venueSheetBody');
     if (venueSheetBody) venueSheetBody.scrollTop = 0;
 
-    // Show overlay and lock background scroll
+    // Show overlay and lock background scroll — IMMEDIATELY
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -2191,6 +2171,39 @@ async function _openVenueSheet(item) {
 
     // Log venue detail view
     _logVenueAction('venue_detail_view', venueId);
+
+    // === PHASE 2: Async content (populates while sheet is already visible) ===
+    await Promise.all([
+        _renderSheetMemo(venueId),
+        _renderSheetTags(venueId)
+    ]);
+}
+
+/**
+ * Show placeholder in memo section while async data loads
+ */
+function _showMemoPlaceholder() {
+    var section = document.getElementById('venueSheetMemoSection');
+    var loggedInDiv = document.getElementById('venueSheetMemoLoggedIn');
+    var loginPrompt = document.getElementById('venueSheetMemoLoginPrompt');
+    var textarea = document.getElementById('venueSheetMemo');
+    if (!section) return;
+    section.style.display = 'block';
+    if (loggedInDiv) loggedInDiv.style.display = 'block';
+    if (loginPrompt) loginPrompt.style.display = 'none';
+    if (textarea) {
+        textarea.value = '';
+        textarea.placeholder = '...';
+    }
+}
+
+/**
+ * Show placeholder in tags section while async data loads
+ */
+function _showTagsPlaceholder() {
+    var container = document.getElementById('venueSheetTags');
+    if (!container) return;
+    container.innerHTML = '<span style="opacity:0.4;font-size:12px;">...</span>';
 }
 
 /**

@@ -244,9 +244,7 @@ const translations = {
         venueNotFound: 'Venue not found',
         alreadyInCollection: 'Already in your collection',
         tapCardHint: 'Tap card to see details & reserve',
-        discoverMoreVenues: 'Discover more venues like this',
-        exploreFeed: 'Explore the Feed',
-
+        loadMoreBtn: 'Load More',
         // Campaigns
         campaignProgressLabel: 'In Progress',
         campaignDeadlinePrefix: 'Until ',
@@ -509,9 +507,7 @@ const translations = {
         venueNotFound: '店舗が見つかりません',
         alreadyInCollection: 'すでに保存済みです',
         tapCardHint: 'カードをタップして詳細・予約',
-        discoverMoreVenues: 'このような店舗をもっと発見',
-        exploreFeed: 'フィードを探索',
-
+        loadMoreBtn: 'さらに読み込む',
         // Campaigns
         campaignProgressLabel: '開催中',
         campaignDeadlinePrefix: '〜 ',
