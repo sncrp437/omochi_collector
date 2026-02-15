@@ -18,6 +18,14 @@ var _autoCollectedVenue = null; // Venue that was auto-collected via URL param
 var _pendingDeleteItem = null;
 var _pendingDeleteCard = null;
 
+// Progressive card rendering
+var INITIAL_CARD_BATCH = 8;
+var SUBSEQUENT_CARD_BATCH = 12;
+var CARD_BATCH_DELAY_MS = 50;
+var _cardRenderQueue = [];
+var _cardRenderIndex = 0;
+var _pendingCardFrame = null;
+
 /**
  * Strip HTML tags from a string, preserving line breaks from block-level elements.
  */
@@ -492,10 +500,13 @@ function _renderAllCards() {
     var emptyEl = document.getElementById('collectionsEmpty');
     if (!cardsListEl) return;
 
+    // Cancel any pending background card rendering
+    _cancelPendingCardRender();
+
     cardsListEl.innerHTML = '';
 
     var filtered = _getFilteredItems();
-    _filteredItems = filtered; // Store for event delegation lookup
+    _filteredItems = filtered; // Store for event delegation lookup (must be complete immediately)
 
     if (filtered.length === 0) {
         cardsListEl.style.display = 'none';
@@ -506,10 +517,88 @@ function _renderAllCards() {
     if (emptyEl) emptyEl.style.display = 'none';
     cardsListEl.style.display = 'flex';
 
-    filtered.forEach(function(item, index) {
-        var card = _createUnifiedCard(item, index);
+    // Store queue for progressive rendering
+    _cardRenderQueue = filtered;
+    _cardRenderIndex = 0;
+
+    // Render initial batch synchronously (fast first paint)
+    var initialEnd = Math.min(INITIAL_CARD_BATCH, filtered.length);
+    for (var i = 0; i < initialEnd; i++) {
+        var card = _createUnifiedCard(filtered[i], i);
         cardsListEl.appendChild(card);
+    }
+    _cardRenderIndex = initialEnd;
+
+    // Render remaining cards in background batches
+    if (filtered.length > INITIAL_CARD_BATCH) {
+        _showCardLoadingIndicator(cardsListEl);
+        _renderRemainingCards(cardsListEl);
+    }
+}
+
+/**
+ * Renders remaining venue cards in background batches using requestIdleCallback
+ */
+function _renderRemainingCards(container) {
+    if (_cardRenderIndex >= _cardRenderQueue.length) {
+        _pendingCardFrame = null;
+        _removeCardLoadingIndicator();
+        return;
+    }
+
+    var scheduleRender = window.requestIdleCallback ||
+        function(cb) { return setTimeout(cb, CARD_BATCH_DELAY_MS); };
+
+    _pendingCardFrame = scheduleRender(function() {
+        if (_pendingCardFrame === null) return;
+
+        var endIndex = Math.min(
+            _cardRenderIndex + SUBSEQUENT_CARD_BATCH,
+            _cardRenderQueue.length
+        );
+        var fragment = document.createDocumentFragment();
+
+        for (var i = _cardRenderIndex; i < endIndex; i++) {
+            var card = _createUnifiedCard(_cardRenderQueue[i], i);
+            fragment.appendChild(card);
+        }
+
+        container.appendChild(fragment);
+        _cardRenderIndex = endIndex;
+
+        _renderRemainingCards(container);
     });
+}
+
+/**
+ * Cancels any pending background card rendering
+ */
+function _cancelPendingCardRender() {
+    if (_pendingCardFrame !== null) {
+        if (window.cancelIdleCallback) {
+            window.cancelIdleCallback(_pendingCardFrame);
+        } else {
+            clearTimeout(_pendingCardFrame);
+        }
+        _pendingCardFrame = null;
+    }
+    _cardRenderQueue = [];
+    _cardRenderIndex = 0;
+    _removeCardLoadingIndicator();
+}
+
+function _showCardLoadingIndicator(container) {
+    _removeCardLoadingIndicator();
+    var indicator = document.createElement('div');
+    indicator.className = 'card-loading-indicator';
+    indicator.id = 'cardLoadingIndicator';
+    indicator.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
+    container.appendChild(indicator);
+}
+
+function _removeCardLoadingIndicator() {
+    var el = document.getElementById('cardLoadingIndicator');
+    if (el) el.remove();
 }
 
 /**
@@ -2059,11 +2148,12 @@ async function _openVenueSheet(item) {
     }
 
     // Reset scroll to top before showing
-    var venueSheetEl = document.getElementById('venueSheet');
-    if (venueSheetEl) venueSheetEl.scrollTop = 0;
+    var venueSheetBody = document.getElementById('venueSheetBody');
+    if (venueSheetBody) venueSheetBody.scrollTop = 0;
 
-    // Show overlay
+    // Show overlay and lock background scroll
     overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
 
     // Setup close handlers
     var closeBtn = document.getElementById('venueSheetClose');
@@ -2253,6 +2343,7 @@ function _closeVenueSheet() {
     var overlay = document.getElementById('venueSheetOverlay');
     if (overlay) overlay.classList.remove('active');
     _currentSheetItem = null;
+    document.body.style.overflow = '';
 
     var mapContainer = document.getElementById('venueSheetMapContainer');
     if (mapContainer) mapContainer.innerHTML = '';
