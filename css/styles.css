@@ -3251,7 +3251,7 @@ body.collections-body.has-expiration-banner .my-collections-page {
     border-radius: 50%;
 }
 
-/* Visit status column (visually separated, outside card) */
+/* Visit status column (floating buttons beside card) */
 .venue-card-visit-col {
     display: flex;
     flex-direction: column;
@@ -3260,8 +3260,6 @@ body.collections-body.has-expiration-banner .my-collections-page {
     gap: 6px;
     flex-shrink: 0;
     padding: 8px 6px;
-    background: #222;
-    border-radius: 10px;
     min-width: 68px;
 }
 
