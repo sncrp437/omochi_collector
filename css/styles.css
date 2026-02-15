@@ -2387,6 +2387,7 @@ body.collections-body.has-expiration-banner .my-collections-page {
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.5;
     margin-bottom: 8px;
+    white-space: pre-line;
 }
 
 .venue-sheet-hours {
