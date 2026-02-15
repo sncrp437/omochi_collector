@@ -96,6 +96,9 @@ function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    if (typeof invalidateStockedVenuesCache === 'function') {
+        invalidateStockedVenuesCache();
+    }
     updateAuthUI();
 }
 
@@ -337,6 +340,11 @@ async function _handlePendingCollect() {
     // Invalidate folder caches to force refresh from API
     if (typeof invalidateFolderCache === 'function') {
         invalidateFolderCache();
+    }
+
+    // Invalidate stocked venues cache (server has authoritative data after sync)
+    if (typeof invalidateStockedVenuesCache === 'function') {
+        invalidateStockedVenuesCache();
     }
 }
 

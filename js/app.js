@@ -502,9 +502,14 @@ function createOverlay(video) {
         // If logged in and has venue_uuid, also sync to API silently
         if (video.venue_uuid && typeof isLoggedIn === 'function' && isLoggedIn()) {
             try {
-                await apiPost('/api/stocked-venues/', { venue: video.venue_uuid });
+                var syncResp = await apiPost('/api/stocked-venues/', { venue: video.venue_uuid });
                 if (typeof markLocalCollectionSynced === 'function') {
                     markLocalCollectionSynced(video.id);
+                }
+                // Update session cache incrementally
+                if (syncResp.ok && typeof addToStockedVenuesCache === 'function') {
+                    var syncData = await syncResp.json();
+                    addToStockedVenuesCache(syncData);
                 }
             } catch (err) {
                 console.warn('API sync failed, will retry later:', err);
@@ -777,6 +782,11 @@ async function collectVenue(video, buttonEl) {
             if (buttonEl) {
                 buttonEl.innerHTML = BOOKMARK_FILLED;
                 buttonEl.classList.add('collected');
+            }
+            // Update session cache incrementally
+            if (typeof addToStockedVenuesCache === 'function') {
+                var pendingData = await response.json().catch(function() { return null; });
+                if (pendingData) addToStockedVenuesCache(pendingData);
             }
         } else {
             const errData = await response.json().catch(() => ({}));

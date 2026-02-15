@@ -346,3 +346,62 @@ function initExpirationBanner() {
         });
     }
 }
+
+// =============================================================================
+// Stocked Venues API Cache (sessionStorage)
+// =============================================================================
+
+var STOCKED_VENUES_CACHE_KEY = 'omochi_stocked_venues_cache';
+
+/**
+ * Get cached stocked venues from sessionStorage
+ * @returns {Array|null} Cached API items array, or null if not cached
+ */
+function getCachedStockedVenues() {
+    try {
+        var raw = sessionStorage.getItem(STOCKED_VENUES_CACHE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Cache stocked venues API response in sessionStorage
+ * @param {Array} data - Raw API response array
+ */
+function cacheStockedVenues(data) {
+    try {
+        sessionStorage.setItem(STOCKED_VENUES_CACHE_KEY, JSON.stringify(data));
+    } catch (e) {
+        // sessionStorage quota exceeded — ignore
+    }
+}
+
+/**
+ * Add a single venue to the cached array (after successful collect POST)
+ * @param {Object} item - Stocked venue object from API response
+ */
+function addToStockedVenuesCache(item) {
+    var cached = getCachedStockedVenues();
+    if (!cached) return;
+    cached.push(item);
+    cacheStockedVenues(cached);
+}
+
+/**
+ * Remove a single venue from the cached array (after successful DELETE)
+ * @param {string} stockedVenueId - The stocked venue ID to remove
+ */
+function removeFromStockedVenuesCache(stockedVenueId) {
+    var cached = getCachedStockedVenues();
+    if (!cached) return;
+    cacheStockedVenues(cached.filter(function(v) { return v.id !== stockedVenueId; }));
+}
+
+/**
+ * Invalidate the stocked venues cache entirely
+ */
+function invalidateStockedVenuesCache() {
+    sessionStorage.removeItem(STOCKED_VENUES_CACHE_KEY);
+}

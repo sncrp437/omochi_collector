@@ -140,9 +140,14 @@ async function handleAutoCollect() {
         // Sync to API if logged in and has venue_uuid
         if (venue.venue_uuid && typeof isLoggedIn === 'function' && isLoggedIn()) {
             try {
-                await apiPost('/api/stocked-venues/', { venue: venue.venue_uuid });
+                var acResponse = await apiPost('/api/stocked-venues/', { venue: venue.venue_uuid });
                 if (typeof markLocalCollectionSynced === 'function') {
                     markLocalCollectionSynced(venue.id);
+                }
+                // Update session cache incrementally
+                if (acResponse.ok && typeof addToStockedVenuesCache === 'function') {
+                    var acData = await acResponse.json();
+                    addToStockedVenuesCache(acData);
                 }
             } catch (err) {
                 console.warn('[my-collections] API sync failed for auto-collected venue:', err);
@@ -299,19 +304,28 @@ async function initCollectionsPage() {
     // 2. Check login status
     var loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
 
-    // 3. If logged in, fetch API collections and sync
+    // 3. If logged in, fetch API collections (with session cache) and sync
     var apiItems = [];
     if (loggedIn) {
-        try {
-            var response = await apiGet('/api/stocked-venues/');
-            if (response.ok) {
-                apiItems = await response.json();
-            } else if (response.status === 401) {
-                // Token expired - still show local items
-                loggedIn = false;
+        // Try sessionStorage cache first
+        var cachedItems = typeof getCachedStockedVenues === 'function' ? getCachedStockedVenues() : null;
+        if (cachedItems) {
+            apiItems = cachedItems;
+        } else {
+            try {
+                var response = await apiGet('/api/stocked-venues/');
+                if (response.ok) {
+                    apiItems = await response.json();
+                    if (typeof cacheStockedVenues === 'function') {
+                        cacheStockedVenues(apiItems);
+                    }
+                } else if (response.status === 401) {
+                    // Token expired - still show local items
+                    loggedIn = false;
+                }
+            } catch (err) {
+                console.warn('Failed to fetch API collections:', err);
             }
-        } catch (err) {
-            console.warn('Failed to fetch API collections:', err);
         }
 
         // Sync unsynced local items to API
@@ -864,6 +878,10 @@ async function _removeItem(item, cardElement) {
             if (!response.ok && response.status !== 204) {
                 console.error('Failed to remove venue:', response.status);
                 return;
+            }
+            // Update session cache incrementally
+            if (typeof removeFromStockedVenuesCache === 'function') {
+                removeFromStockedVenuesCache(item.data.id);
             }
         } catch (err) {
             console.error('Remove venue error:', err);
