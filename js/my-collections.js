@@ -174,25 +174,23 @@ function _cleanAutoCollectUrl() {
  * @param {string} videoId - The video_id to highlight
  */
 function highlightVenueCard(videoId) {
-    var card = document.querySelector('.venue-card[data-video-id="' + videoId + '"]');
-    // Also try finding by local_id pattern in case card uses that
-    if (!card) {
-        var cards = document.querySelectorAll('.venue-card');
-        for (var i = 0; i < cards.length; i++) {
-            var localId = cards[i].dataset.localId;
-            if (localId && _filteredItems && _filteredItems[i]) {
-                var itemVideoId = _filteredItems[i].data.video_id || _filteredItems[i].data.id;
-                if (itemVideoId === videoId) {
-                    card = cards[i];
-                    break;
-                }
+    // Find the row wrapper by iterating venue-card-row elements
+    var rows = document.querySelectorAll('.venue-card-row');
+    var targetRow = null;
+    for (var i = 0; i < rows.length; i++) {
+        var localId = rows[i].dataset.localId;
+        if (localId && _filteredItems && _filteredItems[i]) {
+            var itemVideoId = _filteredItems[i].data.video_id || _filteredItems[i].data.id;
+            if (itemVideoId === videoId) {
+                targetRow = rows[i];
+                break;
             }
         }
     }
 
-    if (card) {
-        card.classList.add('newly-collected');
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (targetRow) {
+        targetRow.classList.add('newly-collected');
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
@@ -227,14 +225,15 @@ function _setupCardClickDelegation() {
     if (!cardsListEl || cardsListEl._delegationSetup) return;
 
     cardsListEl.addEventListener('click', function(e) {
-        // Ignore remove button and visit column clicks (handled separately with stopPropagation)
+        // Ignore remove button clicks (handled separately with stopPropagation)
         if (e.target.closest('.venue-card-remove')) return;
+        // Visit column is outside .venue-card, but ignore its clicks too
         if (e.target.closest('.venue-card-visit-col')) return;
 
-        var card = e.target.closest('.venue-card');
-        if (!card) return;
+        var row = e.target.closest('.venue-card-row');
+        if (!row) return;
 
-        var idx = parseInt(card.dataset.venueIndex, 10);
+        var idx = parseInt(row.dataset.venueIndex, 10);
         if (!isNaN(idx) && _filteredItems && _filteredItems[idx]) {
             _openVenueSheet(_filteredItems[idx]);
         }
@@ -668,22 +667,26 @@ function _getItemVenueId(item) {
 function _createUnifiedCard(item, index) {
     var info = _getVenueInfo(item);
 
+    // Outer row wrapper: card + visit column side by side
+    var row = document.createElement('div');
+    row.className = 'venue-card-row';
+
+    // Store index for event delegation lookup on the row
+    row.dataset.venueIndex = index;
+
+    // Store source info for removal on the row
+    if (item.source === 'api') {
+        row.dataset.stockedVenueId = item.data.id;
+    } else {
+        row.dataset.localId = item.data.id;
+    }
+
     var card = document.createElement('div');
     card.className = 'venue-card';
 
     // Add AI-picked class if this card is from AI search results
     if (_aiFilteredIndices !== null && _aiSearchState === 'results') {
-        card.className += ' ai-picked';
-    }
-
-    // Store index for event delegation lookup
-    card.dataset.venueIndex = index;
-
-    // Store source info for removal
-    if (item.source === 'api') {
-        card.dataset.stockedVenueId = item.data.id;
-    } else {
-        card.dataset.localId = item.data.id;
+        row.className += ' ai-picked';
     }
 
     // Logo
@@ -819,7 +822,7 @@ function _createUnifiedCard(item, index) {
     removeBtn.title = t('removeVenue') || 'Remove';
     removeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        _showDeleteConfirm(item, card);
+        _showDeleteConfirm(item, row);
     });
 
     // Visit status column (right side of card)
@@ -857,15 +860,17 @@ function _createUnifiedCard(item, index) {
         _updateCardVisitUI(visitCol, vs);
     }
 
+    card.appendChild(removeBtn);
     card.appendChild(logoDiv);
     card.appendChild(infoDiv);
-    card.appendChild(visitCol);
-    card.appendChild(removeBtn);
+
+    row.appendChild(card);
+    row.appendChild(visitCol);
 
     // Note: Click handling is done via event delegation in _setupCardClickDelegation()
     // to avoid stale listener issues when cards are re-rendered
 
-    return card;
+    return row;
 }
 
 /**
