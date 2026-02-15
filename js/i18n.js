@@ -284,7 +284,7 @@ const translations = {
         welcomeHowToTitle: '使い方',
         welcomeSwipe: 'スワイプして動画を閲覧',
         welcomeCollect: '保存ボタンを押してコレクションに保存',
-        welcomeCollections: '保存した場所をすぐ見つかる',
+        welcomeCollections: '保存した場所がすぐ見つかる！',
         welcomeReserve: 'コレクションから直接予約＆特典も',
         welcomeTip: '登録すると保存が永久に！',
         welcomeGetStarted: '始める',

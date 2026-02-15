@@ -2,7 +2,7 @@
 // API Client - Omochi Backend Integration
 // =============================================================================
 
-const API_BASE_URL = 'https://5w1pl59sr9.execute-api.ap-northeast-1.amazonaws.com/dev';
+const API_BASE_URL = 'https://yje5anw6qd.execute-api.ap-northeast-1.amazonaws.com/prod';
 
 // Auto-detect local development (CORS proxy needed for localhost)
 const IS_LOCAL_DEV = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);

@@ -19,11 +19,16 @@ CAPTION_FORMATTING_GUIDE.md
 AWS_CORS_SETUP_GUIDE.md
 CLAUDE.md
 cors-test.html
+PROD_API_TEST_RESULTS.md
+ENV_URLS.md
 
 # Apps Script files (copy to Google, not for public repo)
 APPS_SCRIPT.js
 ANALYTICS_APPS_SCRIPT.js
 TAGS_APPS_SCRIPT.js
+
+# AI/SEO/MCP strategy (future reference)
+AI_SEO_MCP_STRATEGY.md
 
 # Reservation system setup (internal docs)
 RESERVATION_SYSTEM_SETUP.md

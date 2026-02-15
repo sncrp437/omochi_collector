@@ -200,7 +200,7 @@ function _updateCampaignCta(campaign) {
         ctaBtn.textContent = t('campaignViewDetails');
         ctaBtn.style.display = 'block';
         ctaBtn.onclick = function() {
-            var appUrl = 'https://d25ayioio4kluj.cloudfront.net/store/' + campaign.target_venue.id;
+            var appUrl = 'https://omochiapp.com/store/' + campaign.target_venue.id;
             window.open(appUrl, '_blank', 'noopener,noreferrer');
             _logCampaignEvent('campaign_cta_click', campaign.id);
         };
